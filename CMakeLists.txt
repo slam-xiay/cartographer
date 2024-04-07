@@ -27,7 +27,7 @@ option(BUILD_PROMETHEUS "build Prometheus monitoring support" false)
 
 include("${PROJECT_SOURCE_DIR}/cmake/functions.cmake")
 google_initialize_cartographer_project()
-google_enable_testing()
+# google_enable_testing()
 
 find_package(absl REQUIRED)
 set(BOOST_COMPONENTS iostreams)
@@ -63,10 +63,10 @@ include(FindPkgConfig)
 # endif()
 
 # Only build the documentation if we can find Sphinx.
-find_package(Sphinx)
-if(SPHINX_FOUND)
-  add_subdirectory("docs")
-endif()
+# find_package(Sphinx)
+# if(SPHINX_FOUND)
+#   add_subdirectory("docs")
+# endif()
 
 # Install catkin package.xml
 install(FILES package.xml DESTINATION share/cartographer)

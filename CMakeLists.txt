@@ -83,19 +83,19 @@ file(GLOB_RECURSE ALL_LIBRARY_SRCS "cartographer/*.cc")
 # file(GLOB_RECURSE TEST_LIBRARY_HDRS "cartographer/fake_*.h" "cartographer/*test_helpers*.h" "cartographer/mock_*.h")
 # file(GLOB_RECURSE TEST_LIBRARY_SRCS "cartographer/fake_*.cc" "cartographer/*test_helpers*.cc" "cartographer/mock_*.cc")
 # file(GLOB_RECURSE ALL_TESTS "cartographer/*_test.cc")
-file(GLOB_RECURSE ALL_EXECUTABLES "cartographer/*_main.cc")
+# file(GLOB_RECURSE ALL_EXECUTABLES "cartographer/*_main.cc")
 
 # Remove dotfiles/-folders that could potentially pollute the build.
-file(GLOB_RECURSE ALL_DOTFILES ".*/*")
-if (ALL_DOTFILES)
-  list(REMOVE_ITEM ALL_LIBRARY_HDRS ${ALL_DOTFILES})
-  list(REMOVE_ITEM ALL_LIBRARY_SRCS ${ALL_DOTFILES})
-  # list(REMOVE_ITEM TEST_LIBRARY_HDRS ${ALL_DOTFILES})
-  # list(REMOVE_ITEM TEST_LIBRARY_SRCS ${ALL_DOTFILES})
-  list(REMOVE_ITEM ALL_TESTS ${ALL_DOTFILES})
-  list(REMOVE_ITEM ALL_EXECUTABLES ${ALL_DOTFILES})
-endif()
-list(REMOVE_ITEM ALL_LIBRARY_SRCS ${ALL_EXECUTABLES})
+# file(GLOB_RECURSE ALL_DOTFILES ".*/*")
+# if (ALL_DOTFILES)
+#   list(REMOVE_ITEM ALL_LIBRARY_HDRS ${ALL_DOTFILES})
+#   list(REMOVE_ITEM ALL_LIBRARY_SRCS ${ALL_DOTFILES})
+#   # list(REMOVE_ITEM TEST_LIBRARY_HDRS ${ALL_DOTFILES})
+#   # list(REMOVE_ITEM TEST_LIBRARY_SRCS ${ALL_DOTFILES})
+#   list(REMOVE_ITEM ALL_TESTS ${ALL_DOTFILES})
+#   # list(REMOVE_ITEM ALL_EXECUTABLES ${ALL_DOTFILES})
+# endif()
+# list(REMOVE_ITEM ALL_LIBRARY_SRCS ${ALL_EXECUTABLES})
 # list(REMOVE_ITEM ALL_LIBRARY_SRCS ${ALL_TESTS})
 # list(REMOVE_ITEM ALL_LIBRARY_HDRS ${TEST_LIBRARY_HDRS})
 # list(REMOVE_ITEM ALL_LIBRARY_SRCS ${TEST_LIBRARY_SRCS})
@@ -191,25 +191,25 @@ configure_file(
   ${PROJECT_SOURCE_DIR}/cartographer/common/config.h.cmake
   ${PROJECT_BINARY_DIR}/cartographer/common/config.h)
 
-google_binary(cartographer_autogenerate_ground_truth
-  SRCS
-    cartographer/ground_truth/autogenerate_ground_truth_main.cc
-)
+# google_binary(cartographer_autogenerate_ground_truth
+#   SRCS
+#     cartographer/ground_truth/autogenerate_ground_truth_main.cc
+# )
 
-google_binary(cartographer_compute_relations_metrics
-  SRCS
-    cartographer/ground_truth/compute_relations_metrics_main.cc
-)
+# google_binary(cartographer_compute_relations_metrics
+#   SRCS
+#     cartographer/ground_truth/compute_relations_metrics_main.cc
+# )
 
-google_binary(cartographer_pbstream
-  SRCS
-  cartographer/io/pbstream_main.cc
-)
+# google_binary(cartographer_pbstream
+#   SRCS
+#   cartographer/io/pbstream_main.cc
+# )
 
-google_binary(cartographer_print_configuration
-  SRCS
-  cartographer/common/print_configuration_main.cc
-)
+# google_binary(cartographer_print_configuration
+#   SRCS
+#   cartographer/common/print_configuration_main.cc
+# )
 
 # if(${BUILD_GRPC})
 #   google_binary(cartographer_grpc_server

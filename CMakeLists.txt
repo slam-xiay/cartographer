@@ -31,21 +31,21 @@ google_enable_testing()
 
 find_package(absl REQUIRED)
 set(BOOST_COMPONENTS iostreams)
-if(WIN32)
-  list(APPEND BOOST_COMPONENTS zlib)
-  set(Boost_USE_STATIC_LIBS FALSE)
-endif()
+# if(WIN32)
+#   list(APPEND BOOST_COMPONENTS zlib)
+#   set(Boost_USE_STATIC_LIBS FALSE)
+# endif()
 find_package(Boost REQUIRED COMPONENTS ${BOOST_COMPONENTS})
 find_package(Ceres REQUIRED COMPONENTS SuiteSparse)
 find_package(Eigen3 REQUIRED)
 find_package(LuaGoogle REQUIRED)
-if(WIN32)
-  # On Windows, Protobuf is incorrectly found by the bundled CMake module, so prefer native CMake config.
-  set(protobuf_MODULE_COMPATIBLE TRUE CACHE INTERNAL "")
-  find_package(Protobuf 3.0.0 CONFIG)
-else()
+# if(WIN32)
+#   # On Windows, Protobuf is incorrectly found by the bundled CMake module, so prefer native CMake config.
+#   set(protobuf_MODULE_COMPATIBLE TRUE CACHE INTERNAL "")
+#   find_package(Protobuf 3.0.0 CONFIG)
+# else()
   find_package(Protobuf 3.0.0 REQUIRED)
-endif()
+# endif()
 
 if (${BUILD_GRPC})
   find_package(async_grpc REQUIRED)
@@ -56,11 +56,11 @@ if(${BUILD_PROMETHEUS})
 endif()
 
 include(FindPkgConfig)
-if (NOT WIN32)
-  PKG_SEARCH_MODULE(CAIRO REQUIRED cairo>=1.12.16)
-else()
+# if (NOT WIN32)
+#   PKG_SEARCH_MODULE(CAIRO REQUIRED cairo>=1.12.16)
+# else()
   find_library(CAIRO_LIBRARIES cairo)
-endif()
+# endif()
 
 # Only build the documentation if we can find Sphinx.
 find_package(Sphinx)
@@ -240,23 +240,23 @@ target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC
   "${Boost_INCLUDE_DIRS}")
 target_link_libraries(${PROJECT_NAME} PUBLIC ${Boost_LIBRARIES})
 
-if (WIN32)
-  find_package(glog REQUIRED)
-  set(GLOG_LIBRARY glog::glog)
-else()
+# if (WIN32)
+#   find_package(glog REQUIRED)
+#   set(GLOG_LIBRARY glog::glog)
+# else()
   set(GLOG_LIBRARY glog)
-endif()
+# endif()
 
 target_link_libraries(${PROJECT_NAME} PUBLIC ${GLOG_LIBRARY})
 target_link_libraries(${PROJECT_NAME} PUBLIC gflags)
-if(WIN32)
-  # Needed to fix conflict with MSVC's error macro.
-  target_compile_definitions(${PROJECT_NAME} PUBLIC -DGLOG_NO_ABBREVIATED_SEVERITIES)
-endif()
-if(MSVC)
-  # Needed for VS 2017 5.8
-  target_compile_definitions(${PROJECT_NAME} PUBLIC -D_ENABLE_EXTENDED_ALIGNED_STORAGE -D_USE_MATH_DEFINES)
-endif()
+# if(WIN32)
+#   # Needed to fix conflict with MSVC's error macro.
+#   target_compile_definitions(${PROJECT_NAME} PUBLIC -DGLOG_NO_ABBREVIATED_SEVERITIES)
+# endif()
+# if(MSVC)
+#   # Needed for VS 2017 5.8
+#   target_compile_definitions(${PROJECT_NAME} PUBLIC -D_ENABLE_EXTENDED_ALIGNED_STORAGE -D_USE_MATH_DEFINES)
+# endif()
 
 if("${CAIRO_INCLUDE_DIRS}")
   target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC
@@ -282,9 +282,9 @@ target_link_libraries(${PROJECT_NAME} PUBLIC ${PROTOBUF_LIBRARY}
   absl::time
   absl::utility 
 )
-if (NOT WIN32)
+# if (NOT WIN32)
   target_link_libraries(${PROJECT_NAME} PUBLIC pthread)
-endif()
+# endif()
 if(${BUILD_GRPC})
   target_link_libraries(${PROJECT_NAME} PUBLIC grpc++)
   target_link_libraries(${PROJECT_NAME} PUBLIC async_grpc)
@@ -307,9 +307,9 @@ add_library(${TEST_LIB} ${TEST_LIBRARY_HDRS} ${TEST_LIBRARY_SRCS})
 target_include_directories(${TEST_LIB} SYSTEM PRIVATE
   "${GMOCK_INCLUDE_DIRS}")
 # Needed for dynamically linked GTest on Windows.
-if (WIN32)
-  target_compile_definitions(${TEST_LIB} PUBLIC -DGTEST_LINKED_AS_SHARED_LIBRARY)
-endif()
+# if (WIN32)
+#   target_compile_definitions(${TEST_LIB} PUBLIC -DGTEST_LINKED_AS_SHARED_LIBRARY)
+# endif()
 target_link_libraries(${TEST_LIB} PUBLIC ${GMOCK_LIBRARY})
 target_link_libraries(${TEST_LIB} PUBLIC ${PROJECT_NAME})
 set_target_properties(${TEST_LIB} PROPERTIES

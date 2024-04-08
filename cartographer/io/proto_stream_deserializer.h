@@ -17,7 +17,8 @@
 #ifndef CARTOGRAPHER_IO_PROTO_STREAM_DESERIALIZER_H_
 #define CARTOGRAPHER_IO_PROTO_STREAM_DESERIALIZER_H_
 
-#include "cartographer/io/proto_stream_interface.h"
+// #include "cartographer/io/proto_stream_interface.h"
+#include "cartographer/io/proto_stream.h"
 #include "cartographer/mapping/proto/pose_graph.pb.h"
 #include "cartographer/mapping/proto/serialization.pb.h"
 #include "cartographer/mapping/proto/trajectory_builder_options.pb.h"
@@ -33,7 +34,7 @@ mapping::proto::PoseGraph DeserializePoseGraphFromFile(
 // proto stream, abstracting away the format parsing logic.
 class ProtoStreamDeserializer {
  public:
-  explicit ProtoStreamDeserializer(ProtoStreamReaderInterface* const reader);
+  explicit ProtoStreamDeserializer(ProtoStreamReader* const reader);
 
   ProtoStreamDeserializer(const ProtoStreamDeserializer&) = delete;
   ProtoStreamDeserializer& operator=(const ProtoStreamDeserializer&) = delete;
@@ -59,7 +60,7 @@ class ProtoStreamDeserializer {
   bool ReadNextSerializedData(mapping::proto::SerializedData* data);
 
  private:
-  ProtoStreamReaderInterface* reader_;
+  ProtoStreamReader* reader_;
 
   mapping::proto::SerializationHeader header_;
   mapping::proto::SerializedData pose_graph_;

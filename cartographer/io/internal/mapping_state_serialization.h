@@ -17,7 +17,8 @@
 #ifndef CARTOGRAPHER_IO_INTERNAL_MAPPING_STATE_SERIALIZATION_H_
 #define CARTOGRAPHER_IO_INTERNAL_MAPPING_STATE_SERIALIZATION_H_
 
-#include "cartographer/io/proto_stream_interface.h"
+// #include "cartographer/io/proto_stream_interface.h"
+#include "cartographer/io/proto_stream.h"
 #include "cartographer/mapping/pose_graph.h"
 #include "cartographer/mapping/proto/trajectory_builder_options.pb.h"
 
@@ -33,7 +34,7 @@ void WritePbStream(
     const mapping::PoseGraph& pose_graph,
     const std::vector<mapping::proto::TrajectoryBuilderOptionsWithSensorIds>&
         builder_options,
-    ProtoStreamWriterInterface* const writer, bool include_unfinished_submaps);
+    ProtoStreamWriter* const writer, bool include_unfinished_submaps);
 
 }  // namespace io
 }  // namespace cartographer

@@ -81,7 +81,7 @@ SerializedData SerializeTrajectoryBuilderOptions(
 
 void SerializeSubmaps(
     const MapById<SubmapId, PoseGraphInterface::SubmapData>& submap_data,
-    bool include_unfinished_submaps, ProtoStreamWriterInterface* const writer) {
+    bool include_unfinished_submaps, ProtoStreamWriter* const writer) {
   // Next serialize all submaps.
   for (const auto& submap_id_data : submap_data) {
     if (!include_unfinished_submaps &&
@@ -102,7 +102,7 @@ void SerializeSubmaps(
 
 void SerializeTrajectoryNodes(
     const MapById<NodeId, TrajectoryNode>& trajectory_nodes,
-    ProtoStreamWriterInterface* const writer) {
+    ProtoStreamWriter* const writer) {
   for (const auto& node_id_data : trajectory_nodes) {
     SerializedData proto;
     auto* const node_proto = proto.mutable_node();
@@ -118,7 +118,7 @@ void SerializeTrajectoryNodes(
 void SerializeTrajectoryData(
     const std::map<int, PoseGraphInterface::TrajectoryData>&
         all_trajectory_data,
-    ProtoStreamWriterInterface* const writer) {
+    ProtoStreamWriter* const writer) {
   for (const auto& trajectory_data : all_trajectory_data) {
     SerializedData proto;
     auto* const trajectory_data_proto = proto.mutable_trajectory_data();
@@ -140,7 +140,7 @@ void SerializeTrajectoryData(
 }
 
 void SerializeImuData(const sensor::MapByTime<sensor::ImuData>& all_imu_data,
-                      ProtoStreamWriterInterface* const writer) {
+                      ProtoStreamWriter* const writer) {
   for (const int trajectory_id : all_imu_data.trajectory_ids()) {
     for (const auto& imu_data : all_imu_data.trajectory(trajectory_id)) {
       SerializedData proto;
@@ -154,7 +154,7 @@ void SerializeImuData(const sensor::MapByTime<sensor::ImuData>& all_imu_data,
 
 void SerializeOdometryData(
     const sensor::MapByTime<sensor::OdometryData>& all_odometry_data,
-    ProtoStreamWriterInterface* const writer) {
+    ProtoStreamWriter* const writer) {
   for (const int trajectory_id : all_odometry_data.trajectory_ids()) {
     for (const auto& odometry_data :
          all_odometry_data.trajectory(trajectory_id)) {
@@ -171,7 +171,7 @@ void SerializeOdometryData(
 // void SerializeFixedFramePoseData(
 //     const sensor::MapByTime<sensor::FixedFramePoseData>&
 //         all_fixed_frame_pose_data,
-//     ProtoStreamWriterInterface* const writer) {
+//     ProtoStreamWriter* const writer) {
 //   for (const int trajectory_id : all_fixed_frame_pose_data.trajectory_ids())
 //   {
 //     for (const auto& fixed_frame_pose_data :
@@ -190,7 +190,7 @@ void SerializeOdometryData(
 // void SerializeLandmarkNodes(
 //     const std::map<std::string, PoseGraphInterface::LandmarkNode>&
 //         all_landmark_nodes,
-//     ProtoStreamWriterInterface* const writer) {
+//     ProtoStreamWriter* const writer) {
 //   for (const auto& node : all_landmark_nodes) {
 //     for (const auto& observation : node.second.landmark_observations) {
 //       SerializedData proto;
@@ -216,7 +216,7 @@ void WritePbStream(
     const mapping::PoseGraph& pose_graph,
     const std::vector<mapping::proto::TrajectoryBuilderOptionsWithSensorIds>&
         trajectory_builder_options,
-    ProtoStreamWriterInterface* const writer, bool include_unfinished_submaps) {
+    ProtoStreamWriter* const writer, bool include_unfinished_submaps) {
   writer->WriteProto(CreateHeader());
   writer->WriteProto(
       SerializePoseGraph(pose_graph, include_unfinished_submaps));

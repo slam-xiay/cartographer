@@ -20,7 +20,7 @@
 #include <fstream>
 
 #include "cartographer/common/port.h"
-#include "cartographer/io/proto_stream_interface.h"
+// #include "cartographer/io/proto_stream_interface.h"
 #include "google/protobuf/message.h"
 
 namespace cartographer {
@@ -32,7 +32,7 @@ namespace io {
 //
 // TODO(whess): Compress the file instead of individual messages for better
 // compression performance? Should we use LZ4?
-class ProtoStreamWriter : public ProtoStreamWriterInterface {
+class ProtoStreamWriter {
  public:
   ProtoStreamWriter(const std::string& filename);
   ~ProtoStreamWriter() = default;
@@ -40,8 +40,8 @@ class ProtoStreamWriter : public ProtoStreamWriterInterface {
   ProtoStreamWriter(const ProtoStreamWriter&) = delete;
   ProtoStreamWriter& operator=(const ProtoStreamWriter&) = delete;
 
-  void WriteProto(const google::protobuf::Message& proto) override;
-  bool Close() override;
+  void WriteProto(const google::protobuf::Message& proto);
+  bool Close();
 
  private:
   void Write(const std::string& uncompressed_data);
@@ -50,7 +50,7 @@ class ProtoStreamWriter : public ProtoStreamWriterInterface {
 };
 
 // A reader of the format produced by ProtoStreamWriter.
-class ProtoStreamReader : public ProtoStreamReaderInterface {
+class ProtoStreamReader {
  public:
   explicit ProtoStreamReader(const std::string& filename);
   ~ProtoStreamReader() = default;
@@ -58,8 +58,8 @@ class ProtoStreamReader : public ProtoStreamReaderInterface {
   ProtoStreamReader(const ProtoStreamReader&) = delete;
   ProtoStreamReader& operator=(const ProtoStreamReader&) = delete;
 
-  bool ReadProto(google::protobuf::Message* proto) override;
-  bool eof() const override;
+  bool ReadProto(google::protobuf::Message* proto);
+  bool eof() const;
 
  private:
   bool Read(std::string* decompressed_data);

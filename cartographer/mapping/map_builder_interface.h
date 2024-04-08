@@ -24,7 +24,7 @@
 #include "Eigen/Geometry"
 #include "cartographer/common/lua_parameter_dictionary.h"
 #include "cartographer/common/port.h"
-#include "cartographer/io/proto_stream_interface.h"
+#include "cartographer/io/proto_stream.h"
 #include "cartographer/mapping/id.h"
 #include "cartographer/mapping/pose_graph_interface.h"
 #include "cartographer/mapping/proto/map_builder_options.pb.h"
@@ -86,7 +86,7 @@ class MapBuilderInterface {
   // submaps that have not yet received all rangefinder data insertions, will
   // be included in the serialized state.
   virtual void SerializeState(bool include_unfinished_submaps,
-                              io::ProtoStreamWriterInterface* writer) = 0;
+                              io::ProtoStreamWriter* writer) = 0;
 
   // Serializes the current state to a proto stream file on the host system. If
   // 'include_unfinished_submaps' is set to true, unfinished submaps, i.e.
@@ -99,7 +99,7 @@ class MapBuilderInterface {
   // Loads the SLAM state from a proto stream. Returns the remapping of new
   // trajectory_ids.
   virtual std::map<int /* trajectory id in proto */, int /* trajectory id */>
-  LoadState(io::ProtoStreamReaderInterface* reader, bool load_frozen_state) = 0;
+  LoadState(io::ProtoStreamReader* reader, bool load_frozen_state) = 0;
 
   // Loads the SLAM state from a pbstream file. Returns the remapping of new
   // trajectory_ids.

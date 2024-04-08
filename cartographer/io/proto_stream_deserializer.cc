@@ -24,7 +24,7 @@ namespace cartographer {
 namespace io {
 namespace {
 mapping::proto::SerializationHeader ReadHeaderOrDie(
-    ProtoStreamReaderInterface* const reader) {
+    ProtoStreamReader* const reader) {
   mapping::proto::SerializationHeader header;
   CHECK(reader->ReadProto(&header)) << "Failed to read SerializationHeader.";
   return header;
@@ -45,7 +45,7 @@ mapping::proto::PoseGraph DeserializePoseGraphFromFile(
 }
 
 ProtoStreamDeserializer::ProtoStreamDeserializer(
-    ProtoStreamReaderInterface* const reader)
+    ProtoStreamReader* const reader)
     : reader_(reader), header_(ReadHeaderOrDie(reader)) {
   CHECK(IsVersionSupported(header_)) << "Unsupported serialization format \""
                                      << header_.format_version() << "\"";

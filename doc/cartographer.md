@@ -1476,7 +1476,75 @@ rm cartographer/sensor/internal/trajectory_collator.*
 rm cartographer/sensor/collator_interface.*
 ```
 
-### 删除
+### 删除proto_stream_interface
+
+```
+find . -name *interface.h
+./cartographer/io/proto_stream_interface.h
+./cartographer/mapping/map_builder_interface.h
+./cartographer/mapping/pose_graph_interface.h
+./cartographer/mapping/internal/optimization/optimization_problem_interface.h
+./cartographer/mapping/trajectory_builder_interface.h
+```
+
+首先屏蔽文件
+
+```
+./cartographer/io/proto_stream_interface.h
+```
+
+修改引用
+
+```
+#include "cartographer/io/proto_stream_interface.h" 屏蔽
+//#include "cartographer/io/proto_stream_interface.h"
+class ProtoStreamWriter : public ProtoStreamWriterInterface 
+改为
+class ProtoStreamWriter
+
+class ProtoStreamReader : public ProtoStreamReaderInterface 
+改为
+class ProtoStreamReader
+```
+
+```
+// #include "cartographer/io/proto_stream_interface.h"
+class ForwardingProtoStreamWriter
+    : public cartographer::io::ProtoStreamWriterInterface
+    改为
+class ForwardingProtoStreamWriter
+    : public cartographer::io::ProtoStreamWriterInterface
+    
+class InMemoryProtoStreamReader
+    : public cartographer::io::ProtoStreamReaderInterface 
+改为
+class InMemoryProtoStreamReader
+```
+
+使用者cartographer/io/internal/mapping_state_serialization.h
+
+```
+// #include "cartographer/io/proto_stream_interface.h"
+改为
+// #include "cartographer/io/proto_stream.h"
+```
+
+全局替换
+
+```
+// #include "cartographer/io/proto_stream_interface.h"
+#include "cartographer/io/proto_stream.h"
+ProtoStreamWriterInterface 改为 ProtoStreamWriter
+ProtoStreamReaderInterface 改为 ProtoStreamReader
+```
+
+最后删除不需要的文件
+
+```
+rm ./cartographer/io/proto_stream_interface.h
+```
+
+
 
 # SLAM理论
 

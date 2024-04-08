@@ -17,7 +17,7 @@
 #include "cartographer/mapping/range_data_inserter_interface.h"
 
 #include "cartographer/mapping/2d/probability_grid_range_data_inserter_2d.h"
-#include "cartographer/mapping/internal/2d/tsdf_range_data_inserter_2d.h"
+// #include "cartographer/mapping/internal/2d/tsdf_range_data_inserter_2d.h"
 
 namespace cartographer {
 namespace mapping {
@@ -39,10 +39,10 @@ proto::RangeDataInserterOptions CreateRangeDataInserterOptions(
           parameter_dictionary
               ->GetDictionary("probability_grid_range_data_inserter")
               .get());
-  *options.mutable_tsdf_range_data_inserter_options_2d() =
-      CreateTSDFRangeDataInserterOptions2D(
-          parameter_dictionary->GetDictionary("tsdf_range_data_inserter")
-              .get());
+  //   *options.mutable_tsdf_range_data_inserter_options_2d() =
+  //       CreateTSDFRangeDataInserterOptions2D(
+  //           parameter_dictionary->GetDictionary("tsdf_range_data_inserter")
+  //               .get());
   return options;
 }
 }  // namespace mapping

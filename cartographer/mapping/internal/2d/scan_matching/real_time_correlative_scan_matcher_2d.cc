@@ -25,7 +25,7 @@
 #include "cartographer/common/lua_parameter_dictionary.h"
 #include "cartographer/common/math.h"
 #include "cartographer/mapping/2d/probability_grid.h"
-#include "cartographer/mapping/internal/2d/tsdf_2d.h"
+// #include "cartographer/mapping/internal/2d/tsdf_2d.h"
 #include "cartographer/sensor/point_cloud.h"
 #include "cartographer/transform/transform.h"
 #include "glog/logging.h"
@@ -35,28 +35,28 @@ namespace mapping {
 namespace scan_matching {
 namespace {
 
-float ComputeCandidateScore(const TSDF2D& tsdf,
-                            const DiscreteScan2D& discrete_scan,
-                            int x_index_offset, int y_index_offset) {
-  float candidate_score = 0.f;
-  float summed_weight = 0.f;
-  for (const Eigen::Array2i& xy_index : discrete_scan) {
-    const Eigen::Array2i proposed_xy_index(xy_index.x() + x_index_offset,
-                                           xy_index.y() + y_index_offset);
-    const std::pair<float, float> tsd_and_weight =
-        tsdf.GetTSDAndWeight(proposed_xy_index);
-    const float normalized_tsd_score =
-        (tsdf.GetMaxCorrespondenceCost() - std::abs(tsd_and_weight.first)) /
-        tsdf.GetMaxCorrespondenceCost();
-    const float weight = tsd_and_weight.second;
-    candidate_score += normalized_tsd_score * weight;
-    summed_weight += weight;
-  }
-  if (summed_weight == 0.f) return 0.f;
-  candidate_score /= summed_weight;
-  CHECK_GE(candidate_score, 0.f);
-  return candidate_score;
-}
+// float ComputeCandidateScore(const TSDF2D& tsdf,
+//                             const DiscreteScan2D& discrete_scan,
+//                             int x_index_offset, int y_index_offset) {
+//   float candidate_score = 0.f;
+//   float summed_weight = 0.f;
+//   for (const Eigen::Array2i& xy_index : discrete_scan) {
+//     const Eigen::Array2i proposed_xy_index(xy_index.x() + x_index_offset,
+//                                            xy_index.y() + y_index_offset);
+//     const std::pair<float, float> tsd_and_weight =
+//         tsdf.GetTSDAndWeight(proposed_xy_index);
+//     const float normalized_tsd_score =
+//         (tsdf.GetMaxCorrespondenceCost() - std::abs(tsd_and_weight.first)) /
+//         tsdf.GetMaxCorrespondenceCost();
+//     const float weight = tsd_and_weight.second;
+//     candidate_score += normalized_tsd_score * weight;
+//     summed_weight += weight;
+//   }
+//   if (summed_weight == 0.f) return 0.f;
+//   candidate_score /= summed_weight;
+//   CHECK_GE(candidate_score, 0.f);
+//   return candidate_score;
+// }
 
 float ComputeCandidateScore(const ProbabilityGrid& probability_grid,
                             const DiscreteScan2D& discrete_scan,
@@ -160,12 +160,12 @@ void RealTimeCorrelativeScanMatcher2D::ScoreCandidates(
             discrete_scans[candidate.scan_index], candidate.x_index_offset,
             candidate.y_index_offset);
         break;
-      case GridType::TSDF:
-        candidate.score = ComputeCandidateScore(
-            static_cast<const TSDF2D&>(grid),
-            discrete_scans[candidate.scan_index], candidate.x_index_offset,
-            candidate.y_index_offset);
-        break;
+        // case GridType::TSDF:
+        //   candidate.score = ComputeCandidateScore(
+        //       static_cast<const TSDF2D&>(grid),
+        //       discrete_scans[candidate.scan_index], candidate.x_index_offset,
+        //       candidate.y_index_offset);
+        //   break;
     }
     candidate.score *=
         std::exp(-common::Pow2(std::hypot(candidate.x, candidate.y) *

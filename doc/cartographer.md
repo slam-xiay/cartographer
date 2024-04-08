@@ -1223,11 +1223,65 @@ rm cartographer/sensor/landmark_data.*
 rm cartographer/mapping/internal/optimization/cost_functions/landmark_cost_function_2d.h
 ```
 
-
-
 ### 删除TSDF分支
 
 删除TSDF相关字段
+
+```
+find . -name *tsdf*
+./cartographer/mapping/internal/2d/tsdf_2d.cc
+./cartographer/mapping/internal/2d/scan_matching/interpolated_tsdf_2d.h
+./cartographer/mapping/internal/2d/scan_matching/tsdf_match_cost_function_2d.cc
+./cartographer/mapping/internal/2d/scan_matching/tsdf_match_cost_function_2d.h
+./cartographer/mapping/internal/2d/tsdf_range_data_inserter_2d.h
+./cartographer/mapping/internal/2d/tsdf_range_data_inserter_2d.cc
+./cartographer/mapping/internal/2d/tsdf_2d.h
+./cartographer/mapping/proto/tsdf_2d.proto
+./cartographer/mapping/proto/tsdf_range_data_inserter_options_2d.proto
+find . -name *tsdf* -delete
+```
+
+删除lua里的tsdf
+
+cartographer/configuration_files/trajectory_builder_2d.lua
+
+```
+      -- tsdf_range_data_inserter = {
+      --   truncation_distance = 0.3,
+      --   maximum_weight = 10.,
+      --   update_free_space = false,
+      --   normal_estimation_options = {
+      --     num_normal_samples = 4,
+      --     sample_radius = 0.5,
+      --   },
+      --   project_sdf_distance_to_scan_normal = true,
+      --   update_weight_range_exponent = 0,
+      --   update_weight_angle_scan_normal_to_ray_kernel_bandwidth = 0.5,
+      --   update_weight_distance_cell_to_hit_kernel_bandwidth = 0.5,
+      -- },
+```
+
+删除含有TSDF的字段
+
+```
+TSDF2D
+TSDF
+TSDF_INSERTER_2D
+```
+
+grid_2d.proto
+
+```
+//import "cartographer/mapping/proto/tsdf_2d.proto";
+```
+
+submap2d.cc
+
+```
+//#include "cartographer/mapping/internal/2d/tsdf_range_data_inserter_2d.h"
+```
+
+
 
 ### 删除interface
 

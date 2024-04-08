@@ -83,7 +83,7 @@ POSE_GRAPH = {
       num_threads = 7,
     },
   },
-  max_num_final_iterations = 200,
+  max_num_final_iterations = 50,
   global_sampling_ratio = 0.003,
   log_residual_histograms = true,
   global_constraint_search_after_n_seconds = 10.,

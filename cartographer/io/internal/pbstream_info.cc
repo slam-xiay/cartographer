@@ -61,8 +61,8 @@ void Run(const std::string& pbstream_filename, bool all_debug_strings) {
       {SerializedData::kTrajectoryData, "trajectory_data"},
       {SerializedData::kImuData, "imu_data"},
       {SerializedData::kOdometryData, "odometry_data"},
-      {SerializedData::kFixedFramePoseData, "fixed_frame_pose_data"},
-      {SerializedData::kLandmarkData, "landmark_data"},
+      // {SerializedData::kFixedFramePoseData, "fixed_frame_pose_data"},
+      // {SerializedData::kLandmarkData, "landmark_data"},
   };
   // Initialize so zero counts of these are also reported.
   std::map<std::string, int> data_counts = {

@@ -26,7 +26,7 @@
 #include "cartographer/common/time.h"
 #include "cartographer/mapping/id.h"
 #include "cartographer/mapping/pose_graph_interface.h"
-#include "cartographer/sensor/fixed_frame_pose_data.h"
+// #include "cartographer/sensor/fixed_frame_pose_data.h"
 #include "cartographer/sensor/imu_data.h"
 #include "cartographer/sensor/map_by_time.h"
 #include "cartographer/sensor/odometry_data.h"
@@ -41,7 +41,7 @@ template <typename NodeDataType, typename SubmapDataType,
 class OptimizationProblemInterface {
  public:
   using Constraint = PoseGraphInterface::Constraint;
-  using LandmarkNode = PoseGraphInterface::LandmarkNode;
+  //   using LandmarkNode = PoseGraphInterface::LandmarkNode;
 
   OptimizationProblemInterface() {}
   virtual ~OptimizationProblemInterface() {}
@@ -67,16 +67,19 @@ class OptimizationProblemInterface {
   virtual void SetMaxNumIterations(int32 max_num_iterations) = 0;
 
   // Optimizes the global poses.
-  virtual void Solve(
-      const std::vector<Constraint>& constraints,
-      const std::map<int, PoseGraphInterface::TrajectoryState>&
-          trajectories_state,
-      const std::map<std::string, LandmarkNode>& landmark_nodes) = 0;
+  //   virtual void Solve(
+  //       const std::vector<Constraint>& constraints,
+  //       const std::map<int, PoseGraphInterface::TrajectoryState>&
+  //           trajectories_state,
+  //       const std::map<std::string, LandmarkNode>& landmark_nodes) = 0;
+  virtual void Solve(const std::vector<Constraint>& constraints,
+                     const std::map<int, PoseGraphInterface::TrajectoryState>&
+                         trajectories_state) = 0;
 
   virtual const MapById<NodeId, NodeDataType>& node_data() const = 0;
   virtual const MapById<SubmapId, SubmapDataType>& submap_data() const = 0;
-  virtual const std::map<std::string, transform::Rigid3d>& landmark_data()
-      const = 0;
+  //   virtual const std::map<std::string, transform::Rigid3d>& landmark_data()
+  //       const = 0;
   virtual const sensor::MapByTime<sensor::ImuData>& imu_data() const = 0;
   virtual const sensor::MapByTime<sensor::OdometryData>& odometry_data()
       const = 0;

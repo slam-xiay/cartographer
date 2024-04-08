@@ -42,8 +42,8 @@
 #include "cartographer/mapping/pose_graph_trimmer.h"
 #include "cartographer/mapping/value_conversion_tables.h"
 // #include "cartographer/metrics/family_factory.h"
-#include "cartographer/sensor/fixed_frame_pose_data.h"
-#include "cartographer/sensor/landmark_data.h"
+// #include "cartographer/sensor/fixed_frame_pose_data.h"
+// #include "cartographer/sensor/landmark_data.h"
 #include "cartographer/sensor/odometry_data.h"
 #include "cartographer/sensor/point_cloud.h"
 #include "cartographer/transform/rigid_transform.h"
@@ -88,13 +88,13 @@ class PoseGraph2D : public PoseGraph {
   void AddOdometryData(int trajectory_id,
                        const sensor::OdometryData& odometry_data) override
       LOCKS_EXCLUDED(mutex_);
-  void AddFixedFramePoseData(
-      int trajectory_id,
-      const sensor::FixedFramePoseData& fixed_frame_pose_data) override
-      LOCKS_EXCLUDED(mutex_);
-  void AddLandmarkData(int trajectory_id,
-                       const sensor::LandmarkData& landmark_data) override
-      LOCKS_EXCLUDED(mutex_);
+  //   void AddFixedFramePoseData(
+  //       int trajectory_id,
+  //       const sensor::FixedFramePoseData& fixed_frame_pose_data) override
+  //       LOCKS_EXCLUDED(mutex_);
+  //   void AddLandmarkData(int trajectory_id,
+  //                        const sensor::LandmarkData& landmark_data) override
+  //       LOCKS_EXCLUDED(mutex_);
 
   void DeleteTrajectory(int trajectory_id) override;
   void FinishTrajectory(int trajectory_id) override;
@@ -130,20 +130,21 @@ class PoseGraph2D : public PoseGraph {
       LOCKS_EXCLUDED(mutex_);
   std::map<int, TrajectoryState> GetTrajectoryStates() const override
       LOCKS_EXCLUDED(mutex_);
-  std::map<std::string, transform::Rigid3d> GetLandmarkPoses() const override
-      LOCKS_EXCLUDED(mutex_);
-  void SetLandmarkPose(const std::string& landmark_id,
-                       const transform::Rigid3d& global_pose,
-                       const bool frozen = false) override
-      LOCKS_EXCLUDED(mutex_);
+  //   std::map<std::string, transform::Rigid3d> GetLandmarkPoses() const
+  //   override
+  //       LOCKS_EXCLUDED(mutex_);
+  //   void SetLandmarkPose(const std::string& landmark_id,
+  //                        const transform::Rigid3d& global_pose,
+  //                        const bool frozen = false) override
+  //       LOCKS_EXCLUDED(mutex_);
   sensor::MapByTime<sensor::ImuData> GetImuData() const override
       LOCKS_EXCLUDED(mutex_);
   sensor::MapByTime<sensor::OdometryData> GetOdometryData() const override
       LOCKS_EXCLUDED(mutex_);
-  sensor::MapByTime<sensor::FixedFramePoseData> GetFixedFramePoseData()
-      const override LOCKS_EXCLUDED(mutex_);
-  std::map<std::string /* landmark ID */, PoseGraph::LandmarkNode>
-  GetLandmarkNodes() const override LOCKS_EXCLUDED(mutex_);
+  //   sensor::MapByTime<sensor::FixedFramePoseData> GetFixedFramePoseData()
+  //       const override LOCKS_EXCLUDED(mutex_);
+  //   std::map<std::string /* landmark ID */, PoseGraph::LandmarkNode>
+  //   GetLandmarkNodes() const override LOCKS_EXCLUDED(mutex_);
   std::map<int, TrajectoryData> GetTrajectoryData() const override
       LOCKS_EXCLUDED(mutex_);
   std::vector<Constraint> constraints() const override LOCKS_EXCLUDED(mutex_);

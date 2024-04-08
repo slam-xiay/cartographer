@@ -32,9 +32,9 @@
 #include "cartographer/mapping/proto/serialization.pb.h"
 #include "cartographer/mapping/submaps.h"
 #include "cartographer/mapping/trajectory_node.h"
-#include "cartographer/sensor/fixed_frame_pose_data.h"
+// #include "cartographer/sensor/fixed_frame_pose_data.h"
 #include "cartographer/sensor/imu_data.h"
-#include "cartographer/sensor/landmark_data.h"
+// #include "cartographer/sensor/landmark_data.h"
 #include "cartographer/sensor/map_by_time.h"
 #include "cartographer/sensor/odometry_data.h"
 
@@ -66,14 +66,15 @@ class PoseGraph : public PoseGraphInterface {
   virtual void AddOdometryData(int trajectory_id,
                                const sensor::OdometryData& odometry_data) = 0;
 
-  // Inserts a fixed frame pose measurement.
-  virtual void AddFixedFramePoseData(
-      int trajectory_id,
-      const sensor::FixedFramePoseData& fixed_frame_pose_data) = 0;
+  //   // Inserts a fixed frame pose measurement.
+  //   virtual void AddFixedFramePoseData(
+  //       int trajectory_id,
+  //       const sensor::FixedFramePoseData& fixed_frame_pose_data) = 0;
 
-  // Inserts landmarks observations.
-  virtual void AddLandmarkData(int trajectory_id,
-                               const sensor::LandmarkData& landmark_data) = 0;
+  //   // Inserts landmarks observations.
+  //   virtual void AddLandmarkData(int trajectory_id,
+  //                                const sensor::LandmarkData& landmark_data) =
+  //                                0;
 
   // Finishes the given trajectory.
   virtual void FinishTrajectory(int trajectory_id) = 0;
@@ -121,12 +122,13 @@ class PoseGraph : public PoseGraphInterface {
   virtual sensor::MapByTime<sensor::OdometryData> GetOdometryData() const = 0;
 
   // Returns the fixed frame pose data.
-  virtual sensor::MapByTime<sensor::FixedFramePoseData> GetFixedFramePoseData()
-      const = 0;
+  //   virtual sensor::MapByTime<sensor::FixedFramePoseData>
+  //   GetFixedFramePoseData()
+  //       const = 0;
 
   // Returns the landmark data.
-  virtual std::map<std::string /* landmark ID */, PoseGraph::LandmarkNode>
-  GetLandmarkNodes() const = 0;
+  //   virtual std::map<std::string /* landmark ID */, PoseGraph::LandmarkNode>
+  //   GetLandmarkNodes() const = 0;
 
   // Sets a relative initial pose 'relative_pose' for 'from_trajectory_id' with
   // respect to 'to_trajectory_id' at time 'time'.

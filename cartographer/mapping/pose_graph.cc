@@ -199,13 +199,14 @@ proto::PoseGraph PoseGraph::ToProto(bool include_unfinished_submaps) const {
         transform::ToProto(node_id_data.data.global_pose);
   }
 
-  auto landmarks_copy = GetLandmarkPoses();
-  proto.mutable_landmark_poses()->Reserve(landmarks_copy.size());
-  for (const auto& id_pose : landmarks_copy) {
-    auto* landmark_proto = proto.add_landmark_poses();
-    landmark_proto->set_landmark_id(id_pose.first);
-    *landmark_proto->mutable_global_pose() = transform::ToProto(id_pose.second);
-  }
+  // auto landmarks_copy = GetLandmarkPoses();
+  // proto.mutable_landmark_poses()->Reserve(landmarks_copy.size());
+  // for (const auto& id_pose : landmarks_copy) {
+  //   auto* landmark_proto = proto.add_landmark_poses();
+  //   landmark_proto->set_landmark_id(id_pose.first);
+  //   *landmark_proto->mutable_global_pose() =
+  //   transform::ToProto(id_pose.second);
+  // }
   return proto;
 }
 

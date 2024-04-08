@@ -270,11 +270,11 @@ std::map<int, int> MapBuilder::LoadState(
   }
 
   // Set global poses of landmarks.
-  for (const auto& landmark : pose_graph_proto.landmark_poses()) {
-    pose_graph_->SetLandmarkPose(landmark.landmark_id(),
-                                 transform::ToRigid3(landmark.global_pose()),
-                                 true);
-  }
+  // for (const auto& landmark : pose_graph_proto.landmark_poses()) {
+  //   pose_graph_->SetLandmarkPose(landmark.landmark_id(),
+  //                                transform::ToRigid3(landmark.global_pose()),
+  //                                true);
+  // }
 
   // if (options_.use_trajectory_builder_3d()) {
   //   CHECK_NE(deserializer.header().format_version(),
@@ -336,22 +336,22 @@ std::map<int, int> MapBuilder::LoadState(
             sensor::FromProto(proto.odometry_data().odometry_data()));
         break;
       }
-      case SerializedData::kFixedFramePoseData: {
-        if (load_frozen_state) break;
-        pose_graph_->AddFixedFramePoseData(
-            trajectory_remapping.at(
-                proto.fixed_frame_pose_data().trajectory_id()),
-            sensor::FromProto(
-                proto.fixed_frame_pose_data().fixed_frame_pose_data()));
-        break;
-      }
-      case SerializedData::kLandmarkData: {
-        if (load_frozen_state) break;
-        pose_graph_->AddLandmarkData(
-            trajectory_remapping.at(proto.landmark_data().trajectory_id()),
-            sensor::FromProto(proto.landmark_data().landmark_data()));
-        break;
-      }
+      // case SerializedData::kFixedFramePoseData: {
+      //   if (load_frozen_state) break;
+      //   pose_graph_->AddFixedFramePoseData(
+      //       trajectory_remapping.at(
+      //           proto.fixed_frame_pose_data().trajectory_id()),
+      //       sensor::FromProto(
+      //           proto.fixed_frame_pose_data().fixed_frame_pose_data()));
+      //   break;
+      // }
+      // case SerializedData::kLandmarkData: {
+      //   if (load_frozen_state) break;
+      //   pose_graph_->AddLandmarkData(
+      //       trajectory_remapping.at(proto.landmark_data().trajectory_id()),
+      //       sensor::FromProto(proto.landmark_data().landmark_data()));
+      //   break;
+      // }
       default:
         LOG(WARNING) << "Skipping unknown message type in stream: "
                      << proto.GetTypeName();

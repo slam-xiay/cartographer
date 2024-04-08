@@ -77,11 +77,14 @@ class OptimizationProblem2D
   void TrimSubmap(const SubmapId& submap_id) override;
   void SetMaxNumIterations(int32 max_num_iterations) override;
 
-  void Solve(
-      const std::vector<Constraint>& constraints,
-      const std::map<int, PoseGraphInterface::TrajectoryState>&
-          trajectories_state,
-      const std::map<std::string, LandmarkNode>& landmark_nodes) override;
+  // void Solve(
+  //     const std::vector<Constraint>& constraints,
+  //     const std::map<int, PoseGraphInterface::TrajectoryState>&
+  //         trajectories_state,
+  //     const std::map<std::string, LandmarkNode>& landmark_nodes) override;
+  void Solve(const std::vector<Constraint>& constraints,
+             const std::map<int, PoseGraphInterface::TrajectoryState>&
+                 trajectories_state) override;
 
   const MapById<NodeId, NodeSpec2D>& node_data() const override {
     return node_data_;
@@ -89,10 +92,10 @@ class OptimizationProblem2D
   const MapById<SubmapId, SubmapSpec2D>& submap_data() const override {
     return submap_data_;
   }
-  const std::map<std::string, transform::Rigid3d>& landmark_data()
-      const override {
-    return landmark_data_;
-  }
+  // const std::map<std::string, transform::Rigid3d>& landmark_data()
+  //     const override {
+  //   return landmark_data_;
+  // }
   const sensor::MapByTime<sensor::ImuData>& imu_data() const override {
     return empty_imu_data_;
   }
@@ -101,16 +104,17 @@ class OptimizationProblem2D
     return odometry_data_;
   }
 
-  void AddFixedFramePoseData(
-      int trajectory_id,
-      const sensor::FixedFramePoseData& fixed_frame_pose_data);
+  // void AddFixedFramePoseData(
+  //     int trajectory_id,
+  //     const sensor::FixedFramePoseData& fixed_frame_pose_data);
   void SetTrajectoryData(
       int trajectory_id,
       const PoseGraphInterface::TrajectoryData& trajectory_data);
-  const sensor::MapByTime<sensor::FixedFramePoseData>& fixed_frame_pose_data()
-      const {
-    return fixed_frame_pose_data_;
-  }
+  // const sensor::MapByTime<sensor::FixedFramePoseData>&
+  // fixed_frame_pose_data()
+  //     const {
+  //   return fixed_frame_pose_data_;
+  // }
   const std::map<int, PoseGraphInterface::TrajectoryData>& trajectory_data()
       const {
     return trajectory_data_;
@@ -127,10 +131,10 @@ class OptimizationProblem2D
   optimization::proto::OptimizationProblemOptions options_;
   MapById<NodeId, NodeSpec2D> node_data_;
   MapById<SubmapId, SubmapSpec2D> submap_data_;
-  std::map<std::string, transform::Rigid3d> landmark_data_;
+  // std::map<std::string, transform::Rigid3d> landmark_data_;
   sensor::MapByTime<sensor::ImuData> empty_imu_data_;
   sensor::MapByTime<sensor::OdometryData> odometry_data_;
-  sensor::MapByTime<sensor::FixedFramePoseData> fixed_frame_pose_data_;
+  // sensor::MapByTime<sensor::FixedFramePoseData> fixed_frame_pose_data_;
   std::map<int, PoseGraphInterface::TrajectoryData> trajectory_data_;
 };
 

@@ -112,20 +112,20 @@ class GlobalTrajectoryBuilder : public mapping::TrajectoryBuilderInterface {
     pose_graph_->AddOdometryData(trajectory_id_, odometry_data);
   }
 
-  void AddSensorData(
-      const std::string& sensor_id,
-      const sensor::FixedFramePoseData& fixed_frame_pose) override {
-    if (fixed_frame_pose.pose.has_value()) {
-      CHECK(fixed_frame_pose.pose.value().IsValid())
-          << fixed_frame_pose.pose.value();
-    }
-    pose_graph_->AddFixedFramePoseData(trajectory_id_, fixed_frame_pose);
-  }
+  // void AddSensorData(
+  //     const std::string& sensor_id,
+  //     const sensor::FixedFramePoseData& fixed_frame_pose) override {
+  //   if (fixed_frame_pose.pose.has_value()) {
+  //     CHECK(fixed_frame_pose.pose.value().IsValid())
+  //         << fixed_frame_pose.pose.value();
+  //   }
+  //   pose_graph_->AddFixedFramePoseData(trajectory_id_, fixed_frame_pose);
+  // }
 
-  void AddSensorData(const std::string& sensor_id,
-                     const sensor::LandmarkData& landmark_data) override {
-    pose_graph_->AddLandmarkData(trajectory_id_, landmark_data);
-  }
+  // void AddSensorData(const std::string& sensor_id,
+  //                    const sensor::LandmarkData& landmark_data) override {
+  //   pose_graph_->AddLandmarkData(trajectory_id_, landmark_data);
+  // }
 
   void AddLocalSlamResultData(std::unique_ptr<mapping::LocalSlamResultData>
                                   local_slam_result_data) override {

@@ -228,35 +228,37 @@ void PoseGraph2D::AddOdometryData(const int trajectory_id,
   });
 }
 
-void PoseGraph2D::AddFixedFramePoseData(
-    const int trajectory_id,
-    const sensor::FixedFramePoseData& fixed_frame_pose_data) {
-  AddWorkItem([=]() LOCKS_EXCLUDED(mutex_) {
-    absl::MutexLock locker(&mutex_);
-    if (CanAddWorkItemModifying(trajectory_id)) {
-      optimization_problem_->AddFixedFramePoseData(trajectory_id,
-                                                   fixed_frame_pose_data);
-    }
-    return WorkItem::Result::kDoNotRunOptimization;
-  });
-}
+// void PoseGraph2D::AddFixedFramePoseData(
+//     const int trajectory_id,
+//     const sensor::FixedFramePoseData& fixed_frame_pose_data) {
+//   AddWorkItem([=]() LOCKS_EXCLUDED(mutex_) {
+//     absl::MutexLock locker(&mutex_);
+//     if (CanAddWorkItemModifying(trajectory_id)) {
+//       optimization_problem_->AddFixedFramePoseData(trajectory_id,
+//                                                    fixed_frame_pose_data);
+//     }
+//     return WorkItem::Result::kDoNotRunOptimization;
+//   });
+// }
 
-void PoseGraph2D::AddLandmarkData(int trajectory_id,
-                                  const sensor::LandmarkData& landmark_data) {
-  AddWorkItem([=]() LOCKS_EXCLUDED(mutex_) {
-    absl::MutexLock locker(&mutex_);
-    if (CanAddWorkItemModifying(trajectory_id)) {
-      for (const auto& observation : landmark_data.landmark_observations) {
-        data_.landmark_nodes[observation.id].landmark_observations.emplace_back(
-            PoseGraphInterface::LandmarkNode::LandmarkObservation{
-                trajectory_id, landmark_data.time,
-                observation.landmark_to_tracking_transform,
-                observation.translation_weight, observation.rotation_weight});
-      }
-    }
-    return WorkItem::Result::kDoNotRunOptimization;
-  });
-}
+// void PoseGraph2D::AddLandmarkData(int trajectory_id,
+//                                   const sensor::LandmarkData& landmark_data)
+//                                   {
+//   AddWorkItem([=]() LOCKS_EXCLUDED(mutex_) {
+//     absl::MutexLock locker(&mutex_);
+//     if (CanAddWorkItemModifying(trajectory_id)) {
+//       for (const auto& observation : landmark_data.landmark_observations) {
+//         data_.landmark_nodes[observation.id].landmark_observations.emplace_back(
+//             PoseGraphInterface::LandmarkNode::LandmarkObservation{
+//                 trajectory_id, landmark_data.time,
+//                 observation.landmark_to_tracking_transform,
+//                 observation.translation_weight,
+//                 observation.rotation_weight});
+//       }
+//     }
+//     return WorkItem::Result::kDoNotRunOptimization;
+//   });
+// }
 
 void PoseGraph2D::ComputeConstraint(const NodeId& node_id,
                                     const SubmapId& submap_id) {
@@ -867,8 +869,9 @@ void PoseGraph2D::RunOptimization() {
   // data_.constraints, data_.frozen_trajectories and data_.landmark_nodes
   // when executing the Solve. Solve is time consuming, so not taking the mutex
   // before Solve to avoid blocking foreground processing.
-  optimization_problem_->Solve(data_.constraints, GetTrajectoryStates(),
-                               data_.landmark_nodes);
+  // optimization_problem_->Solve(data_.constraints, GetTrajectoryStates(),
+  //                              data_.landmark_nodes);
+  optimization_problem_->Solve(data_.constraints, GetTrajectoryStates());
   absl::MutexLock locker(&mutex_);
 
   const auto& submap_data = optimization_problem_->submap_data();
@@ -902,9 +905,10 @@ void PoseGraph2D::RunOptimization() {
           old_global_to_new_global * mutable_trajectory_node.global_pose;
     }
   }
-  for (const auto& landmark : optimization_problem_->landmark_data()) {
-    data_.landmark_nodes[landmark.first].global_landmark_pose = landmark.second;
-  }
+  // for (const auto& landmark : optimization_problem_->landmark_data()) {
+  //   data_.landmark_nodes[landmark.first].global_landmark_pose =
+  //   landmark.second;
+  // }
   data_.global_submap_poses_2d = submap_data;
 }
 
@@ -969,29 +973,29 @@ PoseGraph2D::GetTrajectoryStates() const {
   return trajectories_state;
 }
 
-std::map<std::string, transform::Rigid3d> PoseGraph2D::GetLandmarkPoses()
-    const {
-  std::map<std::string, transform::Rigid3d> landmark_poses;
-  absl::MutexLock locker(&mutex_);
-  for (const auto& landmark : data_.landmark_nodes) {
-    // Landmark without value has not been optimized yet.
-    if (!landmark.second.global_landmark_pose.has_value()) continue;
-    landmark_poses[landmark.first] =
-        landmark.second.global_landmark_pose.value();
-  }
-  return landmark_poses;
-}
+// std::map<std::string, transform::Rigid3d> PoseGraph2D::GetLandmarkPoses()
+//     const {
+//   std::map<std::string, transform::Rigid3d> landmark_poses;
+//   absl::MutexLock locker(&mutex_);
+//   for (const auto& landmark : data_.landmark_nodes) {
+//     // Landmark without value has not been optimized yet.
+//     if (!landmark.second.global_landmark_pose.has_value()) continue;
+//     landmark_poses[landmark.first] =
+//         landmark.second.global_landmark_pose.value();
+//   }
+//   return landmark_poses;
+// }
 
-void PoseGraph2D::SetLandmarkPose(const std::string& landmark_id,
-                                  const transform::Rigid3d& global_pose,
-                                  const bool frozen) {
-  AddWorkItem([=]() LOCKS_EXCLUDED(mutex_) {
-    absl::MutexLock locker(&mutex_);
-    data_.landmark_nodes[landmark_id].global_landmark_pose = global_pose;
-    data_.landmark_nodes[landmark_id].frozen = frozen;
-    return WorkItem::Result::kDoNotRunOptimization;
-  });
-}
+// void PoseGraph2D::SetLandmarkPose(const std::string& landmark_id,
+//                                   const transform::Rigid3d& global_pose,
+//                                   const bool frozen) {
+//   AddWorkItem([=]() LOCKS_EXCLUDED(mutex_) {
+//     absl::MutexLock locker(&mutex_);
+//     data_.landmark_nodes[landmark_id].global_landmark_pose = global_pose;
+//     data_.landmark_nodes[landmark_id].frozen = frozen;
+//     return WorkItem::Result::kDoNotRunOptimization;
+//   });
+// }
 
 sensor::MapByTime<sensor::ImuData> PoseGraph2D::GetImuData() const {
   absl::MutexLock locker(&mutex_);
@@ -1003,11 +1007,11 @@ sensor::MapByTime<sensor::OdometryData> PoseGraph2D::GetOdometryData() const {
   return optimization_problem_->odometry_data();
 }
 
-std::map<std::string /* landmark ID */, PoseGraphInterface::LandmarkNode>
-PoseGraph2D::GetLandmarkNodes() const {
-  absl::MutexLock locker(&mutex_);
-  return data_.landmark_nodes;
-}
+// std::map<std::string /* landmark ID */, PoseGraphInterface::LandmarkNode>
+// PoseGraph2D::GetLandmarkNodes() const {
+//   absl::MutexLock locker(&mutex_);
+//   return data_.landmark_nodes;
+// }
 
 std::map<int, PoseGraphInterface::TrajectoryData>
 PoseGraph2D::GetTrajectoryData() const {
@@ -1015,11 +1019,11 @@ PoseGraph2D::GetTrajectoryData() const {
   return optimization_problem_->trajectory_data();
 }
 
-sensor::MapByTime<sensor::FixedFramePoseData>
-PoseGraph2D::GetFixedFramePoseData() const {
-  absl::MutexLock locker(&mutex_);
-  return optimization_problem_->fixed_frame_pose_data();
-}
+// sensor::MapByTime<sensor::FixedFramePoseData>
+// PoseGraph2D::GetFixedFramePoseData() const {
+//   absl::MutexLock locker(&mutex_);
+//   return optimization_problem_->fixed_frame_pose_data();
+// }
 
 std::vector<PoseGraphInterface::Constraint> PoseGraph2D::constraints() const {
   std::vector<PoseGraphInterface::Constraint> result;

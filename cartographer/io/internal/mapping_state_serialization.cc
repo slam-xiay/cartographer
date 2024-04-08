@@ -168,46 +168,47 @@ void SerializeOdometryData(
   }
 }
 
-void SerializeFixedFramePoseData(
-    const sensor::MapByTime<sensor::FixedFramePoseData>&
-        all_fixed_frame_pose_data,
-    ProtoStreamWriterInterface* const writer) {
-  for (const int trajectory_id : all_fixed_frame_pose_data.trajectory_ids()) {
-    for (const auto& fixed_frame_pose_data :
-         all_fixed_frame_pose_data.trajectory(trajectory_id)) {
-      SerializedData proto;
-      auto* const fixed_frame_pose_data_proto =
-          proto.mutable_fixed_frame_pose_data();
-      fixed_frame_pose_data_proto->set_trajectory_id(trajectory_id);
-      *fixed_frame_pose_data_proto->mutable_fixed_frame_pose_data() =
-          sensor::ToProto(fixed_frame_pose_data);
-      writer->WriteProto(proto);
-    }
-  }
-}
+// void SerializeFixedFramePoseData(
+//     const sensor::MapByTime<sensor::FixedFramePoseData>&
+//         all_fixed_frame_pose_data,
+//     ProtoStreamWriterInterface* const writer) {
+//   for (const int trajectory_id : all_fixed_frame_pose_data.trajectory_ids())
+//   {
+//     for (const auto& fixed_frame_pose_data :
+//          all_fixed_frame_pose_data.trajectory(trajectory_id)) {
+//       SerializedData proto;
+//       auto* const fixed_frame_pose_data_proto =
+//           proto.mutable_fixed_frame_pose_data();
+//       fixed_frame_pose_data_proto->set_trajectory_id(trajectory_id);
+//       *fixed_frame_pose_data_proto->mutable_fixed_frame_pose_data() =
+//           sensor::ToProto(fixed_frame_pose_data);
+//       writer->WriteProto(proto);
+//     }
+//   }
+// }
 
-void SerializeLandmarkNodes(
-    const std::map<std::string, PoseGraphInterface::LandmarkNode>&
-        all_landmark_nodes,
-    ProtoStreamWriterInterface* const writer) {
-  for (const auto& node : all_landmark_nodes) {
-    for (const auto& observation : node.second.landmark_observations) {
-      SerializedData proto;
-      auto* landmark_data_proto = proto.mutable_landmark_data();
-      landmark_data_proto->set_trajectory_id(observation.trajectory_id);
-      landmark_data_proto->mutable_landmark_data()->set_timestamp(
-          common::ToUniversal(observation.time));
-      auto* observation_proto = landmark_data_proto->mutable_landmark_data()
-                                    ->add_landmark_observations();
-      observation_proto->set_id(node.first);
-      *observation_proto->mutable_landmark_to_tracking_transform() =
-          transform::ToProto(observation.landmark_to_tracking_transform);
-      observation_proto->set_translation_weight(observation.translation_weight);
-      observation_proto->set_rotation_weight(observation.rotation_weight);
-      writer->WriteProto(proto);
-    }
-  }
-}
+// void SerializeLandmarkNodes(
+//     const std::map<std::string, PoseGraphInterface::LandmarkNode>&
+//         all_landmark_nodes,
+//     ProtoStreamWriterInterface* const writer) {
+//   for (const auto& node : all_landmark_nodes) {
+//     for (const auto& observation : node.second.landmark_observations) {
+//       SerializedData proto;
+//       auto* landmark_data_proto = proto.mutable_landmark_data();
+//       landmark_data_proto->set_trajectory_id(observation.trajectory_id);
+//       landmark_data_proto->mutable_landmark_data()->set_timestamp(
+//           common::ToUniversal(observation.time));
+//       auto* observation_proto = landmark_data_proto->mutable_landmark_data()
+//                                     ->add_landmark_observations();
+//       observation_proto->set_id(node.first);
+//       *observation_proto->mutable_landmark_to_tracking_transform() =
+//           transform::ToProto(observation.landmark_to_tracking_transform);
+//       observation_proto->set_translation_weight(observation.translation_weight);
+//       observation_proto->set_rotation_weight(observation.rotation_weight);
+//       writer->WriteProto(proto);
+//     }
+//   }
+// }
 
 }  // namespace
 
@@ -229,8 +230,8 @@ void WritePbStream(
   SerializeTrajectoryData(pose_graph.GetTrajectoryData(), writer);
   SerializeImuData(pose_graph.GetImuData(), writer);
   SerializeOdometryData(pose_graph.GetOdometryData(), writer);
-  SerializeFixedFramePoseData(pose_graph.GetFixedFramePoseData(), writer);
-  SerializeLandmarkNodes(pose_graph.GetLandmarkNodes(), writer);
+  // SerializeFixedFramePoseData(pose_graph.GetFixedFramePoseData(), writer);
+  // SerializeLandmarkNodes(pose_graph.GetLandmarkNodes(), writer);
 }
 
 }  // namespace io

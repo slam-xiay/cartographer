@@ -67,25 +67,25 @@ class CollatedTrajectoryBuilder : public TrajectoryBuilderInterface {
     AddData(sensor::MakeDispatchable(sensor_id, odometry_data));
   }
 
-  void AddSensorData(
-      const std::string& sensor_id,
-      const sensor::FixedFramePoseData& fixed_frame_pose_data) override {
-    if (collate_fixed_frame_) {
-      AddData(sensor::MakeDispatchable(sensor_id, fixed_frame_pose_data));
-      return;
-    }
-    wrapped_trajectory_builder_->AddSensorData(sensor_id,
-                                               fixed_frame_pose_data);
-  }
+  // void AddSensorData(
+  //     const std::string& sensor_id,
+  //     const sensor::FixedFramePoseData& fixed_frame_pose_data) override {
+  //   if (collate_fixed_frame_) {
+  //     AddData(sensor::MakeDispatchable(sensor_id, fixed_frame_pose_data));
+  //     return;
+  //   }
+  //   wrapped_trajectory_builder_->AddSensorData(sensor_id,
+  //                                              fixed_frame_pose_data);
+  // }
 
-  void AddSensorData(const std::string& sensor_id,
-                     const sensor::LandmarkData& landmark_data) override {
-    if (collate_landmarks_) {
-      AddData(sensor::MakeDispatchable(sensor_id, landmark_data));
-      return;
-    }
-    wrapped_trajectory_builder_->AddSensorData(sensor_id, landmark_data);
-  }
+  // void AddSensorData(const std::string& sensor_id,
+  //                    const sensor::LandmarkData& landmark_data) override {
+  //   if (collate_landmarks_) {
+  //     AddData(sensor::MakeDispatchable(sensor_id, landmark_data));
+  //     return;
+  //   }
+  //   wrapped_trajectory_builder_->AddSensorData(sensor_id, landmark_data);
+  // }
 
   void AddLocalSlamResultData(std::unique_ptr<mapping::LocalSlamResultData>
                                   local_slam_result_data) override {

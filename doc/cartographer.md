@@ -1124,10 +1124,6 @@ graph TD
 
 ```
 
-
-
-
-
 找到涉及的文件
 
 ```
@@ -1191,6 +1187,75 @@ imu_based_pose_extrapolator.cc
 ```
 
 删除引用了*_3d.h的字段
+
+### 删除FixedFramePose和AddLandmarkData
+
+删除FixedFrame、Landmark相关字段
+
+```
+SerializeFixedFramePoseData
+SerializeLandmarkNodes
+kFixedFramePoseData
+kLandmarkData
+AddFixedFramePoseData
+AddLandmarkData
+FixedFramePoseData
+LandmarkData
+landmark_data_
+fixed_frame_pose_data_
+C_landmarks
+C_fixed_frames
+fixed_frame_pose_data.h
+landmark_data.h
+GetLandmarkNodes
+landmark_nodes
+GetInitialLandmarkPose
+AddLandmarkCostFunctions
+SetLandmarkPose
+GetLandmarkPoses
+```
+
+删除相关文件
+
+```
+rm cartographer/sensor/fixed_frame_pose_data.*
+rm cartographer/sensor/landmark_data.*
+rm cartographer/mapping/internal/optimization/cost_functions/landmark_cost_function_2d.h
+```
+
+
+
+### 删除TSDF分支
+
+删除TSDF相关字段
+
+### 删除interface
+
+```
+find . -name *interface.h
+./cartographer/sensor/collator_interface.h
+./cartographer/io/proto_stream_interface.h
+./cartographer/mapping/range_data_inserter_interface.h
+./cartographer/mapping/grid_interface.h
+./cartographer/mapping/pose_extrapolator_interface.h
+./cartographer/mapping/map_builder_interface.h
+./cartographer/mapping/pose_graph_interface.h
+./cartographer/mapping/internal/optimization/optimization_problem_interface.h
+./cartographer/mapping/trajectory_builder_interface.h
+```
+
+与我们有关，影响开发进度的是
+
+```
+map_builder_interface
+pose_graph_interface
+trajectory_builder_interface
+optimization_problem_interface
+grid_interface
+pose_extrapolator_interface
+```
+
+
 
 # SLAM理论
 

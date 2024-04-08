@@ -25,7 +25,8 @@
 #include "cartographer/mapping/2d/probability_grid.h"
 #include "cartographer/mapping/2d/xy_index.h"
 #include "cartographer/mapping/proto/probability_grid_range_data_inserter_options_2d.pb.h"
-#include "cartographer/mapping/range_data_inserter_interface.h"
+// #include "cartographer/mapping/range_data_inserter_interface.h"
+#include "cartographer/mapping/2d/probability_grid_range_data_inserter_2d.h"
 #include "cartographer/sensor/point_cloud.h"
 #include "cartographer/sensor/range_data.h"
 
@@ -36,7 +37,10 @@ proto::ProbabilityGridRangeDataInserterOptions2D
 CreateProbabilityGridRangeDataInserterOptions2D(
     common::LuaParameterDictionary* parameter_dictionary);
 
-class ProbabilityGridRangeDataInserter2D : public RangeDataInserterInterface {
+proto::RangeDataInserterOptions CreateRangeDataInserterOptions(
+    common::LuaParameterDictionary* const parameter_dictionary);
+
+class ProbabilityGridRangeDataInserter2D {
  public:
   explicit ProbabilityGridRangeDataInserter2D(
       const proto::ProbabilityGridRangeDataInserterOptions2D& options);
@@ -47,8 +51,9 @@ class ProbabilityGridRangeDataInserter2D : public RangeDataInserterInterface {
       const ProbabilityGridRangeDataInserter2D&) = delete;
 
   // Inserts 'range_data' into 'probability_grid'.
-  virtual void Insert(const sensor::RangeData& range_data,
-                      GridInterface* grid) const override;
+  //   virtual void Insert(const sensor::RangeData& range_data,
+  //                       GridInterface* grid) const;
+  virtual void Insert(const sensor::RangeData& range_data, Grid2D* grid) const;
 
  private:
   const proto::ProbabilityGridRangeDataInserterOptions2D options_;

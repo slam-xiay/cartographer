@@ -113,6 +113,30 @@ CreateProbabilityGridRangeDataInserterOptions2D(
   return options;
 }
 
+proto::RangeDataInserterOptions CreateRangeDataInserterOptions(
+    common::LuaParameterDictionary* const parameter_dictionary) {
+  proto::RangeDataInserterOptions options;
+  const std::string range_data_inserter_type_string =
+      parameter_dictionary->GetString("range_data_inserter_type");
+  proto::RangeDataInserterOptions_RangeDataInserterType
+      range_data_inserter_type;
+  CHECK(proto::RangeDataInserterOptions_RangeDataInserterType_Parse(
+      range_data_inserter_type_string, &range_data_inserter_type))
+      << "Unknown RangeDataInserterOptions_RangeDataInserterType kind: "
+      << range_data_inserter_type_string;
+  options.set_range_data_inserter_type(range_data_inserter_type);
+  *options.mutable_probability_grid_range_data_inserter_options_2d() =
+      CreateProbabilityGridRangeDataInserterOptions2D(
+          parameter_dictionary
+              ->GetDictionary("probability_grid_range_data_inserter")
+              .get());
+  //   *options.mutable_tsdf_range_data_inserter_options_2d() =
+  //       CreateTSDFRangeDataInserterOptions2D(
+  // parameter_dictionary->GetDictionary("tsdf_range_data_inserter")
+  //               .get());
+  return options;
+}
+
 ProbabilityGridRangeDataInserter2D::ProbabilityGridRangeDataInserter2D(
     const proto::ProbabilityGridRangeDataInserterOptions2D& options)
     : options_(options),
@@ -122,7 +146,7 @@ ProbabilityGridRangeDataInserter2D::ProbabilityGridRangeDataInserter2D(
           Odds(options.miss_probability()))) {}
 
 void ProbabilityGridRangeDataInserter2D::Insert(
-    const sensor::RangeData& range_data, GridInterface* const grid) const {
+    const sensor::RangeData& range_data, Grid2D* const grid) const {
   ProbabilityGrid* const probability_grid = static_cast<ProbabilityGrid*>(grid);
   CHECK(probability_grid != nullptr);
   // By not finishing the update after hits are inserted, we give hits priority

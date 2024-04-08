@@ -1281,9 +1281,7 @@ submap2d.cc
 //#include "cartographer/mapping/internal/2d/tsdf_range_data_inserter_2d.h"
 ```
 
-
-
-### 删除interface
+### 删除pose_extrapolator_interface
 
 ```
 find . -name *interface.h
@@ -1298,15 +1296,136 @@ find . -name *interface.h
 ./cartographer/mapping/trajectory_builder_interface.h
 ```
 
-与我们有关，影响开发进度的是
+数据结构迁移，把interface的结构体ExtrapolationResult放在public之后
 
 ```
-map_builder_interface
-pose_graph_interface
-trajectory_builder_interface
-optimization_problem_interface
-grid_interface
-pose_extrapolator_interface
+  struct ExtrapolationResult {
+    // The poses for the requested times at index 0 to N-1.
+    std::vector<transform::Rigid3f> previous_poses;
+    // The pose for the requested time at index N.
+    transform::Rigid3d current_pose;
+    Eigen::Vector3d current_velocity;
+    Eigen::Quaterniond gravity_from_tracking;
+  };
+```
+
+独立函数迁移CreatePoseExtrapolatorOptions，把函数从interface迁出到pose_extrapolator
+
+```
+ConstantVelocityPoseExtrapolatorOptions
+CreatePoseExtrapolatorOptions
+CreateWithImuData
+```
+
+修改后修改头文件
+
+```
+#include "cartographer/mapping/pose_extrapolator_interface.h"
+改为
+#include "cartographer/mapping/pose_extrapolator.h"
+```
+
+在extrapolator.h增加引用
+
+```
+#include "cartographer/mapping/proto/pose_extrapolator_options.pb.h"
+#include "cartographer/transform/timestamped_transform.h"
+```
+
+首先改变原有继承关系
+
+```
+class PoseExtrapolator : public PoseExtrapolatorInterface {
+改为
+class PoseExtrapolator 
+```
+
+删除所有的override
+
+最后我们删除文件
+
+```
+ rm cartographer/mapping/pose_extrapolator_interface.cc
+ rm cartographer/mapping/pose_extrapolator_interface.h
+```
+
+### 删除grid_interface和range_data_inserter_interface
+
+删除引用
+
+```
+// #include "cartographer/mapping/grid_interface.h"
+替换为
+#include "cartographer/mapping/2d/grid_2d.h"
+
+// #include "cartographer/mapping/range_data_inserter_interface.h"
+替换为
+#include "cartographer/mapping/2d/probability_grid_range_data_inserter_2d.h"
+```
+
+删除文件
+
+```
+
+```
+
+```
+class Grid2D : public GridInterface 
+改为
+class Grid2D
+
+class ProbabilityGridRangeDataInserter2D : public RangeDataInserterInterface 
+改为
+class ProbabilityGridRangeDataInserter2D
+
+删除类里的 override
+```
+
+把其他地方的
+
+```
+RangeDataInserterInterface 替换为 ProbabilityGridRangeDataInserter2D
+GridInterface 替换为 Grid2D
+```
+
+独立函数迁移从range_data_inserter_interface 到probability_grid_range_data_inserter_2d
+
+```
+.h
+// proto::RangeDataInserterOptions CreateRangeDataInserterOptions(
+//     common::LuaParameterDictionary* const parameter_dictionary);
+.cc
+// proto::RangeDataInserterOptions CreateRangeDataInserterOptions(
+//     common::LuaParameterDictionary* const parameter_dictionary) {
+//   proto::RangeDataInserterOptions options;
+//   const std::string range_data_inserter_type_string =
+//       parameter_dictionary->GetString("range_data_inserter_type");
+//   proto::RangeDataInserterOptions_RangeDataInserterType
+//       range_data_inserter_type;
+//   CHECK(proto::RangeDataInserterOptions_RangeDataInserterType_Parse(
+//       range_data_inserter_type_string, &range_data_inserter_type))
+//       << "Unknown RangeDataInserterOptions_RangeDataInserterType kind: "
+//       << range_data_inserter_type_string;
+//   options.set_range_data_inserter_type(range_data_inserter_type);
+//   *options.mutable_probability_grid_range_data_inserter_options_2d() =
+//       CreateProbabilityGridRangeDataInserterOptions2D(
+//           parameter_dictionary
+//               ->GetDictionary("probability_grid_range_data_inserter")
+//               .get());
+//   //   *options.mutable_tsdf_range_data_inserter_options_2d() =
+//   //       CreateTSDFRangeDataInserterOptions2D(
+//   // parameter_dictionary->GetDictionary("tsdf_range_data_inserter")
+//   //               .get());
+//   return options;
+// }
+```
+
+编译通过后删除文件
+
+```
+rm cartographer/mapping/grid_interface.h
+rm cartographer/mapping/range_data_inserter_interface.h
+rm cartographer/mapping/range_data_inserter_interface.cc
 ```
 
 

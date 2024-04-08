@@ -20,7 +20,8 @@
 #include <vector>
 
 #include "cartographer/mapping/2d/map_limits.h"
-#include "cartographer/mapping/grid_interface.h"
+// #include "cartographer/mapping/grid_interface.h"
+#include "cartographer/mapping/2d/grid_2d.h"
 #include "cartographer/mapping/probability_values.h"
 #include "cartographer/mapping/proto/grid_2d.pb.h"
 #include "cartographer/mapping/proto/submap_visualization.pb.h"
@@ -35,7 +36,7 @@ proto::GridOptions2D CreateGridOptions2D(
 
 enum class GridType { PROBABILITY_GRID };
 
-class Grid2D : public GridInterface {
+class Grid2D {
  public:
   Grid2D(const MapLimits& limits, float min_correspondence_cost,
          float max_correspondence_cost,

@@ -27,7 +27,9 @@
 #include "cartographer/mapping/proto/serialization.pb.h"
 #include "cartographer/mapping/proto/submap_visualization.pb.h"
 #include "cartographer/mapping/proto/submaps_options_2d.pb.h"
-#include "cartographer/mapping/range_data_inserter_interface.h"
+// #include "cartographer/mapping/range_data_inserter_interface.h"
+#include "cartographer/mapping/2d/probability_grid_range_data_inserter_2d.h"
+// #include "cartographer/mapping/range_data_inserter.h"
 #include "cartographer/mapping/submaps.h"
 #include "cartographer/mapping/trajectory_node.h"
 #include "cartographer/mapping/value_conversion_tables.h"
@@ -57,8 +59,12 @@ class Submap2D : public Submap {
 
   // Insert 'range_data' into this submap using 'range_data_inserter'. The
   // submap must not be finished yet.
-  void InsertRangeData(const sensor::RangeData& range_data,
-                       const RangeDataInserterInterface* range_data_inserter);
+  // void InsertRangeData(const sensor::RangeData& range_data,
+  //                      const RangeDataInserterInterface*
+  //                      range_data_inserter);
+  void InsertRangeData(
+      const sensor::RangeData& range_data,
+      const ProbabilityGridRangeDataInserter2D* range_data_inserter);
   void Finish();
 
  private:
@@ -90,14 +96,16 @@ class ActiveSubmaps2D {
   std::vector<std::shared_ptr<const Submap2D>> submaps() const;
 
  private:
-  std::unique_ptr<RangeDataInserterInterface> CreateRangeDataInserter();
-  std::unique_ptr<GridInterface> CreateGrid(const Eigen::Vector2f& origin);
+  // std::unique_ptr<RangeDataInserterInterface> CreateRangeDataInserter();
+  std::unique_ptr<ProbabilityGridRangeDataInserter2D> CreateRangeDataInserter();
+  // std::unique_ptr<GridInterface> CreateGrid(const Eigen::Vector2f& origin);
+  std::unique_ptr<Grid2D> CreateGrid(const Eigen::Vector2f& origin);
   void FinishSubmap();
   void AddSubmap(const Eigen::Vector2f& origin);
 
   const proto::SubmapsOptions2D options_;
   std::vector<std::shared_ptr<Submap2D>> submaps_;
-  std::unique_ptr<RangeDataInserterInterface> range_data_inserter_;
+  std::unique_ptr<ProbabilityGridRangeDataInserter2D> range_data_inserter_;
   ValueConversionTables conversion_tables_;
 };
 

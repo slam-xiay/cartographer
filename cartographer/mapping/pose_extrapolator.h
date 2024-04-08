@@ -23,18 +23,31 @@
 #include "cartographer/common/time.h"
 #include "cartographer/mapping/imu_tracker.h"
 #include "cartographer/mapping/pose_extrapolator_interface.h"
+#include "cartographer/mapping/proto/pose_extrapolator_options.pb.h"
 #include "cartographer/sensor/imu_data.h"
 #include "cartographer/sensor/odometry_data.h"
 #include "cartographer/transform/rigid_transform.h"
+#include "cartographer/transform/timestamped_transform.h"
 
 namespace cartographer {
 namespace mapping {
 
+proto::PoseExtrapolatorOptions CreatePoseExtrapolatorOptions(
+    common::LuaParameterDictionary* const parameter_dictionary);
 // Keep poses for a certain duration to estimate linear and angular velocity.
 // Uses the velocities to extrapolate motion. Uses IMU and/or odometry data if
 // available to improve the extrapolation.
-class PoseExtrapolator : public PoseExtrapolatorInterface {
+class PoseExtrapolator {
  public:
+  struct ExtrapolationResult {
+    // The poses for the requested times at index 0 to N-1.
+    std::vector<transform::Rigid3f> previous_poses;
+    // The pose for the requested time at index N.
+    transform::Rigid3d current_pose;
+    Eigen::Vector3d current_velocity;
+    Eigen::Quaterniond gravity_from_tracking;
+  };
+
   explicit PoseExtrapolator(common::Duration pose_queue_duration,
                             double imu_gravity_time_constant);
 
@@ -47,20 +60,25 @@ class PoseExtrapolator : public PoseExtrapolatorInterface {
 
   // Returns the time of the last added pose or Time::min() if no pose was added
   // yet.
-  common::Time GetLastPoseTime() const override;
-  common::Time GetLastExtrapolatedTime() const override;
+  common::Time GetLastPoseTime() const;
+  common::Time GetLastExtrapolatedTime() const;
 
-  void AddPose(common::Time time, const transform::Rigid3d& pose) override;
-  void AddImuData(const sensor::ImuData& imu_data) override;
-  void AddOdometryData(const sensor::OdometryData& odometry_data) override;
-  transform::Rigid3d ExtrapolatePose(common::Time time) override;
+  void AddPose(common::Time time, const transform::Rigid3d& pose);
+  void AddImuData(const sensor::ImuData& imu_data);
+  void AddOdometryData(const sensor::OdometryData& odometry_data);
+  transform::Rigid3d ExtrapolatePose(common::Time time);
 
   ExtrapolationResult ExtrapolatePosesWithGravity(
-      const std::vector<common::Time>& times) override;
+      const std::vector<common::Time>& times);
 
   // Returns the current gravity alignment estimate as a rotation from
   // the tracking frame into a gravity aligned frame.
-  Eigen::Quaterniond EstimateGravityOrientation(common::Time time) override;
+  Eigen::Quaterniond EstimateGravityOrientation(common::Time time);
+  //   // TODO: Remove dependency cycle.
+  static std::unique_ptr<PoseExtrapolator> CreateWithImuData(
+      const proto::PoseExtrapolatorOptions& options,
+      const std::vector<sensor::ImuData>& imu_data,
+      const std::vector<transform::TimestampedTransform>& initial_poses);
 
  private:
   void UpdateVelocitiesFromPoses();

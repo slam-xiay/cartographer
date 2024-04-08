@@ -27,7 +27,7 @@
 #include "cartographer/common/port.h"
 #include "cartographer/mapping/2d/probability_grid_range_data_inserter_2d.h"
 // #include "cartographer/mapping/internal/2d/tsdf_range_data_inserter_2d.h"
-#include "cartographer/mapping/range_data_inserter_interface.h"
+// #include "cartographer/mapping/range_data_inserter_interface.h"
 #include "glog/logging.h"
 
 namespace cartographer {
@@ -138,9 +138,12 @@ void Submap2D::ToResponseProto(
   grid()->DrawToSubmapTexture(texture, local_pose());
 }
 
+// void Submap2D::InsertRangeData(
+//     const sensor::RangeData& range_data,
+//     const RangeDataInserterInterface* range_data_inserter) {
 void Submap2D::InsertRangeData(
     const sensor::RangeData& range_data,
-    const RangeDataInserterInterface* range_data_inserter) {
+    const ProbabilityGridRangeDataInserter2D* range_data_inserter) {
   CHECK(grid_);
   CHECK(!insertion_finished());
   range_data_inserter->Insert(range_data, grid_.get());
@@ -177,7 +180,8 @@ std::vector<std::shared_ptr<const Submap2D>> ActiveSubmaps2D::InsertRangeData(
   return submaps();
 }
 
-std::unique_ptr<RangeDataInserterInterface>
+// std::unique_ptr<RangeDataInserterInterface>
+std::unique_ptr<ProbabilityGridRangeDataInserter2D>
 ActiveSubmaps2D::CreateRangeDataInserter() {
   switch (options_.range_data_inserter_options().range_data_inserter_type()) {
     case proto::RangeDataInserterOptions::PROBABILITY_GRID_INSERTER_2D:
@@ -193,7 +197,8 @@ ActiveSubmaps2D::CreateRangeDataInserter() {
   }
 }
 
-std::unique_ptr<GridInterface> ActiveSubmaps2D::CreateGrid(
+// std::unique_ptr<GridInterface> ActiveSubmaps2D::CreateGrid(
+std::unique_ptr<Grid2D> ActiveSubmaps2D::CreateGrid(
     const Eigen::Vector2f& origin) {
   constexpr int kInitialSubmapSize = 100;
   float resolution = options_.grid_options_2d().resolution();

@@ -1544,6 +1544,33 @@ ProtoStreamReaderInterface 改为 ProtoStreamReader
 rm ./cartographer/io/proto_stream_interface.h
 ```
 
+### 删除optimization_problem_interface
+
+首先屏蔽
+
+```
+cartographer/mapping/internal/optimization/optimization_problem_interface.h
+```
+
+删除引用
+
+```
+// #include
+// "cartographer/mapping/internal/optimization/optimization_problem_interface.h"
+```
+
+其次删除派生
+
+```
+class OptimizationProblem2D
+    : public OptimizationProblemInterface<NodeSpec2D, SubmapSpec2D,
+                                          transform::Rigid2d>
+                                          改为
+class OptimizationProblem2D 
+  删除类中的override
+  迁移 using Constraint = PoseGraphInterface::Constraint; 到类中
+```
+
 
 
 # SLAM理论

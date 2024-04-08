@@ -66,10 +66,10 @@ proto::TrajectoryBuilderOptions CreateTrajectoryBuilderOptions(
   // *options.mutable_trajectory_builder_3d_options() =
   //     CreateLocalTrajectoryBuilderOptions3D(
   //         parameter_dictionary->GetDictionary("trajectory_builder_3d").get());
-  options.set_collate_fixed_frame(
-      parameter_dictionary->GetBool("collate_fixed_frame"));
-  options.set_collate_landmarks(
-      parameter_dictionary->GetBool("collate_landmarks"));
+  // options.set_collate_fixed_frame(
+  //     parameter_dictionary->GetBool("collate_fixed_frame"));
+  // options.set_collate_landmarks(
+  //     parameter_dictionary->GetBool("collate_landmarks"));
   PopulatePureLocalizationTrimmerOptions(&options, parameter_dictionary);
   PopulatePoseGraphOdometryMotionFilterOptions(&options, parameter_dictionary);
   return options;
@@ -87,12 +87,12 @@ proto::SensorId ToProto(const TrajectoryBuilderInterface::SensorId& sensor_id) {
     case TrajectoryBuilderInterface::SensorId::SensorType::ODOMETRY:
       sensor_id_proto.set_type(proto::SensorId::ODOMETRY);
       break;
-    case TrajectoryBuilderInterface::SensorId::SensorType::FIXED_FRAME_POSE:
-      sensor_id_proto.set_type(proto::SensorId::FIXED_FRAME_POSE);
-      break;
-    case TrajectoryBuilderInterface::SensorId::SensorType::LANDMARK:
-      sensor_id_proto.set_type(proto::SensorId::LANDMARK);
-      break;
+    // case TrajectoryBuilderInterface::SensorId::SensorType::FIXED_FRAME_POSE:
+    //   sensor_id_proto.set_type(proto::SensorId::FIXED_FRAME_POSE);
+    //   break;
+    // case TrajectoryBuilderInterface::SensorId::SensorType::LANDMARK:
+    //   sensor_id_proto.set_type(proto::SensorId::LANDMARK);
+    //   break;
     case TrajectoryBuilderInterface::SensorId::SensorType::LOCAL_SLAM_RESULT:
       sensor_id_proto.set_type(proto::SensorId::LOCAL_SLAM_RESULT);
       break;
@@ -117,14 +117,14 @@ TrajectoryBuilderInterface::SensorId FromProto(
       sensor_id.type =
           TrajectoryBuilderInterface::SensorId::SensorType::ODOMETRY;
       break;
-    case proto::SensorId::FIXED_FRAME_POSE:
-      sensor_id.type =
-          TrajectoryBuilderInterface::SensorId::SensorType::FIXED_FRAME_POSE;
-      break;
-    case proto::SensorId::LANDMARK:
-      sensor_id.type =
-          TrajectoryBuilderInterface::SensorId::SensorType::LANDMARK;
-      break;
+    // case proto::SensorId::FIXED_FRAME_POSE:
+    //   sensor_id.type =
+    //       TrajectoryBuilderInterface::SensorId::SensorType::FIXED_FRAME_POSE;
+    //   break;
+    // case proto::SensorId::LANDMARK:
+    //   sensor_id.type =
+    //       TrajectoryBuilderInterface::SensorId::SensorType::LANDMARK;
+    //   break;
     case proto::SensorId::LOCAL_SLAM_RESULT:
       sensor_id.type =
           TrajectoryBuilderInterface::SensorId::SensorType::LOCAL_SLAM_RESULT;

@@ -106,8 +106,8 @@ class CollatedTrajectoryBuilder : public TrajectoryBuilderInterface {
                                 std::unique_ptr<sensor::Data> data);
 
   sensor::Collator* const sensor_collator_;
-  const bool collate_landmarks_;
-  const bool collate_fixed_frame_;
+  // const bool collate_landmarks_;
+  // const bool collate_fixed_frame_;
   const int trajectory_id_;
   std::unique_ptr<TrajectoryBuilderInterface> wrapped_trajectory_builder_;
 

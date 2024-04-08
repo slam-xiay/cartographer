@@ -34,21 +34,21 @@ CollatedTrajectoryBuilder::CollatedTrajectoryBuilder(
     const std::set<SensorId>& expected_sensor_ids,
     std::unique_ptr<TrajectoryBuilderInterface> wrapped_trajectory_builder)
     : sensor_collator_(sensor_collator),
-      collate_landmarks_(trajectory_options.collate_landmarks()),
-      collate_fixed_frame_(trajectory_options.collate_fixed_frame()),
+      // collate_landmarks_(trajectory_options.collate_landmarks()),
+      // collate_fixed_frame_(trajectory_options.collate_fixed_frame()),
       trajectory_id_(trajectory_id),
       wrapped_trajectory_builder_(std::move(wrapped_trajectory_builder)),
       last_logging_time_(std::chrono::steady_clock::now()) {
   absl::flat_hash_set<std::string> expected_sensor_id_strings;
   for (const auto& sensor_id : expected_sensor_ids) {
-    if (sensor_id.type == SensorId::SensorType::LANDMARK &&
-        !collate_landmarks_) {
-      continue;
-    }
-    if (sensor_id.type == SensorId::SensorType::FIXED_FRAME_POSE &&
-        !collate_fixed_frame_) {
-      continue;
-    }
+    // if (sensor_id.type == SensorId::SensorType::LANDMARK &&
+    //     !collate_landmarks_) {
+    //   continue;
+    // }
+    // if (sensor_id.type == SensorId::SensorType::FIXED_FRAME_POSE &&
+    //     !collate_fixed_frame_) {
+    //   continue;
+    // }
     expected_sensor_id_strings.insert(sensor_id.id);
   }
   sensor_collator_->AddTrajectory(

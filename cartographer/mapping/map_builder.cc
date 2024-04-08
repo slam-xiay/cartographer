@@ -32,12 +32,46 @@
 #include "cartographer/mapping/internal/motion_filter.h"
 #include "cartographer/sensor/internal/collator.h"
 // #include "cartographer/sensor/internal/trajectory_collator.h"
+#include "Eigen/Geometry"
+#include "cartographer/common/lua_parameter_dictionary.h"
+#include "cartographer/common/port.h"
+#include "cartographer/common/thread_pool.h"
+#include "cartographer/io/proto_stream.h"
+#include "cartographer/mapping/id.h"
+#include "cartographer/mapping/pose_graph_interface.h"
+#include "cartographer/mapping/proto/map_builder_options.pb.h"
+#include "cartographer/mapping/proto/submap_visualization.pb.h"
+#include "cartographer/mapping/proto/trajectory_builder_options.pb.h"
+#include "cartographer/mapping/submaps.h"
+#include "cartographer/mapping/trajectory_builder_interface.h"
 #include "cartographer/sensor/internal/voxel_filter.h"
 #include "cartographer/transform/rigid_transform.h"
+// #include "cartographer/mapping/map_builder_interface.h"
+#include "cartographer/mapping/pose_graph.h"
+#include "cartographer/mapping/proto/map_builder_options.pb.h"
+// #include "cartographer/sensor/collator_interface.h"
+#include "cartographer/sensor/internal/collator.h"
 #include "cartographer/transform/transform.h"
 
 namespace cartographer {
 namespace mapping {
+proto::MapBuilderOptions CreateMapBuilderOptions(
+    common::LuaParameterDictionary* const parameter_dictionary) {
+  proto::MapBuilderOptions options;
+  options.set_use_trajectory_builder_2d(
+      parameter_dictionary->GetBool("use_trajectory_builder_2d"));
+  //   options.set_use_trajectory_builder_3d(
+  //       parameter_dictionary->GetBool("use_trajectory_builder_3d"));
+  options.set_num_background_threads(
+      parameter_dictionary->GetNonNegativeInt("num_background_threads"));
+  options.set_collate_by_trajectory(
+      parameter_dictionary->GetBool("collate_by_trajectory"));
+  *options.mutable_pose_graph_options() = CreatePoseGraphOptions(
+      parameter_dictionary->GetDictionary("pose_graph").get());
+  //   CHECK_NE(options.use_trajectory_builder_2d(),
+  //            options.use_trajectory_builder_3d());
+  return options;
+}
 namespace {
 
 using mapping::proto::SerializedData;
@@ -397,7 +431,7 @@ std::map<int, int> MapBuilder::LoadStateFromFile(
   return LoadState(&stream, load_frozen_state);
 }
 
-std::unique_ptr<MapBuilderInterface> CreateMapBuilder(
+std::unique_ptr<MapBuilder> CreateMapBuilder(
     const proto::MapBuilderOptions& options) {
   return absl::make_unique<MapBuilder>(options);
 }

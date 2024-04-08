@@ -1571,9 +1571,44 @@ class OptimizationProblem2D
   迁移 using Constraint = PoseGraphInterface::Constraint; 到类中
 ```
 
+### 删除map_build_interface
+
+```
+// #include "cartographer/mapping/map_builder_interface.h"
+```
+
+```
+  proto::MapBuilderOptions CreateMapBuilderOptions(
+    common::LuaParameterDictionary* const parameter_dictionary);
+  
+  using LocalSlamResultCallback =
+      TrajectoryBuilderInterface::LocalSlamResultCallback;
+
+  using SensorId = TrajectoryBuilderInterface::SensorId;
+```
+
+删除 override
+
+```
+std::unique_ptr<MapBuilderInterface> CreateMapBuilder(
+    const proto::MapBuilderOptions& options) {
+  return absl::make_unique<MapBuilder>(options);
+}
+
+改成
+std::unique_ptr<MapBuilder> CreateMapBuilder(
+    const proto::MapBuilderOptions& options) {
+  return absl::make_unique<MapBuilder>(options);
+}
+```
+
+删除文件
+
+```
+rm cartographer/mapping/map_builder_interface.h
+```
 
 
-# SLAM理论
 
 ## 视频演示
 

@@ -1023,470 +1023,86 @@ rm cartographer/mapping/internal/testing
 
 ### 删除metrics
 
-删除函数GlobalTrajectoryBuilderRegisterMetrics
-
-mapping/internal/global_trajectory_builder.h
+替换所有的
 
 ```
-// void GlobalTrajectoryBuilderRegisterMetrics(
-//     metrics::FamilyFactory* family_factory);
+#include "cartographer/metrics/family_factory.h"
+//#include "cartographer/metrics/family_factory.h"
 ```
 
-mapping/internal/global_trajectory_builder.cc
+删除所有包含以下函数以及声明
 
 ```
-// void GlobalTrajectoryBuilderRegisterMetrics(metrics::FamilyFactory* factory)
-// {
-//   auto* results = factory->NewCounterFamily(
-//       "mapping_global_trajectory_builder_local_slam_results",
-//       "Local SLAM results");
-//   kLocalSlamMatchingResults = results->Add({{"type", "MatchingResult"}});
-//   kLocalSlamInsertionResults = results->Add({{"type", "InsertionResult"}});
-// }
+RegisterMetrics
+GlobalTrajectoryBuilderRegisterMetrics
+GetOrCreateSensorMetric
 ```
 
-mapping/internal/2d/local_trajectory_builder_2d.h
+删除包含变量的语句
 
 ```
-  //   static void RegisterMetrics(metrics::FamilyFactory* family_factory);
+collator_metrics_family_
+metrics_map_
 ```
 
-mapping/internal/2d/local_trajectory_builder_2d.cc
+删除所有的包含以下字段的语句
 
 ```
-// void LocalTrajectoryBuilder2D::RegisterMetrics(
-//     metrics::FamilyFactory* family_factory) {
-//   auto* latency = family_factory->NewGaugeFamily(
-//       "mapping_2d_local_trajectory_builder_latency",
-//       "Duration from first incoming point cloud in accumulation to local slam "
-//       "result");
-//   kLocalSlamLatencyMetric = latency->Add({});
-//   auto* real_time_ratio = family_factory->NewGaugeFamily(
-//       "mapping_2d_local_trajectory_builder_real_time_ratio",
-//       "sensor duration / wall clock duration.");
-//   kLocalSlamRealTimeRatio = real_time_ratio->Add({});
+kLocalSlamLatencyMetric
+kLocalSlamVoxelFilterFraction
+kLocalSlamScanMatcherFraction
+kLocalSlamInsertIntoSubmapFraction
+kLocalSlamRealTimeRatio
+kLocalSlamCpuRealTimeRatio
+kRealTimeCorrelativeScanMatcherScoreMetric
+kCeresScanMatcherCostMetric
+kScanMatcherResidualDistanceMetric
+kScanMatcherResidualAngleMetric
 
-//   auto* cpu_real_time_ratio = family_factory->NewGaugeFamily(
-//       "mapping_2d_local_trajectory_builder_cpu_real_time_ratio",
-//       "sensor duration / cpu duration.");
-//   kLocalSlamCpuRealTimeRatio = cpu_real_time_ratio->Add({});
-//   auto score_boundaries = metrics::Histogram::FixedWidth(0.05, 20);
-//   auto* scores = family_factory->NewHistogramFamily(
-//       "mapping_2d_local_trajectory_builder_scores", "Local scan matcher scores",
-//       score_boundaries);
-//   kRealTimeCorrelativeScanMatcherScoreMetric =
-//       scores->Add({{"scan_matcher", "real_time_correlative"}});
-//   auto cost_boundaries = metrics::Histogram::ScaledPowersOf(2, 0.01, 100);
-//   auto* costs = family_factory->NewHistogramFamily(
-//       "mapping_2d_local_trajectory_builder_costs", "Local scan matcher costs",
-//       cost_boundaries);
-//   kCeresScanMatcherCostMetric = costs->Add({{"scan_matcher", "ceres"}});
-//   auto distance_boundaries = metrics::Histogram::ScaledPowersOf(2, 0.01, 10);
-//   auto* residuals = family_factory->NewHistogramFamily(
-//       "mapping_2d_local_trajectory_builder_residuals",
-//       "Local scan matcher residuals", distance_boundaries);
-//   kScanMatcherResidualDistanceMetric =
-//       residuals->Add({{"component", "distance"}});
-//   kScanMatcherResidualAngleMetric = residuals->Add({{"component", "angle"}});
-// }
+kConstraintsSearchedMetric
+kConstraintsFoundMetric
+kGlobalConstraintsSearchedMetric
+kGlobalConstraintsFoundMetric
+kQueueLengthMetric
+kConstraintScoresMetric
+kConstraintRotationalScoresMetric
+kConstraintLowResolutionScoresMetric
+kGlobalConstraintScoresMetric
+kGlobalConstraintRotationalScoresMetric
+kGlobalConstraintLowResolutionScoresMetric
+kNumSubmapScanMatchersMetric
+
+kWorkQueueDelayMetric
+kWorkQueueSizeMetric
+kConstraintsSameTrajectoryMetric
+kConstraintsDifferentTrajectoryMetric
+kActiveSubmapsMetric
+kFrozenSubmapsMetric
+kDeletedSubmapsMetric
 ```
 
-mapping/internal/2d/pose_graph_2d.cc
+删除所有包含以下字段的语句
 
 ```
-// void PoseGraph2D::RegisterMetrics(metrics::FamilyFactory* family_factory) {
-//   auto* latency = family_factory->NewGaugeFamily(
-//       "mapping_2d_pose_graph_work_queue_delay",
-//       "Age of the oldest entry in the work queue in seconds");
-//   kWorkQueueDelayMetric = latency->Add({});
-//   auto* queue_size =
-//       family_factory->NewGaugeFamily("mapping_2d_pose_graph_work_queue_size",
-//                                      "Number of items in the work queue");
-//   kWorkQueueSizeMetric = queue_size->Add({});
-//   auto* constraints = family_factory->NewGaugeFamily(
-//       "mapping_2d_pose_graph_constraints",
-//       "Current number of constraints in the pose graph");
-//   kConstraintsDifferentTrajectoryMetric =
-//       constraints->Add({{"tag", "inter_submap"}, {"trajectory",
-//       "different"}});
-//   kConstraintsSameTrajectoryMetric =
-//       constraints->Add({{"tag", "inter_submap"}, {"trajectory", "same"}});
-//   auto* submaps = family_factory->NewGaugeFamily(
-//       "mapping_2d_pose_graph_submaps", "Number of submaps in the pose
-//       graph.");
-//   kActiveSubmapsMetric = submaps->Add({{"state", "active"}});
-//   kFrozenSubmapsMetric = submaps->Add({{"state", "frozen"}});
-//   kDeletedSubmapsMetric = submaps->Add({{"state", "deleted"}});
-// }
+->Observe(
+->Increment();
+->Set(
+->Add()
 ```
 
-mapping/internal/2d/pose_graph_2d.h
+删除文件夹
 
 ```
-  //   static void RegisterMetrics(metrics::FamilyFactory* family_factory);
+rm cartographer/metrics -rf
 ```
 
-mapping/internal/2d/pose_graph_2d.cc
-
-```
-// void PoseGraph2D::RegisterMetrics(metrics::FamilyFactory* family_factory) {
-//   auto* latency = family_factory->NewGaugeFamily(
-//       "mapping_2d_pose_graph_work_queue_delay",
-//       "Age of the oldest entry in the work queue in seconds");
-//   kWorkQueueDelayMetric = latency->Add({});
-//   auto* queue_size =
-//       family_factory->NewGaugeFamily("mapping_2d_pose_graph_work_queue_size",
-//                                      "Number of items in the work queue");
-//   kWorkQueueSizeMetric = queue_size->Add({});
-//   auto* constraints = family_factory->NewGaugeFamily(
-//       "mapping_2d_pose_graph_constraints",
-//       "Current number of constraints in the pose graph");
-//   kConstraintsDifferentTrajectoryMetric =
-//       constraints->Add({{"tag", "inter_submap"}, {"trajectory",
-//       "different"}});
-//   kConstraintsSameTrajectoryMetric =
-//       constraints->Add({{"tag", "inter_submap"}, {"trajectory", "same"}});
-//   auto* submaps = family_factory->NewGaugeFamily(
-//       "mapping_2d_pose_graph_submaps", "Number of submaps in the pose
-//       graph.");
-//   kActiveSubmapsMetric = submaps->Add({{"state", "active"}});
-//   kFrozenSubmapsMetric = submaps->Add({{"state", "frozen"}});
-//   kDeletedSubmapsMetric = submaps->Add({{"state", "deleted"}});
-// }
-```
-
-mapping/internal/3d/local_trajectory_builder_3d.h
-
-```
-//   static void RegisterMetrics(metrics::FamilyFactory* family_factory);
-```
-
-mapping/internal/3d/local_trajectory_builder_3d.cc
-
-```
-void LocalTrajectoryBuilder3D::RegisterMetrics(
-//     metrics::FamilyFactory* family_factory) {
-//   auto* latency = family_factory->NewGaugeFamily(
-//       "mapping_3d_local_trajectory_builder_latency",
-//       "Duration from first incoming point cloud in accumulation to local slam "
-//       "result");
-//   kLocalSlamLatencyMetric = latency->Add({});
-
-//   auto* voxel_filter_fraction = family_factory->NewGaugeFamily(
-//       "mapping_3d_local_trajectory_builder_voxel_filter_fraction",
-//       "Fraction of total sensor time taken up by voxel filter.");
-//   kLocalSlamVoxelFilterFraction = voxel_filter_fraction->Add({});
-
-//   auto* scan_matcher_fraction = family_factory->NewGaugeFamily(
-//       "mapping_3d_local_trajectory_builder_scan_matcher_fraction",
-//       "Fraction of total sensor time taken up by scan matcher.");
-//   kLocalSlamScanMatcherFraction = scan_matcher_fraction->Add({});
-
-//   auto* insert_into_submap_fraction = family_factory->NewGaugeFamily(
-//       "mapping_3d_local_trajectory_builder_insert_into_submap_fraction",
-//       "Fraction of total sensor time taken up by inserting into submap.");
-//   kLocalSlamInsertIntoSubmapFraction = insert_into_submap_fraction->Add({});
-
-//   auto* real_time_ratio = family_factory->NewGaugeFamily(
-//       "mapping_3d_local_trajectory_builder_real_time_ratio",
-//       "sensor duration / wall clock duration.");
-//   kLocalSlamRealTimeRatio = real_time_ratio->Add({});
-
-//   auto* cpu_real_time_ratio = family_factory->NewGaugeFamily(
-//       "mapping_3d_local_trajectory_builder_cpu_real_time_ratio",
-//       "sensor duration / cpu duration.");
-//   kLocalSlamCpuRealTimeRatio = cpu_real_time_ratio->Add({});
-
-//   auto score_boundaries = metrics::Histogram::FixedWidth(0.05, 20);
-//   auto* scores = family_factory->NewHistogramFamily(
-//       "mapping_3d_local_trajectory_builder_scores", "Local scan matcher scores",
-//       score_boundaries);
-//   kRealTimeCorrelativeScanMatcherScoreMetric =
-//       scores->Add({{"scan_matcher", "real_time_correlative"}});
-//   auto cost_boundaries = metrics::Histogram::ScaledPowersOf(2, 0.01, 100);
-//   auto* costs = family_factory->NewHistogramFamily(
-//       "mapping_3d_local_trajectory_builder_costs", "Local scan matcher costs",
-//       cost_boundaries);
-//   kCeresScanMatcherCostMetric = costs->Add({{"scan_matcher", "ceres"}});
-//   auto distance_boundaries = metrics::Histogram::ScaledPowersOf(2, 0.01, 10);
-//   auto* residuals = family_factory->NewHistogramFamily(
-//       "mapping_3d_local_trajectory_builder_residuals",
-//       "Local scan matcher residuals", distance_boundaries);
-//   kScanMatcherResidualDistanceMetric =
-//       residuals->Add({{"component", "distance"}});
-//   kScanMatcherResidualAngleMetric = residuals->Add({{"component", "angle"}});
-// }
-```
-
-mapping/internal/3d/pose_graph_3d.h
-
-```
-  //   static void RegisterMetrics(metrics::FamilyFactory* family_factory);
-```
-
-mapping/internal/3d/pose_graph_3d.cc
-
-```
-// void PoseGraph3D::RegisterMetrics(metrics::FamilyFactory* family_factory) {
-//   auto* latency = family_factory->NewGaugeFamily(
-//       "mapping_3d_pose_graph_work_queue_delay",
-//       "Age of the oldest entry in the work queue in seconds");
-//   kWorkQueueDelayMetric = latency->Add({});
-//   auto* queue_size =
-//       family_factory->NewGaugeFamily("mapping_3d_pose_graph_work_queue_size",
-//                                      "Number of items in the work queue");
-//   kWorkQueueSizeMetric = queue_size->Add({});
-//   auto* constraints = family_factory->NewGaugeFamily(
-//       "mapping_3d_pose_graph_constraints",
-//       "Current number of constraints in the pose graph");
-//   kConstraintsDifferentTrajectoryMetric =
-//       constraints->Add({{"tag", "inter_submap"}, {"trajectory",
-//       "different"}});
-//   kConstraintsSameTrajectoryMetric =
-//       constraints->Add({{"tag", "inter_submap"}, {"trajectory", "same"}});
-//   auto* submaps = family_factory->NewGaugeFamily(
-//       "mapping_3d_pose_graph_submaps", "Number of submaps in the pose
-//       graph.");
-//   kActiveSubmapsMetric = submaps->Add({{"state", "active"}});
-//   kFrozenSubmapsMetric = submaps->Add({{"state", "frozen"}});
-//   kDeletedSubmapsMetric = submaps->Add({{"state", "deleted"}});
-// }
-```
-
-mapping/internal/constraints/constraint_builder_2d.h
-
-```
-  //   static void RegisterMetrics(metrics::FamilyFactory* family_factory);
-```
-
-mapping/internal/constraints/constraint_builder_2d.cc
-
-```
-void ConstraintBuilder2D::RegisterMetrics(metrics::FamilyFactory* factory) {
-//   auto* counts = factory->NewCounterFamily(
-//       "mapping_constraints_constraint_builder_2d_constraints",
-//       "Constraints computed");
-//   kConstraintsSearchedMetric =
-//       counts->Add({{"search_region", "local"}, {"matcher", "searched"}});
-//   kConstraintsFoundMetric =
-//       counts->Add({{"search_region", "local"}, {"matcher", "found"}});
-//   kGlobalConstraintsSearchedMetric =
-//       counts->Add({{"search_region", "global"}, {"matcher", "searched"}});
-//   kGlobalConstraintsFoundMetric =
-//       counts->Add({{"search_region", "global"}, {"matcher", "found"}});
-//   auto* queue_length = factory->NewGaugeFamily(
-//       "mapping_constraints_constraint_builder_2d_queue_length", "Queue length");
-//   kQueueLengthMetric = queue_length->Add({});
-//   auto boundaries = metrics::Histogram::FixedWidth(0.05, 20);
-//   auto* scores = factory->NewHistogramFamily(
-//       "mapping_constraints_constraint_builder_2d_scores",
-//       "Constraint scores built", boundaries);
-//   kConstraintScoresMetric = scores->Add({{"search_region", "local"}});
-//   kGlobalConstraintScoresMetric = scores->Add({{"search_region", "global"}});
-//   auto* num_matchers = factory->NewGaugeFamily(
-//       "mapping_constraints_constraint_builder_2d_num_submap_scan_matchers",
-//       "Current number of constructed submap scan matchers");
-//   kNumSubmapScanMatchersMetric = num_matchers->Add({});
-// }
-```
-
-mapping/internal/constraints/constraint_builder_3d.h
-
-```
- //   static void RegisterMetrics(metrics::FamilyFactory* family_factory);
-```
-
-mapping/internal/constraints/constraint_builder_3d.cc
-
-```
-// void ConstraintBuilder3D::RegisterMetrics(metrics::FamilyFactory* factory) {
-//   auto* counts = factory->NewCounterFamily(
-//       "mapping_constraints_constraint_builder_3d_constraints",
-//       "Constraints computed");
-//   kConstraintsSearchedMetric =
-//       counts->Add({{"search_region", "local"}, {"matcher", "searched"}});
-//   kConstraintsFoundMetric =
-//       counts->Add({{"search_region", "local"}, {"matcher", "found"}});
-//   kGlobalConstraintsSearchedMetric =
-//       counts->Add({{"search_region", "global"}, {"matcher", "searched"}});
-//   kGlobalConstraintsFoundMetric =
-//       counts->Add({{"search_region", "global"}, {"matcher", "found"}});
-//   auto* queue_length = factory->NewGaugeFamily(
-//       "mapping_constraints_constraint_builder_3d_queue_length", "Queue length");
-//   kQueueLengthMetric = queue_length->Add({});
-//   auto boundaries = metrics::Histogram::FixedWidth(0.05, 20);
-//   auto* scores = factory->NewHistogramFamily(
-//       "mapping_constraints_constraint_builder_3d_scores",
-//       "Constraint scores built", boundaries);
-//   kConstraintScoresMetric =
-//       scores->Add({{"search_region", "local"}, {"kind", "score"}});
-//   kConstraintRotationalScoresMetric =
-//       scores->Add({{"search_region", "local"}, {"kind", "rotational_score"}});
-//   kConstraintLowResolutionScoresMetric = scores->Add(
-//       {{"search_region", "local"}, {"kind", "low_resolution_score"}});
-//   kGlobalConstraintScoresMetric =
-//       scores->Add({{"search_region", "global"}, {"kind", "score"}});
-//   kGlobalConstraintRotationalScoresMetric =
-//       scores->Add({{"search_region", "global"}, {"kind", "rotational_score"}});
-//   kGlobalConstraintLowResolutionScoresMetric = scores->Add(
-//       {{"search_region", "global"}, {"kind", "low_resolution_score"}});
-//   auto* num_matchers = factory->NewGaugeFamily(
-//       "mapping_constraints_constraint_builder_3d_num_submap_scan_matchers",
-//       "Current number of constructed submap scan matchers");
-//   kNumSubmapScanMatchersMetric = num_matchers->Add({});
-// }
-```
-
-sensor/internal/trajectory_collator.cc
-
-```
-void TrajectoryCollator::RegisterMetrics(
-    metrics::FamilyFactory* family_factory) {
-  collator_metrics_family_ = family_factory->NewCounterFamily(
-      "collator_input_total", "Sensor data received");
-}
-```
-
-sensor/internal/trajectory_collator.h
-
-```
-static void RegisterMetrics(metrics::FamilyFactory* family_factory);
-```
-
-sensor/internal/trajectory_collator.cc
-
-```
-// void TrajectoryCollator::RegisterMetrics(
-//     metrics::FamilyFactory* family_factory) {
-//   collator_metrics_family_ = family_factory->NewCounterFamily(
-//       "collator_input_total", "Sensor data received");
-// }
-// metrics::Counter* TrajectoryCollator::GetOrCreateSensorMetric(
-//     const std::string& sensor_id, int trajectory_id) {
-//   const std::string trajectory_id_str = absl::StrCat(trajectory_id);
-//   const std::string map_key = absl::StrCat(sensor_id, "/",
-//   trajectory_id_str);
-
-//   auto metrics_map_itr = metrics_map_.find(map_key);
-//   if (metrics_map_itr != metrics_map_.end()) {
-//     return metrics_map_itr->second;
-//   }
-
-//   LOG(INFO) << "Create metrics handler for key: " << map_key;
-//   auto new_counter = collator_metrics_family_->Add(
-//       {{"sensor_id", sensor_id}, {"trajectory_id", trajectory_id_str}});
-
-//   metrics_map_[map_key] = new_counter;
-//   return new_counter;
-// }
-```
-
-sensor/internal/trajectory_collator.h
-
-```
-    //   static void RegisterMetrics(metrics::FamilyFactory* family_factory);
-  //   metrics::Counter* GetOrCreateSensorMetric(const std::string& sensor_id,
-  //                                             int trajectory_id);
-
-  //   static cartographer::metrics::Family<metrics::Counter>*
-  //       collator_metrics_family_;
-
-  // Holds individual counters for each trajectory/sensor pair.
-  //   absl::flat_hash_map<std::string, metrics::Counter*> metrics_map_;
+最后根据编译的内容进行微调
 
 ```
 
-mapping/internal/constraints/constraint_builder_2d.cc
-
-```
-// static auto* kConstraintsSearchedMetric = metrics::Counter::Null();
-// static auto* kConstraintsFoundMetric = metrics::Counter::Null();
-// static auto* kGlobalConstraintsSearchedMetric = metrics::Counter::Null();
-// static auto* kGlobalConstraintsFoundMetric = metrics::Counter::Null();
-// static auto* kQueueLengthMetric = metrics::Gauge::Null();
-// static auto* kConstraintScoresMetric = metrics::Histogram::Null();
-// static auto* kGlobalConstraintScoresMetric = metrics::Histogram::Null();
-// static auto* kNumSubmapScanMatchersMetric = metrics::Gauge::Null();
-```
-
-mapping/internal/constraints/constraint_builder_3d.cc
-
-```
-// static auto* kConstraintsSearchedMetric = metrics::Counter::Null();
-// static auto* kConstraintsFoundMetric = metrics::Counter::Null();
-// static auto* kGlobalConstraintsSearchedMetric = metrics::Counter::Null();
-// static auto* kGlobalConstraintsFoundMetric = metrics::Counter::Null();
-// static auto* kQueueLengthMetric = metrics::Gauge::Null();
-// static auto* kConstraintScoresMetric = metrics::Histogram::Null();
-// static auto* kConstraintRotationalScoresMetric = metrics::Histogram::Null();
-// static auto* kConstraintLowResolutionScoresMetric =
-// metrics::Histogram::Null(); static auto* kGlobalConstraintScoresMetric =
-// metrics::Histogram::Null(); static auto*
-// kGlobalConstraintRotationalScoresMetric =
-//     metrics::Histogram::Null();
-// static auto* kGlobalConstraintLowResolutionScoresMetric =
-//     metrics::Histogram::Null();
-// static auto* kNumSubmapScanMatchersMetric = metrics::Gauge::Null();
-```
-
-cartographer/mapping/internal/2d/pose_graph_2d.cc
-
-```
-// static auto* kWorkQueueDelayMetric = metrics::Gauge::Null();
-// static auto* kWorkQueueSizeMetric = metrics::Gauge::Null();
-// static auto* kConstraintsSameTrajectoryMetric = metrics::Gauge::Null();
-// static auto* kConstraintsDifferentTrajectoryMetric = metrics::Gauge::Null();
-// static auto* kActiveSubmapsMetric = metrics::Gauge::Null();
-// static auto* kFrozenSubmapsMetric = metrics::Gauge::Null();
-// static auto* kDeletedSubmapsMetric = metrics::Gauge::Null();
-```
-
-cartographer/mapping/internal/3d/pose_graph_3d.cc
-
-```
-// static auto* kWorkQueueDelayMetric = metrics::Gauge::Null();
-// static auto* kWorkQueueSizeMetric = metrics::Gauge::Null();
-// static auto* kConstraintsSameTrajectoryMetric = metrics::Gauge::Null();
-// static auto* kConstraintsDifferentTrajectoryMetric = metrics::Gauge::Null();
-// static auto* kActiveSubmapsMetric = metrics::Gauge::Null();
-// static auto* kFrozenSubmapsMetric = metrics::Gauge::Null();
-// static auto* kDeletedSubmapsMetric = metrics::Gauge::Null();
-```
-
-cartographer/mapping/internal/2d/local_trajectory_builder_2d.cc
-
-```
-// static auto* kLocalSlamLatencyMetric = metrics::Gauge::Null();
-// static auto* kLocalSlamRealTimeRatio = metrics::Gauge::Null();
-// static auto* kLocalSlamCpuRealTimeRatio = metrics::Gauge::Null();
-// static auto* kRealTimeCorrelativeScanMatcherScoreMetric =
-//     metrics::Histogram::Null();
-// static auto* kCeresScanMatcherCostMetric = metrics::Histogram::Null();
-// static auto* kScanMatcherResidualDistanceMetric = metrics::Histogram::Null();
-// static auto* kScanMatcherResidualAngleMetric = metrics::Histogram::Null();
-```
-
-cartographer/mapping/internal/3d/local_trajectory_builder_3d.cc
-
-```
-// static auto* kLocalSlamLatencyMetric = metrics::Gauge::Null();
-// static auto* kLocalSlamVoxelFilterFraction = metrics::Gauge::Null();
-// static auto* kLocalSlamScanMatcherFraction = metrics::Gauge::Null();
-// static auto* kLocalSlamInsertIntoSubmapFraction = metrics::Gauge::Null();
-// static auto* kLocalSlamRealTimeRatio = metrics::Gauge::Null();
-// static auto* kLocalSlamCpuRealTimeRatio = metrics::Gauge::Null();
-// static auto* kRealTimeCorrelativeScanMatcherScoreMetric =
-//     metrics::Histogram::Null();
-// static auto* kCeresScanMatcherCostMetric = metrics::Histogram::Null();
-// static auto* kScanMatcherResidualDistanceMetric = metrics::Histogram::Null();
-// static auto* kScanMatcherResidualAngleMetric = metrics::Histogram::Null();
 ```
 
 
-
-```
-rm -rf cartographer/metrics
-```
 
 # SLAM理论
 

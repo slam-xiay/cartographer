@@ -25,7 +25,7 @@
 #include "cartographer/mapping/internal/3d/pose_graph_3d.h"
 #include "cartographer/mapping/internal/local_slam_result_data.h"
 #include "cartographer/mapping/trajectory_builder_interface.h"
-#include "cartographer/metrics/family_factory.h"
+// #include "cartographer/metrics/family_factory.h"
 
 namespace cartographer {
 namespace mapping {
@@ -44,8 +44,8 @@ std::unique_ptr<TrajectoryBuilderInterface> CreateGlobalTrajectoryBuilder3D(
         local_slam_result_callback,
     const absl::optional<MotionFilter>& pose_graph_odometry_motion_filter);
 
-void GlobalTrajectoryBuilderRegisterMetrics(
-    metrics::FamilyFactory* family_factory);
+// void GlobalTrajectoryBuilderRegisterMetrics(
+//     metrics::FamilyFactory* family_factory);
 
 }  // namespace mapping
 }  // namespace cartographer

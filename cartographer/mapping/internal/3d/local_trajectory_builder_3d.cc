@@ -33,17 +33,17 @@ namespace mapping {
 
 // TODO(spielawa): Adjust metrics for multi-trajectory. So far we assume a
 // single trajectory.
-static auto* kLocalSlamLatencyMetric = metrics::Gauge::Null();
-static auto* kLocalSlamVoxelFilterFraction = metrics::Gauge::Null();
-static auto* kLocalSlamScanMatcherFraction = metrics::Gauge::Null();
-static auto* kLocalSlamInsertIntoSubmapFraction = metrics::Gauge::Null();
-static auto* kLocalSlamRealTimeRatio = metrics::Gauge::Null();
-static auto* kLocalSlamCpuRealTimeRatio = metrics::Gauge::Null();
-static auto* kRealTimeCorrelativeScanMatcherScoreMetric =
-    metrics::Histogram::Null();
-static auto* kCeresScanMatcherCostMetric = metrics::Histogram::Null();
-static auto* kScanMatcherResidualDistanceMetric = metrics::Histogram::Null();
-static auto* kScanMatcherResidualAngleMetric = metrics::Histogram::Null();
+// static auto* kLocalSlamLatencyMetric = metrics::Gauge::Null();
+// static auto* kLocalSlamVoxelFilterFraction = metrics::Gauge::Null();
+// static auto* kLocalSlamScanMatcherFraction = metrics::Gauge::Null();
+// static auto* kLocalSlamInsertIntoSubmapFraction = metrics::Gauge::Null();
+// static auto* kLocalSlamRealTimeRatio = metrics::Gauge::Null();
+// static auto* kLocalSlamCpuRealTimeRatio = metrics::Gauge::Null();
+// static auto* kRealTimeCorrelativeScanMatcherScoreMetric =
+//     metrics::Histogram::Null();
+// static auto* kCeresScanMatcherCostMetric = metrics::Histogram::Null();
+// static auto* kScanMatcherResidualDistanceMetric = metrics::Histogram::Null();
+// static auto* kScanMatcherResidualAngleMetric = metrics::Histogram::Null();
 
 LocalTrajectoryBuilder3D::LocalTrajectoryBuilder3D(
     const mapping::proto::LocalTrajectoryBuilderOptions3D& options,
@@ -74,10 +74,11 @@ std::unique_ptr<transform::Rigid3d> LocalTrajectoryBuilder3D::ScanMatch(
   if (options_.use_online_correlative_scan_matching()) {
     // We take a copy since we use 'initial_ceres_pose' as an output argument.
     const transform::Rigid3d initial_pose = initial_ceres_pose;
-    const double score = real_time_correlative_scan_matcher_->Match(
+    // const double score =
+    real_time_correlative_scan_matcher_->Match(
         initial_pose, high_resolution_point_cloud_in_tracking,
         matching_submap->high_resolution_hybrid_grid(), &initial_ceres_pose);
-    kRealTimeCorrelativeScanMatcherScoreMetric->Observe(score);
+    // kRealTimeCorrelativeScanMatcherScoreMetric->Observe(score);
   }
 
   transform::Rigid3d pose_observation_in_submap;
@@ -95,15 +96,16 @@ std::unique_ptr<transform::Rigid3d> LocalTrajectoryBuilder3D::ScanMatch(
                             &matching_submap->low_resolution_hybrid_grid(),
                             /*intensity_hybrid_grid=*/nullptr}},
       &pose_observation_in_submap, &summary);
-  kCeresScanMatcherCostMetric->Observe(summary.final_cost);
-  const double residual_distance = (pose_observation_in_submap.translation() -
-                                    initial_ceres_pose.translation())
-                                       .norm();
-  kScanMatcherResidualDistanceMetric->Observe(residual_distance);
-  const double residual_angle =
-      pose_observation_in_submap.rotation().angularDistance(
-          initial_ceres_pose.rotation());
-  kScanMatcherResidualAngleMetric->Observe(residual_angle);
+  // kCeresScanMatcherCostMetric->Observe(summary.final_cost);
+  // const double residual_distance = (pose_observation_in_submap.translation()
+  // -
+  //                                   initial_ceres_pose.translation())
+  //                                      .norm();
+  // kScanMatcherResidualDistanceMetric->Observe(residual_distance);
+  // const double residual_angle =
+  //     pose_observation_in_submap.rotation().angularDistance(
+  //         initial_ceres_pose.rotation());
+  // kScanMatcherResidualAngleMetric->Observe(residual_angle);
   return absl::make_unique<transform::Rigid3d>(matching_submap->local_pose() *
                                                pose_observation_in_submap);
 }
@@ -264,12 +266,12 @@ LocalTrajectoryBuilder3D::AddRangeData(
   const auto voxel_filter_stop = std::chrono::steady_clock::now();
   const auto voxel_filter_duration = voxel_filter_stop - voxel_filter_start;
 
-  if (sensor_duration.has_value()) {
-    const double voxel_filter_fraction =
-        common::ToSeconds(voxel_filter_duration) /
-        common::ToSeconds(sensor_duration.value());
-    kLocalSlamVoxelFilterFraction->Set(voxel_filter_fraction);
-  }
+  // if (sensor_duration.has_value()) {
+  //   const double voxel_filter_fraction =
+  //       common::ToSeconds(voxel_filter_duration) /
+  //       common::ToSeconds(sensor_duration.value());
+  //   kLocalSlamVoxelFilterFraction->Set(voxel_filter_fraction);
+  // }
 
   return AddAccumulatedRangeData(
       current_time,
@@ -292,7 +294,7 @@ LocalTrajectoryBuilder3D::AddAccumulatedRangeData(
     return nullptr;
   }
 
-  const auto scan_matcher_start = std::chrono::steady_clock::now();
+  // const auto scan_matcher_start = std::chrono::steady_clock::now();
 
   const sensor::PointCloud high_resolution_point_cloud_in_tracking =
       sensor::AdaptiveVoxelFilter(
@@ -320,55 +322,56 @@ LocalTrajectoryBuilder3D::AddAccumulatedRangeData(
   }
   extrapolator_->AddPose(time, *pose_estimate);
 
-  const auto scan_matcher_stop = std::chrono::steady_clock::now();
-  const auto scan_matcher_duration = scan_matcher_stop - scan_matcher_start;
-  if (sensor_duration.has_value()) {
-    const double scan_matcher_fraction =
-        common::ToSeconds(scan_matcher_duration) /
-        common::ToSeconds(sensor_duration.value());
-    kLocalSlamScanMatcherFraction->Set(scan_matcher_fraction);
-  }
+  // const auto scan_matcher_stop = std::chrono::steady_clock::now();
+  // const auto scan_matcher_duration = scan_matcher_stop - scan_matcher_start;
+  // if (sensor_duration.has_value()) {
+  //   const double scan_matcher_fraction =
+  //       common::ToSeconds(scan_matcher_duration) /
+  //       common::ToSeconds(sensor_duration.value());
+  //   kLocalSlamScanMatcherFraction->Set(scan_matcher_fraction);
+  // }
 
   sensor::RangeData filtered_range_data_in_local = sensor::TransformRangeData(
       filtered_range_data_in_tracking, pose_estimate->cast<float>());
 
-  const auto insert_into_submap_start = std::chrono::steady_clock::now();
+  // const auto insert_into_submap_start = std::chrono::steady_clock::now();
   std::unique_ptr<InsertionResult> insertion_result = InsertIntoSubmap(
       time, filtered_range_data_in_local, filtered_range_data_in_tracking,
       high_resolution_point_cloud_in_tracking,
       low_resolution_point_cloud_in_tracking, *pose_estimate,
       gravity_alignment);
-  const auto insert_into_submap_stop = std::chrono::steady_clock::now();
+  // const auto insert_into_submap_stop = std::chrono::steady_clock::now();
 
-  const auto insert_into_submap_duration =
-      insert_into_submap_stop - insert_into_submap_start;
-  if (sensor_duration.has_value()) {
-    const double insert_into_submap_fraction =
-        common::ToSeconds(insert_into_submap_duration) /
-        common::ToSeconds(sensor_duration.value());
-    kLocalSlamInsertIntoSubmapFraction->Set(insert_into_submap_fraction);
-  }
-  const auto wall_time = std::chrono::steady_clock::now();
-  if (last_wall_time_.has_value()) {
-    const auto wall_time_duration = wall_time - last_wall_time_.value();
-    kLocalSlamLatencyMetric->Set(common::ToSeconds(wall_time_duration));
-    if (sensor_duration.has_value()) {
-      kLocalSlamRealTimeRatio->Set(common::ToSeconds(sensor_duration.value()) /
-                                   common::ToSeconds(wall_time_duration));
-    }
-  }
-  const double thread_cpu_time_seconds = common::GetThreadCpuTimeSeconds();
-  if (last_thread_cpu_time_seconds_.has_value()) {
-    const double thread_cpu_duration_seconds =
-        thread_cpu_time_seconds - last_thread_cpu_time_seconds_.value();
-    if (sensor_duration.has_value()) {
-      kLocalSlamCpuRealTimeRatio->Set(
-          common::ToSeconds(sensor_duration.value()) /
-          thread_cpu_duration_seconds);
-    }
-  }
-  last_wall_time_ = wall_time;
-  last_thread_cpu_time_seconds_ = thread_cpu_time_seconds;
+  // const auto insert_into_submap_duration =
+  //     insert_into_submap_stop - insert_into_submap_start;
+  // if (sensor_duration.has_value()) {
+  //   const double insert_into_submap_fraction =
+  //       common::ToSeconds(insert_into_submap_duration) /
+  //       common::ToSeconds(sensor_duration.value());
+  //   kLocalSlamInsertIntoSubmapFraction->Set(insert_into_submap_fraction);
+  // }
+  // const auto wall_time = std::chrono::steady_clock::now();
+  // if (last_wall_time_.has_value()) {
+  //   const auto wall_time_duration = wall_time - last_wall_time_.value();
+  //   kLocalSlamLatencyMetric->Set(common::ToSeconds(wall_time_duration));
+  //   if (sensor_duration.has_value()) {
+  //     kLocalSlamRealTimeRatio->Set(common::ToSeconds(sensor_duration.value())
+  //     /
+  //                                  common::ToSeconds(wall_time_duration));
+  //   }
+  // }
+  // const double thread_cpu_time_seconds = common::GetThreadCpuTimeSeconds();
+  // if (last_thread_cpu_time_seconds_.has_value()) {
+  //   const double thread_cpu_duration_seconds =
+  //       thread_cpu_time_seconds - last_thread_cpu_time_seconds_.value();
+  //   if (sensor_duration.has_value()) {
+  //     kLocalSlamCpuRealTimeRatio->Set(
+  //         common::ToSeconds(sensor_duration.value()) /
+  //         thread_cpu_duration_seconds);
+  //   }
+  // }
+  // last_wall_time_ = wall_time;
+  // last_thread_cpu_time_seconds_ = thread_cpu_time_seconds;
   return absl::make_unique<MatchingResult>(MatchingResult{
       time, *pose_estimate, std::move(filtered_range_data_in_local),
       std::move(insertion_result)});
@@ -422,58 +425,58 @@ LocalTrajectoryBuilder3D::InsertIntoSubmap(
                       std::move(insertion_submaps)});
 }
 
-void LocalTrajectoryBuilder3D::RegisterMetrics(
-    metrics::FamilyFactory* family_factory) {
-  auto* latency = family_factory->NewGaugeFamily(
-      "mapping_3d_local_trajectory_builder_latency",
-      "Duration from first incoming point cloud in accumulation to local slam "
-      "result");
-  kLocalSlamLatencyMetric = latency->Add({});
+// void LocalTrajectoryBuilder3D::RegisterMetrics(
+//     metrics::FamilyFactory* family_factory) {
+//   auto* latency = family_factory->NewGaugeFamily(
+//       "mapping_3d_local_trajectory_builder_latency",
+//       "Duration from first incoming point cloud in accumulation to local slam
+//       " "result");
+//   kLocalSlamLatencyMetric = latency->Add({});
 
-  auto* voxel_filter_fraction = family_factory->NewGaugeFamily(
-      "mapping_3d_local_trajectory_builder_voxel_filter_fraction",
-      "Fraction of total sensor time taken up by voxel filter.");
-  kLocalSlamVoxelFilterFraction = voxel_filter_fraction->Add({});
+//   auto* voxel_filter_fraction = family_factory->NewGaugeFamily(
+//       "mapping_3d_local_trajectory_builder_voxel_filter_fraction",
+//       "Fraction of total sensor time taken up by voxel filter.");
+//   kLocalSlamVoxelFilterFraction = voxel_filter_fraction->Add({});
 
-  auto* scan_matcher_fraction = family_factory->NewGaugeFamily(
-      "mapping_3d_local_trajectory_builder_scan_matcher_fraction",
-      "Fraction of total sensor time taken up by scan matcher.");
-  kLocalSlamScanMatcherFraction = scan_matcher_fraction->Add({});
+//   auto* scan_matcher_fraction = family_factory->NewGaugeFamily(
+//       "mapping_3d_local_trajectory_builder_scan_matcher_fraction",
+//       "Fraction of total sensor time taken up by scan matcher.");
+//   kLocalSlamScanMatcherFraction = scan_matcher_fraction->Add({});
 
-  auto* insert_into_submap_fraction = family_factory->NewGaugeFamily(
-      "mapping_3d_local_trajectory_builder_insert_into_submap_fraction",
-      "Fraction of total sensor time taken up by inserting into submap.");
-  kLocalSlamInsertIntoSubmapFraction = insert_into_submap_fraction->Add({});
+//   auto* insert_into_submap_fraction = family_factory->NewGaugeFamily(
+//       "mapping_3d_local_trajectory_builder_insert_into_submap_fraction",
+//       "Fraction of total sensor time taken up by inserting into submap.");
+//   kLocalSlamInsertIntoSubmapFraction = insert_into_submap_fraction->Add({});
 
-  auto* real_time_ratio = family_factory->NewGaugeFamily(
-      "mapping_3d_local_trajectory_builder_real_time_ratio",
-      "sensor duration / wall clock duration.");
-  kLocalSlamRealTimeRatio = real_time_ratio->Add({});
+//   auto* real_time_ratio = family_factory->NewGaugeFamily(
+//       "mapping_3d_local_trajectory_builder_real_time_ratio",
+//       "sensor duration / wall clock duration.");
+//   kLocalSlamRealTimeRatio = real_time_ratio->Add({});
 
-  auto* cpu_real_time_ratio = family_factory->NewGaugeFamily(
-      "mapping_3d_local_trajectory_builder_cpu_real_time_ratio",
-      "sensor duration / cpu duration.");
-  kLocalSlamCpuRealTimeRatio = cpu_real_time_ratio->Add({});
+//   auto* cpu_real_time_ratio = family_factory->NewGaugeFamily(
+//       "mapping_3d_local_trajectory_builder_cpu_real_time_ratio",
+//       "sensor duration / cpu duration.");
+//   kLocalSlamCpuRealTimeRatio = cpu_real_time_ratio->Add({});
 
-  auto score_boundaries = metrics::Histogram::FixedWidth(0.05, 20);
-  auto* scores = family_factory->NewHistogramFamily(
-      "mapping_3d_local_trajectory_builder_scores", "Local scan matcher scores",
-      score_boundaries);
-  kRealTimeCorrelativeScanMatcherScoreMetric =
-      scores->Add({{"scan_matcher", "real_time_correlative"}});
-  auto cost_boundaries = metrics::Histogram::ScaledPowersOf(2, 0.01, 100);
-  auto* costs = family_factory->NewHistogramFamily(
-      "mapping_3d_local_trajectory_builder_costs", "Local scan matcher costs",
-      cost_boundaries);
-  kCeresScanMatcherCostMetric = costs->Add({{"scan_matcher", "ceres"}});
-  auto distance_boundaries = metrics::Histogram::ScaledPowersOf(2, 0.01, 10);
-  auto* residuals = family_factory->NewHistogramFamily(
-      "mapping_3d_local_trajectory_builder_residuals",
-      "Local scan matcher residuals", distance_boundaries);
-  kScanMatcherResidualDistanceMetric =
-      residuals->Add({{"component", "distance"}});
-  kScanMatcherResidualAngleMetric = residuals->Add({{"component", "angle"}});
-}
+//   auto score_boundaries = metrics::Histogram::FixedWidth(0.05, 20);
+//   auto* scores = family_factory->NewHistogramFamily(
+//       "mapping_3d_local_trajectory_builder_scores", "Local scan matcher
+//       scores", score_boundaries);
+//   kRealTimeCorrelativeScanMatcherScoreMetric =
+//       scores->Add({{"scan_matcher", "real_time_correlative"}});
+//   auto cost_boundaries = metrics::Histogram::ScaledPowersOf(2, 0.01, 100);
+//   auto* costs = family_factory->NewHistogramFamily(
+//       "mapping_3d_local_trajectory_builder_costs", "Local scan matcher
+//       costs", cost_boundaries);
+//   kCeresScanMatcherCostMetric = costs->Add({{"scan_matcher", "ceres"}});
+//   auto distance_boundaries = metrics::Histogram::ScaledPowersOf(2, 0.01, 10);
+//   auto* residuals = family_factory->NewHistogramFamily(
+//       "mapping_3d_local_trajectory_builder_residuals",
+//       "Local scan matcher residuals", distance_boundaries);
+//   kScanMatcherResidualDistanceMetric =
+//       residuals->Add({{"component", "distance"}});
+//   kScanMatcherResidualAngleMetric = residuals->Add({{"component", "angle"}});
+// }
 
 }  // namespace mapping
 }  // namespace cartographer

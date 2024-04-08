@@ -40,7 +40,7 @@
 #include "cartographer/mapping/internal/work_queue.h"
 #include "cartographer/mapping/pose_graph.h"
 #include "cartographer/mapping/pose_graph_trimmer.h"
-#include "cartographer/metrics/family_factory.h"
+// #include "cartographer/metrics/family_factory.h"
 #include "cartographer/sensor/fixed_frame_pose_data.h"
 #include "cartographer/sensor/landmark_data.h"
 #include "cartographer/sensor/odometry_data.h"
@@ -155,7 +155,7 @@ class PoseGraph3D : public PoseGraph {
       int trajectory_id, const common::Time time) const
       EXCLUSIVE_LOCKS_REQUIRED(mutex_);
 
-  static void RegisterMetrics(metrics::FamilyFactory* family_factory);
+  //   static void RegisterMetrics(metrics::FamilyFactory* family_factory);
 
  protected:
   // Waits until we caught up (i.e. nothing is waiting to be scheduled), and

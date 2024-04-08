@@ -37,7 +37,7 @@
 #include "cartographer/mapping/internal/2d/scan_matching/fast_correlative_scan_matcher_2d.h"
 #include "cartographer/mapping/pose_graph_interface.h"
 #include "cartographer/mapping/proto/pose_graph/constraint_builder_options.pb.h"
-#include "cartographer/metrics/family_factory.h"
+// #include "cartographer/metrics/family_factory.h"
 #include "cartographer/sensor/internal/voxel_filter.h"
 #include "cartographer/sensor/point_cloud.h"
 
@@ -104,7 +104,7 @@ class ConstraintBuilder2D {
   // Delete data related to 'submap_id'.
   void DeleteScanMatcher(const SubmapId& submap_id);
 
-  static void RegisterMetrics(metrics::FamilyFactory* family_factory);
+  //   static void RegisterMetrics(metrics::FamilyFactory* family_factory);
 
  private:
   struct SubmapScanMatcher {

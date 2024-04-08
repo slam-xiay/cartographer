@@ -41,7 +41,7 @@
 #include "cartographer/mapping/pose_graph.h"
 #include "cartographer/mapping/pose_graph_trimmer.h"
 #include "cartographer/mapping/value_conversion_tables.h"
-#include "cartographer/metrics/family_factory.h"
+// #include "cartographer/metrics/family_factory.h"
 #include "cartographer/sensor/fixed_frame_pose_data.h"
 #include "cartographer/sensor/landmark_data.h"
 #include "cartographer/sensor/odometry_data.h"
@@ -157,7 +157,7 @@ class PoseGraph2D : public PoseGraph {
       int trajectory_id, const common::Time time) const
       EXCLUSIVE_LOCKS_REQUIRED(mutex_);
 
-  static void RegisterMetrics(metrics::FamilyFactory* family_factory);
+  //   static void RegisterMetrics(metrics::FamilyFactory* family_factory);
 
  private:
   MapById<SubmapId, PoseGraphInterface::SubmapData> GetSubmapDataUnderLock()

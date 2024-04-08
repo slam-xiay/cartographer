@@ -23,15 +23,15 @@
 #include "cartographer/common/time.h"
 #include "cartographer/mapping/internal/local_slam_result_data.h"
 #include "cartographer/mapping/internal/motion_filter.h"
-#include "cartographer/metrics/family_factory.h"
+// #include "cartographer/metrics/family_factory.h"
 #include "glog/logging.h"
 
 namespace cartographer {
 namespace mapping {
 namespace {
 
-static auto* kLocalSlamMatchingResults = metrics::Counter::Null();
-static auto* kLocalSlamInsertionResults = metrics::Counter::Null();
+// static auto* kLocalSlamMatchingResults = metrics::Counter::Null();
+//  static auto* kLocalSlamInsertionResults = metrics::Counter::Null();
 
 template <typename LocalTrajectoryBuilder, typename PoseGraph>
 class GlobalTrajectoryBuilder : public mapping::TrajectoryBuilderInterface {
@@ -65,10 +65,10 @@ class GlobalTrajectoryBuilder : public mapping::TrajectoryBuilderInterface {
       // The range data has not been fully accumulated yet.
       return;
     }
-    kLocalSlamMatchingResults->Increment();
+    // kLocalSlamMatchingResults->Increment();
     std::unique_ptr<InsertionResult> insertion_result;
     if (matching_result->insertion_result != nullptr) {
-      kLocalSlamInsertionResults->Increment();
+      // kLocalSlamInsertionResults->Increment();
       auto node_id = pose_graph_->AddNode(
           matching_result->insertion_result->constant_data, trajectory_id_,
           matching_result->insertion_result->insertion_submaps);
@@ -168,13 +168,14 @@ std::unique_ptr<TrajectoryBuilderInterface> CreateGlobalTrajectoryBuilder3D(
       local_slam_result_callback, pose_graph_odometry_motion_filter);
 }
 
-void GlobalTrajectoryBuilderRegisterMetrics(metrics::FamilyFactory* factory) {
-  auto* results = factory->NewCounterFamily(
-      "mapping_global_trajectory_builder_local_slam_results",
-      "Local SLAM results");
-  kLocalSlamMatchingResults = results->Add({{"type", "MatchingResult"}});
-  kLocalSlamInsertionResults = results->Add({{"type", "InsertionResult"}});
-}
+// void GlobalTrajectoryBuilderRegisterMetrics(metrics::FamilyFactory* factory)
+// {
+//   auto* results = factory->NewCounterFamily(
+//       "mapping_global_trajectory_builder_local_slam_results",
+//       "Local SLAM results");
+//   kLocalSlamMatchingResults = results->Add({{"type", "MatchingResult"}});
+//   kLocalSlamInsertionResults = results->Add({{"type", "InsertionResult"}});
+// }
 
 }  // namespace mapping
 }  // namespace cartographer

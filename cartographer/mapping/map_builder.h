@@ -23,7 +23,8 @@
 #include "cartographer/mapping/map_builder_interface.h"
 #include "cartographer/mapping/pose_graph.h"
 #include "cartographer/mapping/proto/map_builder_options.pb.h"
-#include "cartographer/sensor/collator_interface.h"
+// #include "cartographer/sensor/collator_interface.h"
+#include "cartographer/sensor/internal/collator.h"
 
 namespace cartographer {
 namespace mapping {
@@ -88,7 +89,8 @@ class MapBuilder : public MapBuilderInterface {
 
   std::unique_ptr<PoseGraph> pose_graph_;
 
-  std::unique_ptr<sensor::CollatorInterface> sensor_collator_;
+  // std::unique_ptr<sensor::CollatorInterface> sensor_collator_;
+  std::unique_ptr<sensor::Collator> sensor_collator_;
   std::vector<std::unique_ptr<mapping::TrajectoryBuilderInterface>>
       trajectory_builders_;
   std::vector<proto::TrajectoryBuilderOptionsWithSensorIds>

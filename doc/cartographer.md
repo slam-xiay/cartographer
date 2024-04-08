@@ -1213,6 +1213,8 @@ GetInitialLandmarkPose
 AddLandmarkCostFunctions
 SetLandmarkPose
 GetLandmarkPoses
+SensorId::SensorType::LANDMARK
+SensorId::SensorType::FIXED_FRAME_POSE
 ```
 
 删除相关文件
@@ -1285,11 +1287,11 @@ submap2d.cc
 
 ```
 find . -name *interface.h
-./cartographer/sensor/collator_interface.h
+./cartographer/sensor/collator_interface.h ok
 ./cartographer/io/proto_stream_interface.h
-./cartographer/mapping/range_data_inserter_interface.h
-./cartographer/mapping/grid_interface.h
-./cartographer/mapping/pose_extrapolator_interface.h
+./cartographer/mapping/range_data_inserter_interface.h ok
+./cartographer/mapping/grid_interface.h ok
+./cartographer/mapping/pose_extrapolator_interface.h ok
 ./cartographer/mapping/map_builder_interface.h
 ./cartographer/mapping/pose_graph_interface.h
 ./cartographer/mapping/internal/optimization/optimization_problem_interface.h
@@ -1363,12 +1365,6 @@ class PoseExtrapolator
 #include "cartographer/mapping/2d/probability_grid_range_data_inserter_2d.h"
 ```
 
-删除文件
-
-```
-
-```
-
 ```
 class Grid2D : public GridInterface 
 改为
@@ -1428,7 +1424,59 @@ rm cartographer/mapping/range_data_inserter_interface.h
 rm cartographer/mapping/range_data_inserter_interface.cc
 ```
 
+### 删除collator_interface
 
+有两个派生类trajectory_collator和collator，只保留collator。
+
+```
+  // Queue keys are a pair of trajectory ID and sensor identifier.
+  OrderedMultiQueue queue_;
+  // Map of trajectory ID to all associated QueueKeys.
+  absl::flat_hash_map<int, std::vector<QueueKey>> queue_keys_;
+  
+  absl::flat_hash_map<int, OrderedMultiQueue> trajectory_to_queue_;
+  // Map of trajectory ID to all associated QueueKeys.
+  absl::flat_hash_map<int, std::vector<QueueKey>> trajectory_to_queue_keys_;
+```
+
+先找到相应文件进行屏蔽
+
+```
+CollatorInterface
+```
+
+修改类
+
+```
+class Collator : public CollatorInterface
+改为
+class Collator
+删除override
+```
+
+修改引用文件
+
+```
+#include "cartographer/sensor/collator_interface.h"
+```
+
+在使用文件中修改
+
+```
+#include "cartographer/sensor/collator_interface.h"
+改为
+#include "cartographer/sensor/internal/collator.h"
+CollatorInterface改为Collator
+```
+
+最后删除文件
+
+```
+rm cartographer/sensor/internal/trajectory_collator.*
+rm cartographer/sensor/collator_interface.*
+```
+
+### 删除
 
 # SLAM理论
 

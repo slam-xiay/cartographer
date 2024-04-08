@@ -28,7 +28,8 @@
 #include "cartographer/mapping/internal/local_slam_result_data.h"
 #include "cartographer/mapping/submaps.h"
 #include "cartographer/mapping/trajectory_builder_interface.h"
-#include "cartographer/sensor/collator_interface.h"
+// #include "cartographer/sensor/collator_interface.h"
+#include "cartographer/sensor/internal/collator.h"
 #include "cartographer/sensor/internal/dispatchable.h"
 
 namespace cartographer {
@@ -40,9 +41,15 @@ class CollatedTrajectoryBuilder : public TrajectoryBuilderInterface {
  public:
   using SensorId = TrajectoryBuilderInterface::SensorId;
 
+  // CollatedTrajectoryBuilder(
+  //     const proto::TrajectoryBuilderOptions& trajectory_options,
+  //     sensor::CollatorInterface* sensor_collator, int trajectory_id,
+  //     const std::set<SensorId>& expected_sensor_ids,
+  //     std::unique_ptr<TrajectoryBuilderInterface>
+  //     wrapped_trajectory_builder);
   CollatedTrajectoryBuilder(
       const proto::TrajectoryBuilderOptions& trajectory_options,
-      sensor::CollatorInterface* sensor_collator, int trajectory_id,
+      sensor::Collator* sensor_collator, int trajectory_id,
       const std::set<SensorId>& expected_sensor_ids,
       std::unique_ptr<TrajectoryBuilderInterface> wrapped_trajectory_builder);
   ~CollatedTrajectoryBuilder() override {}
@@ -98,7 +105,7 @@ class CollatedTrajectoryBuilder : public TrajectoryBuilderInterface {
   void HandleCollatedSensorData(const std::string& sensor_id,
                                 std::unique_ptr<sensor::Data> data);
 
-  sensor::CollatorInterface* const sensor_collator_;
+  sensor::Collator* const sensor_collator_;
   const bool collate_landmarks_;
   const bool collate_fixed_frame_;
   const int trajectory_id_;

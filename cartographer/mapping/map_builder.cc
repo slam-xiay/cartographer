@@ -31,7 +31,7 @@
 #include "cartographer/mapping/internal/global_trajectory_builder.h"
 #include "cartographer/mapping/internal/motion_filter.h"
 #include "cartographer/sensor/internal/collator.h"
-#include "cartographer/sensor/internal/trajectory_collator.h"
+// #include "cartographer/sensor/internal/trajectory_collator.h"
 #include "cartographer/sensor/internal/voxel_filter.h"
 #include "cartographer/transform/rigid_transform.h"
 #include "cartographer/transform/transform.h"
@@ -92,11 +92,11 @@ MapBuilder::MapBuilder(const proto::MapBuilderOptions& options)
   //           options_.pose_graph_options().optimization_problem_options()),
   //       &thread_pool_);
   // }
-  if (options.collate_by_trajectory()) {
-    sensor_collator_ = absl::make_unique<sensor::TrajectoryCollator>();
-  } else {
-    sensor_collator_ = absl::make_unique<sensor::Collator>();
-  }
+  // if (options.collate_by_trajectory()) {
+  //   sensor_collator_ = absl::make_unique<sensor::TrajectoryCollator>();
+  // } else {
+  sensor_collator_ = absl::make_unique<sensor::Collator>();
+  // }
 }
 
 int MapBuilder::AddTrajectoryBuilder(

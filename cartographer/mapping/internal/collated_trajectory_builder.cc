@@ -30,7 +30,7 @@ constexpr double kSensorDataRatesLoggingPeriodSeconds = 15.;
 
 CollatedTrajectoryBuilder::CollatedTrajectoryBuilder(
     const proto::TrajectoryBuilderOptions& trajectory_options,
-    sensor::CollatorInterface* const sensor_collator, const int trajectory_id,
+    sensor::Collator* const sensor_collator, const int trajectory_id,
     const std::set<SensorId>& expected_sensor_ids,
     std::unique_ptr<TrajectoryBuilderInterface> wrapped_trajectory_builder)
     : sensor_collator_(sensor_collator),

@@ -1,3 +1,4 @@
 build
 bazel-*
 .clang-format
+.vscode

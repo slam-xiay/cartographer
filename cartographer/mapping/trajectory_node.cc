@@ -33,17 +33,17 @@ proto::TrajectoryNodeData ToProto(const TrajectoryNode::Data& constant_data) {
       sensor::CompressedPointCloud(
           constant_data.filtered_gravity_aligned_point_cloud)
           .ToProto();
-  *proto.mutable_high_resolution_point_cloud() =
-      sensor::CompressedPointCloud(constant_data.high_resolution_point_cloud)
-          .ToProto();
-  *proto.mutable_low_resolution_point_cloud() =
-      sensor::CompressedPointCloud(constant_data.low_resolution_point_cloud)
-          .ToProto();
-  for (Eigen::VectorXf::Index i = 0;
-       i != constant_data.rotational_scan_matcher_histogram.size(); ++i) {
-    proto.add_rotational_scan_matcher_histogram(
-        constant_data.rotational_scan_matcher_histogram(i));
-  }
+//   *proto.mutable_high_resolution_point_cloud() =
+//       sensor::CompressedPointCloud(constant_data.high_resolution_point_cloud)
+//           .ToProto();
+//   *proto.mutable_low_resolution_point_cloud() =
+//       sensor::CompressedPointCloud(constant_data.low_resolution_point_cloud)
+//           .ToProto();
+//   for (Eigen::VectorXf::Index i = 0;
+//        i != constant_data.rotational_scan_matcher_histogram.size(); ++i) {
+//     proto.add_rotational_scan_matcher_histogram(
+//         constant_data.rotational_scan_matcher_histogram(i));
+//   }
   *proto.mutable_local_pose() = transform::ToProto(constant_data.local_pose);
   return proto;
 }

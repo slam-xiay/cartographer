@@ -54,9 +54,9 @@ struct TrajectoryNode {
     sensor::PointCloud filtered_gravity_aligned_point_cloud;
 
     // Used for loop closure in 3D.
-    sensor::PointCloud high_resolution_point_cloud;
-    sensor::PointCloud low_resolution_point_cloud;
-    Eigen::VectorXf rotational_scan_matcher_histogram;
+    // sensor::PointCloud high_resolution_point_cloud;
+    // sensor::PointCloud low_resolution_point_cloud;
+    // Eigen::VectorXf rotational_scan_matcher_histogram;
 
     // The node pose in the local SLAM frame.
     transform::Rigid3d local_pose;

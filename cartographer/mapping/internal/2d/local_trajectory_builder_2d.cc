@@ -294,9 +294,9 @@ LocalTrajectoryBuilder2D::InsertIntoSubmap(
           time,
           gravity_alignment,
           filtered_gravity_aligned_point_cloud,
-          {},  // 'high_resolution_point_cloud' is only used in 3D.
-          {},  // 'low_resolution_point_cloud' is only used in 3D.
-          {},  // 'rotational_scan_matcher_histogram' is only used in 3D.
+          // {},  // 'high_resolution_point_cloud' is only used in 3D.
+          // {},  // 'low_resolution_point_cloud' is only used in 3D.
+          // {},  // 'rotational_scan_matcher_histogram' is only used in 3D.
           pose_estimate}),
       std::move(insertion_submaps)});
 }

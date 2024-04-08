@@ -1188,6 +1188,16 @@ imu_based_pose_extrapolator.cc
 
 删除引用了*_3d.h的字段
 
+cartographer/mapping/trajectory_node.h
+
+```
+high_resolution_point_cloud
+low_resolution_point_cloud
+rotational_scan_matcher_histogram
+```
+
+
+
 ### 删除FixedFramePose和AddLandmarkData
 
 删除FixedFrame、Landmark相关字段
@@ -1606,6 +1616,19 @@ std::unique_ptr<MapBuilder> CreateMapBuilder(
 
 ```
 rm cartographer/mapping/map_builder_interface.h
+```
+
+### 删除TrajectoryBuilderInterface
+
+```mermaid
+graph TD
+1(TrajectoryBuilderInterface)
+2(GlobalTrajectoryBuilder)
+3(CreateGlobalTrajectoryBuilder2D)
+4(CollatedTrajectoryBuilder)
+5(LocalTrajectoryBuilder2D)
+1-->2
+1-->4
 ```
 
 

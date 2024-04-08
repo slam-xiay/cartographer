@@ -1098,11 +1098,99 @@ rm cartographer/metrics -rf
 
 最后根据编译的内容进行微调
 
-```
+### 删除3D
+
+找到入口use_trajectory_builder_3d
+
+找到相关变量，并删除有关内容
 
 ```
+use_trajectory_builder_3d
+```
+
+找到相关函数并删除
+
+```
+CreateGlobalTrajectoryBuilder3D
+```
+
+```mermaid
+graph TD
+1(CreateGlobalTrajectoryBuilder3D)
+2(PoseGraph3D)
+3(LocalTrajectoryBuilder3D)
+1-->2
+1-->3
+
+```
 
 
+
+
+
+找到涉及的文件
+
+```
+find . -name *_3d*
+./cartographer/mapping/3d/range_data_inserter_3d.cc
+./cartographer/mapping/3d/submap_3d.cc
+./cartographer/mapping/3d/submap_3d.h
+./cartographer/mapping/3d/range_data_inserter_3d.h
+./cartographer/mapping/internal/optimization/optimization_problem_3d.cc
+./cartographer/mapping/internal/optimization/cost_functions/rotation_cost_function_3d.h
+./cartographer/mapping/internal/optimization/cost_functions/acceleration_cost_function_3d.h
+./cartographer/mapping/internal/optimization/cost_functions/landmark_cost_function_3d.h
+./cartographer/mapping/internal/optimization/cost_functions/spa_cost_function_3d.h
+./cartographer/mapping/internal/optimization/optimization_problem_3d.h
+./cartographer/mapping/internal/3d/pose_graph_3d.cc
+./cartographer/mapping/internal/3d/local_trajectory_builder_options_3d.cc
+./cartographer/mapping/internal/3d/scan_matching/ceres_scan_matcher_3d.h
+./cartographer/mapping/internal/3d/scan_matching/precomputation_grid_3d.cc
+./cartographer/mapping/internal/3d/scan_matching/ceres_scan_matcher_3d.cc
+./cartographer/mapping/internal/3d/scan_matching/translation_delta_cost_functor_3d.h
+./cartographer/mapping/internal/3d/scan_matching/fast_correlative_scan_matcher_3d.cc
+./cartographer/mapping/internal/3d/scan_matching/intensity_cost_function_3d.h
+./cartographer/mapping/internal/3d/scan_matching/precomputation_grid_3d.h
+./cartographer/mapping/internal/3d/scan_matching/rotation_delta_cost_functor_3d.h
+./cartographer/mapping/internal/3d/scan_matching/occupied_space_cost_function_3d.h
+./cartographer/mapping/internal/3d/scan_matching/real_time_correlative_scan_matcher_3d.cc
+./cartographer/mapping/internal/3d/scan_matching/fast_correlative_scan_matcher_3d.h
+./cartographer/mapping/internal/3d/scan_matching/intensity_cost_function_3d.cc
+./cartographer/mapping/internal/3d/scan_matching/real_time_correlative_scan_matcher_3d.h
+./cartographer/mapping/internal/3d/local_slam_result_3d.h
+./cartographer/mapping/internal/3d/local_trajectory_builder_options_3d.h
+./cartographer/mapping/internal/3d/pose_graph_3d.h
+./cartographer/mapping/internal/3d/local_slam_result_3d.cc
+./cartographer/mapping/internal/3d/local_trajectory_builder_3d.cc
+./cartographer/mapping/internal/3d/local_trajectory_builder_3d.h
+./cartographer/mapping/internal/constraints/constraint_builder_3d.cc
+./cartographer/mapping/internal/constraints/constraint_builder_3d.h
+./cartographer/mapping/proto/submaps_options_3d.proto
+./cartographer/mapping/proto/local_trajectory_builder_options_3d.proto
+./cartographer/mapping/proto/scan_matching/ceres_scan_matcher_options_3d.proto
+./cartographer/mapping/proto/scan_matching/fast_correlative_scan_matcher_options_3d.proto
+./cartographer/mapping/proto/range_data_inserter_options_3d.proto
+./configuration_files/trajectory_builder_3d.lua
+```
+
+找到文件夹
+
+```
+find . -type d -name 3d
+./cartographer/mapping/3d
+./cartographer/mapping/internal/3d
+```
+
+删除ImuBasedPoseExtrapolator目录
+
+以及相应文件
+
+```
+imu_based_pose_extrapolator.h
+imu_based_pose_extrapolator.cc
+```
+
+删除引用了*_3d.h的字段
 
 # SLAM理论
 

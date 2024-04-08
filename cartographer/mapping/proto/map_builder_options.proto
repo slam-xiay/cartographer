@@ -20,7 +20,7 @@ package cartographer.mapping.proto;
 
 message MapBuilderOptions {
   bool use_trajectory_builder_2d = 1;
-  bool use_trajectory_builder_3d = 2;
+  //bool use_trajectory_builder_3d = 2;
 
   // Number of threads to use for background computations.
   int32 num_background_threads = 3;

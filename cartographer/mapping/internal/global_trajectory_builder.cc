@@ -156,17 +156,18 @@ std::unique_ptr<TrajectoryBuilderInterface> CreateGlobalTrajectoryBuilder2D(
       local_slam_result_callback, pose_graph_odometry_motion_filter);
 }
 
-std::unique_ptr<TrajectoryBuilderInterface> CreateGlobalTrajectoryBuilder3D(
-    std::unique_ptr<LocalTrajectoryBuilder3D> local_trajectory_builder,
-    const int trajectory_id, mapping::PoseGraph3D* const pose_graph,
-    const TrajectoryBuilderInterface::LocalSlamResultCallback&
-        local_slam_result_callback,
-    const absl::optional<MotionFilter>& pose_graph_odometry_motion_filter) {
-  return absl::make_unique<
-      GlobalTrajectoryBuilder<LocalTrajectoryBuilder3D, mapping::PoseGraph3D>>(
-      std::move(local_trajectory_builder), trajectory_id, pose_graph,
-      local_slam_result_callback, pose_graph_odometry_motion_filter);
-}
+// std::unique_ptr<TrajectoryBuilderInterface> CreateGlobalTrajectoryBuilder3D(
+//     std::unique_ptr<LocalTrajectoryBuilder3D> local_trajectory_builder,
+//     const int trajectory_id, mapping::PoseGraph3D* const pose_graph,
+//     const TrajectoryBuilderInterface::LocalSlamResultCallback&
+//         local_slam_result_callback,
+//     const absl::optional<MotionFilter>& pose_graph_odometry_motion_filter) {
+//   return absl::make_unique<
+//       GlobalTrajectoryBuilder<LocalTrajectoryBuilder3D,
+//       mapping::PoseGraph3D>>( std::move(local_trajectory_builder),
+//       trajectory_id, pose_graph, local_slam_result_callback,
+//       pose_graph_odometry_motion_filter);
+// }
 
 // void GlobalTrajectoryBuilderRegisterMetrics(metrics::FamilyFactory* factory)
 // {

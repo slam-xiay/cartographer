@@ -75,7 +75,8 @@ std::unique_ptr<transform::Rigid2d> LocalTrajectoryBuilder2D::ScanMatch(
   transform::Rigid2d initial_ceres_pose = pose_prediction;
 
   if (options_.use_online_correlative_scan_matching()) {
-    const double score = real_time_correlative_scan_matcher_.Match(
+    // const double score =
+    real_time_correlative_scan_matcher_.Match(
         pose_prediction, filtered_gravity_aligned_point_cloud,
         *matching_submap->grid(), &initial_ceres_pose);
     // kRealTimeCorrelativeScanMatcherScoreMetric->Observe(score);
@@ -320,7 +321,7 @@ void LocalTrajectoryBuilder2D::InitializeExtrapolator(const common::Time time) {
   if (extrapolator_ != nullptr) {
     return;
   }
-  CHECK(!options_.pose_extrapolator_options().use_imu_based());
+  // CHECK(!options_.pose_extrapolator_options().use_imu_based());
   // TODO(gaschler): Consider using InitializeWithImu as 3D does.
   extrapolator_ = absl::make_unique<PoseExtrapolator>(
       ::cartographer::common::FromSeconds(options_.pose_extrapolator_options()

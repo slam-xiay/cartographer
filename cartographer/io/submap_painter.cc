@@ -17,7 +17,7 @@
 #include "cartographer/io/submap_painter.h"
 
 #include "cartographer/mapping/2d/submap_2d.h"
-#include "cartographer/mapping/3d/submap_3d.h"
+// #include "cartographer/mapping/3d/submap_3d.h"
 
 namespace cartographer {
 namespace io {
@@ -61,11 +61,11 @@ bool Has2DGrid(const mapping::proto::Submap& submap) {
   return submap.has_submap_2d() && submap.submap_2d().has_grid();
 }
 
-bool Has3DGrids(const mapping::proto::Submap& submap) {
-  return submap.has_submap_3d() &&
-         submap.submap_3d().has_low_resolution_hybrid_grid() &&
-         submap.submap_3d().has_high_resolution_hybrid_grid();
-}
+// bool Has3DGrids(const mapping::proto::Submap& submap) {
+//   return submap.has_submap_3d() &&
+//          submap.submap_3d().has_low_resolution_hybrid_grid() &&
+//          submap.submap_3d().has_high_resolution_hybrid_grid();
+// }
 
 }  // namespace
 
@@ -124,29 +124,29 @@ void FillSubmapSlice(
     mapping::ValueConversionTables* conversion_tables) {
   ::cartographer::mapping::proto::SubmapQuery::Response response;
   ::cartographer::transform::Rigid3d local_pose;
-  if (proto.has_submap_3d()) {
-    mapping::Submap3D submap(proto.submap_3d());
-    local_pose = submap.local_pose();
-    submap.ToResponseProto(global_submap_pose, &response);
-  } else {
-    ::cartographer::mapping::Submap2D submap(proto.submap_2d(),
-                                             conversion_tables);
-    local_pose = submap.local_pose();
-    submap.ToResponseProto(global_submap_pose, &response);
-  }
-  submap_slice->pose = global_submap_pose;
+  // if (proto.has_submap_3d()) {
+  //   mapping::Submap3D submap(proto.submap_3d());
+  //   local_pose = submap.local_pose();
+  //   submap.ToResponseProto(global_submap_pose, &response);
+  // } else {
+  ::cartographer::mapping::Submap2D submap(proto.submap_2d(),
+                                           conversion_tables);
+  local_pose = submap.local_pose();
+  submap.ToResponseProto(global_submap_pose, &response);
+    // }
+    submap_slice->pose = global_submap_pose;
 
-  auto& texture_proto = response.textures(0);
-  const SubmapTexture::Pixels pixels = UnpackTextureData(
-      texture_proto.cells(), texture_proto.width(), texture_proto.height());
-  submap_slice->width = texture_proto.width();
-  submap_slice->height = texture_proto.height();
-  submap_slice->resolution = texture_proto.resolution();
-  submap_slice->slice_pose =
-      ::cartographer::transform::ToRigid3(texture_proto.slice_pose());
-  submap_slice->surface =
-      DrawTexture(pixels.intensity, pixels.alpha, texture_proto.width(),
-                  texture_proto.height(), &submap_slice->cairo_data);
+    auto& texture_proto = response.textures(0);
+    const SubmapTexture::Pixels pixels = UnpackTextureData(
+        texture_proto.cells(), texture_proto.width(), texture_proto.height());
+    submap_slice->width = texture_proto.width();
+    submap_slice->height = texture_proto.height();
+    submap_slice->resolution = texture_proto.resolution();
+    submap_slice->slice_pose =
+        ::cartographer::transform::ToRigid3(texture_proto.slice_pose());
+    submap_slice->surface =
+        DrawTexture(pixels.intensity, pixels.alpha, texture_proto.width(),
+                    texture_proto.height(), &submap_slice->cairo_data);
 }
 
 void DeserializeAndFillSubmapSlices(
@@ -163,8 +163,9 @@ void DeserializeAndFillSubmapSlices(
   }
   mapping::proto::SerializedData proto;
   while (deserializer->ReadNextSerializedData(&proto)) {
-    if (proto.has_submap() &&
-        (Has2DGrid(proto.submap()) || Has3DGrids(proto.submap()))) {
+    // if (proto.has_submap() &&
+    //     (Has2DGrid(proto.submap()) || Has3DGrids(proto.submap()))) {
+    if (proto.has_submap() && (Has2DGrid(proto.submap()))) {
       const auto& submap = proto.submap();
       const mapping::SubmapId id{submap.submap_id().trajectory_id(),
                                  submap.submap_id().submap_index()};

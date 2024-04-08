@@ -18,8 +18,10 @@
 
 #include "cartographer/mapping/internal/2d/scan_matching/ceres_scan_matcher_2d.h"
 #include "cartographer/mapping/internal/2d/scan_matching/fast_correlative_scan_matcher_2d.h"
-#include "cartographer/mapping/internal/3d/scan_matching/ceres_scan_matcher_3d.h"
-#include "cartographer/mapping/internal/3d/scan_matching/fast_correlative_scan_matcher_3d.h"
+// #include
+// "cartographer/mapping/internal/3d/scan_matching/ceres_scan_matcher_3d.h"
+// #include
+// "cartographer/mapping/internal/3d/scan_matching/fast_correlative_scan_matcher_3d.h"
 #include "cartographer/sensor/internal/voxel_filter.h"
 
 namespace cartographer {
@@ -47,14 +49,14 @@ proto::ConstraintBuilderOptions CreateConstraintBuilderOptions(
   *options.mutable_ceres_scan_matcher_options() =
       scan_matching::CreateCeresScanMatcherOptions2D(
           parameter_dictionary->GetDictionary("ceres_scan_matcher").get());
-  *options.mutable_fast_correlative_scan_matcher_options_3d() =
-      scan_matching::CreateFastCorrelativeScanMatcherOptions3D(
-          parameter_dictionary
-              ->GetDictionary("fast_correlative_scan_matcher_3d")
-              .get());
-  *options.mutable_ceres_scan_matcher_options_3d() =
-      scan_matching::CreateCeresScanMatcherOptions3D(
-          parameter_dictionary->GetDictionary("ceres_scan_matcher_3d").get());
+  //   *options.mutable_fast_correlative_scan_matcher_options_3d() =
+  //       scan_matching::CreateFastCorrelativeScanMatcherOptions3D(
+  //           parameter_dictionary
+  //               ->GetDictionary("fast_correlative_scan_matcher_3d")
+  //               .get());
+  //   *options.mutable_ceres_scan_matcher_options_3d() =
+  //       scan_matching::CreateCeresScanMatcherOptions3D(
+  //           parameter_dictionary->GetDictionary("ceres_scan_matcher_3d").get());
   return options;
 }
 

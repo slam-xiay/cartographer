@@ -18,7 +18,7 @@
 #define CARTOGRAPHER_MAPPING_INTERNAL_SUBMAP_CONTROLLER_H
 
 #include "cartographer/mapping/2d/submap_2d.h"
-#include "cartographer/mapping/3d/submap_3d.h"
+// #include "cartographer/mapping/3d/submap_3d.h"
 #include "cartographer/mapping/id.h"
 #include "cartographer/mapping/proto/serialization.pb.h"
 
@@ -70,10 +70,10 @@ template <>
 std::shared_ptr<mapping::Submap2D>
 SubmapController<mapping::Submap2D>::CreateSubmap(
     const mapping::proto::Submap& proto);
-template <>
-std::shared_ptr<mapping::Submap3D>
-SubmapController<mapping::Submap3D>::CreateSubmap(
-    const mapping::proto::Submap& proto);
+// template <>
+// std::shared_ptr<mapping::Submap3D>
+// SubmapController<mapping::Submap3D>::CreateSubmap(
+//     const mapping::proto::Submap& proto);
 
 }  // namespace mapping
 }  // namespace cartographer

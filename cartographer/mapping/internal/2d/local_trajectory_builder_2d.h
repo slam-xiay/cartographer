@@ -62,19 +62,11 @@ class LocalTrajectoryBuilder2D {
 
   LocalTrajectoryBuilder2D(const LocalTrajectoryBuilder2D&) = delete;
   LocalTrajectoryBuilder2D& operator=(const LocalTrajectoryBuilder2D&) = delete;
-
-  // Returns 'MatchingResult' when range data accumulation completed,
-  // otherwise 'nullptr'. Range data must be approximately horizontal
-  // for 2D SLAM. `TimedPointCloudData::time` is when the last point in
-  // `range_data` was acquired, `TimedPointCloudData::ranges` contains the
-  // relative time of point with respect to `TimedPointCloudData::time`.
   std::unique_ptr<MatchingResult> AddRangeData(
       const std::string& sensor_id,
       const sensor::TimedPointCloudData& range_data);
   void AddImuData(const sensor::ImuData& imu_data);
   void AddOdometryData(const sensor::OdometryData& odometry_data);
-
-  //   static void RegisterMetrics(metrics::FamilyFactory* family_factory);
 
  private:
   std::unique_ptr<MatchingResult> AddAccumulatedRangeData(

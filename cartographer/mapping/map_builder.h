@@ -21,6 +21,7 @@
 
 #include "cartographer/common/thread_pool.h"
 // #include "cartographer/mapping/map_builder_interface.h"
+#include "cartographer/mapping/internal/global_trajectory_builder.h"
 #include "cartographer/mapping/pose_graph.h"
 #include "cartographer/mapping/proto/map_builder_options.pb.h"
 // #include "cartographer/sensor/collator_interface.h"
@@ -50,10 +51,10 @@ proto::MapBuilderOptions CreateMapBuilderOptions(
 // and a PoseGraph for loop closure.
 class MapBuilder {
  public:
-  using LocalSlamResultCallback =
-      TrajectoryBuilderInterface::LocalSlamResultCallback;
+  //   using LocalSlamResultCallback =
+  //       TrajectoryBuilderInterface::LocalSlamResultCallback;
 
-  using SensorId = TrajectoryBuilderInterface::SensorId;
+  //   using SensorId = TrajectoryBuilderInterface::SensorId;
   explicit MapBuilder(const proto::MapBuilderOptions &options);
   ~MapBuilder() {}
 
@@ -86,12 +87,11 @@ class MapBuilder {
   std::map<int, int> LoadStateFromFile(const std::string& filename,
                                        const bool load_frozen_state);
 
-  mapping::PoseGraphInterface* pose_graph() { return pose_graph_.get(); }
+  PoseGraph2D* pose_graph() { return pose_graph_2d_.get(); }
 
   int num_trajectory_builders() const { return trajectory_builders_.size(); }
 
-  mapping::TrajectoryBuilderInterface* GetTrajectoryBuilder(
-      int trajectory_id) const {
+  GlobalTrajectoryBuilder2D* GetTrajectoryBuilder(int trajectory_id) const {
     return trajectory_builders_.at(trajectory_id).get();
   }
 
@@ -104,11 +104,13 @@ class MapBuilder {
   const proto::MapBuilderOptions options_;
   common::ThreadPool thread_pool_;
 
-  std::unique_ptr<PoseGraph> pose_graph_;
+  std::unique_ptr<PoseGraph2D> pose_graph_2d_;
 
   // std::unique_ptr<sensor::CollatorInterface> sensor_collator_;
   std::unique_ptr<sensor::Collator> sensor_collator_;
-  std::vector<std::unique_ptr<mapping::TrajectoryBuilderInterface>>
+  //   std::vector<std::unique_ptr<mapping::TrajectoryBuilderInterface>>
+  //       trajectory_builders_;
+  std::vector<std::shared_ptr<mapping::GlobalTrajectoryBuilder2D>>
       trajectory_builders_;
   std::vector<proto::TrajectoryBuilderOptionsWithSensorIds>
       all_trajectory_builder_options_;

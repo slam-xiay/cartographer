@@ -1618,6 +1618,8 @@ rm cartographer/mapping/map_builder_interface.h
 
 ### 梳理TrajectoryBuilderInterface
 
+优化前
+
 ```mermaid
 graph TD
 1(TrajectoryBuilderInterface)
@@ -1625,27 +1627,107 @@ graph TD
 3(CreateGlobalTrajectoryBuilder2D)
 4(CollatedTrajectoryBuilder)
 5(LocalTrajectoryBuilder2D)
+6(MapBuild类trajectory_builders_成员)
+7(LocalTrajectoryBuilder3D)
+8(CreateGlobalTrajectoryBuilder3D)
+7-->8
 1-->|继承|2
 1-->|继承|4
-3-->|生成|2
+3-->|生成TrajectoryBuilderInterface指针|2
 2-->|生成|4
 5-->3
-
-6(MapBuild类trajectory_builders_成员)
 4-->|插入向量|6
+8-->2
+```
+
+优化后
+
+```mermaid
+graph TD
+1(LocalTrajectoryBuilder2D)
+2(GlobalTrajectoryBuilder2D)
+1-->2
+3(MapBuild类trajectory_builders_成员)
+2-->3
+
+4(cartographer::mapping::Struct)
+```
+
+新建global_trajectroy_builder_2d*
+
+```
+两个模版类改为LocalTrajectoryBuilder2D PoseGraph2D
+拷贝global_trajectroy_builder，修改为2d,删除Create
+删除继承关系，删除override。理顺cc 和 h 类的分工。
+```
+
+屏蔽TrajectoryBuilderInterface，CollatedTrajectoryBuilder，GlobalTrajectoryBuilder三个类代码
+
+
+
+使用时map_build.h
+
+```
+  //   using LocalSlamResultCallback =
+  //       TrajectoryBuilderInterface::LocalSlamResultCallback;
+
+  //   using SensorId = TrajectoryBuilderInterface::SensorId;
+  
+    //std::vector<std::unique_ptr<mapping::TrajectoryBuilderInterface>>
+      trajectory_builders_;
+     改为
+     std::vector<std::unique_ptr<mapping::TrajectoryBuilderInterface>>
+      trajectory_builders_;
+```
+
+修改dispatchable.h
+
+```
+// #include "cartographer/mapping/trajectory_builder_interface.h"
+#include "cartographer/mapping/internal/2d/global_trajectory_builder_2d.h"
+```
+
+修改data.h
+
+```
+  #include "cartographer/mapping/internal/2d/global_trajectory_builder_2d.h"
+  // virtual void AddToTrajectoryBuilder(
+  //     mapping::TrajectoryBuilderInterface *trajectory_builder) = 0;
+  virtual void AddToTrajectoryBuilder(
+      mapping::GlobalTrajectoryBuilder2D* trajectory_builder) = 0;
+```
+
+修改local_slam_result_2d.h
+
+```
+  void AddToTrajectoryBuilder(
+      TrajectoryBuilderInterface* const trajectory_builder) override;
+      //DCHECK(dynamic_cast<PoseGraph2D*>(pose_graph));
+   DCHECK(dynamic_cast<PoseGraph2D*>(pose_graph_2d));
+   // static_cast<PoseGraph2D*>(pose_graph)
+  pose_graph_2d->AddNode(
 ```
 
 ```
-map_build类成员std::vector<std::unique_ptr<mapping::TrajectoryBuilderInterface>> trajectory_builders_；
-以make_unique声明CollatedTrajectoryBuilder类，变量有四个
-trajectory_options
-sensor_collator_.get()
-trajectory_id
-expected_sensor_ids
-std::unique_ptr<TrajectoryBuilderInterface>
-	CreateGlobalTrajectoryBuilder2D
-	第一个参数是std::unique_ptr<LocalTrajectoryBuilder2D>
-	返回值是std::unique_ptr<TrajectoryBuilderInterface>
+    // }
+    // DCHECK(dynamic_cast<PoseGraph2D*>(pose_graph_.get()));
+    // trajectory_builders_.push_back(absl::make_unique<CollatedTrajectoryBuilder>(
+    //     trajectory_options, sensor_collator_.get(), trajectory_id,
+    //     expected_sensor_ids,
+    //     CreateGlobalTrajectoryBuilder2D(
+    //         std::move(local_trajectory_builder), trajectory_id,
+    //         static_cast<PoseGraph2D*>(pose_graph_.get()),
+    //         local_slam_result_callback, pose_graph_odometry_motion_filter)));
+    // }
+```
+
+根据报错信息进一步修改
+
+修改
+
+```
+class LocalSlamResult2D : public LocalSlamResultData
+改为class LocalSlamResult2D
 ```
 
 

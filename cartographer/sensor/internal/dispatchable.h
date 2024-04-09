@@ -17,7 +17,8 @@
 #ifndef CARTOGRAPHER_SENSOR_INTERNAL_DISPATCHABLE_H_
 #define CARTOGRAPHER_SENSOR_INTERNAL_DISPATCHABLE_H_
 
-#include "cartographer/mapping/trajectory_builder_interface.h"
+// #include "cartographer/mapping/trajectory_builder_interface.h"
+#include "cartographer/mapping/internal/2d/global_trajectory_builder_2d.h"
 #include "cartographer/sensor/data.h"
 
 namespace cartographer {
@@ -31,8 +32,9 @@ class Dispatchable : public Data {
 
   common::Time GetTime() const override { return data_.time; }
   void AddToTrajectoryBuilder(
-      mapping::TrajectoryBuilderInterface *const trajectory_builder) override {
-    trajectory_builder->AddSensorData(sensor_id_, data_);
+      ::cartographer::mapping::GlobalTrajectoryBuilder2D* const
+          trajectory_builder_2d) override {
+    trajectory_builder_2d->AddSensorData(sensor_id_, data_);
   }
   const DataType &data() const { return data_; }
 

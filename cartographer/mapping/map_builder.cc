@@ -163,11 +163,11 @@ int MapBuilder::AddTrajectoryBuilder(
   //           local_slam_result_callback, pose_graph_odometry_motion_filter)));
   // } else {
   std::unique_ptr<LocalTrajectoryBuilder2D> local_trajectory_builder;
-  if (trajectory_options.has_trajectory_builder_2d_options()) {
+  // if (trajectory_options.has_trajectory_builder_2d_options()) {
     local_trajectory_builder = absl::make_unique<LocalTrajectoryBuilder2D>(
         trajectory_options.trajectory_builder_2d_options(),
         SelectRangeSensorIds(expected_sensor_ids));
-  }
+  // }
     DCHECK(dynamic_cast<PoseGraph2D*>(pose_graph_.get()));
     trajectory_builders_.push_back(absl::make_unique<CollatedTrajectoryBuilder>(
         trajectory_options, sensor_collator_.get(), trajectory_id,
@@ -250,9 +250,6 @@ bool MapBuilder::SerializeStateToFile(bool include_unfinished_submaps,
 std::map<int, int> MapBuilder::LoadState(io::ProtoStreamReader* const reader,
                                          bool load_frozen_state) {
   io::ProtoStreamDeserializer deserializer(reader);
-
-  // Create a copy of the pose_graph_proto, such that we can re-write the
-  // trajectory ids.
   proto::PoseGraph pose_graph_proto = deserializer.pose_graph();
   const auto& all_builder_options_proto =
       deserializer.all_trajectory_builder_options();

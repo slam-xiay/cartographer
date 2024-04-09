@@ -1196,8 +1196,6 @@ low_resolution_point_cloud
 rotational_scan_matcher_histogram
 ```
 
-
-
 ### 删除FixedFramePose和AddLandmarkData
 
 删除FixedFrame、Landmark相关字段
@@ -1618,7 +1616,7 @@ std::unique_ptr<MapBuilder> CreateMapBuilder(
 rm cartographer/mapping/map_builder_interface.h
 ```
 
-### 删除TrajectoryBuilderInterface
+### 梳理TrajectoryBuilderInterface
 
 ```mermaid
 graph TD
@@ -1627,9 +1625,30 @@ graph TD
 3(CreateGlobalTrajectoryBuilder2D)
 4(CollatedTrajectoryBuilder)
 5(LocalTrajectoryBuilder2D)
-1-->2
-1-->4
+1-->|继承|2
+1-->|继承|4
+3-->|生成|2
+2-->|生成|4
+5-->3
+
+6(MapBuild类trajectory_builders_成员)
+4-->|插入向量|6
 ```
+
+```
+map_build类成员std::vector<std::unique_ptr<mapping::TrajectoryBuilderInterface>> trajectory_builders_；
+以make_unique声明CollatedTrajectoryBuilder类，变量有四个
+trajectory_options
+sensor_collator_.get()
+trajectory_id
+expected_sensor_ids
+std::unique_ptr<TrajectoryBuilderInterface>
+	CreateGlobalTrajectoryBuilder2D
+	第一个参数是std::unique_ptr<LocalTrajectoryBuilder2D>
+	返回值是std::unique_ptr<TrajectoryBuilderInterface>
+```
+
+
 
 
 

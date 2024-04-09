@@ -49,22 +49,22 @@ proto::TrajectoryNodeData ToProto(const TrajectoryNode::Data& constant_data) {
 }
 
 TrajectoryNode::Data FromProto(const proto::TrajectoryNodeData& proto) {
-  Eigen::VectorXf rotational_scan_matcher_histogram(
-      proto.rotational_scan_matcher_histogram_size());
-  for (int i = 0; i != proto.rotational_scan_matcher_histogram_size(); ++i) {
-    rotational_scan_matcher_histogram(i) =
-        proto.rotational_scan_matcher_histogram(i);
-  }
+//   Eigen::VectorXf rotational_scan_matcher_histogram(
+//       proto.rotational_scan_matcher_histogram_size());
+//   for (int i = 0; i != proto.rotational_scan_matcher_histogram_size(); ++i) {
+//     rotational_scan_matcher_histogram(i) =
+//         proto.rotational_scan_matcher_histogram(i);
+//   }
   return TrajectoryNode::Data{
       common::FromUniversal(proto.timestamp()),
       transform::ToEigen(proto.gravity_alignment()),
       sensor::CompressedPointCloud(proto.filtered_gravity_aligned_point_cloud())
           .Decompress(),
-      sensor::CompressedPointCloud(proto.high_resolution_point_cloud())
-          .Decompress(),
-      sensor::CompressedPointCloud(proto.low_resolution_point_cloud())
-          .Decompress(),
-      rotational_scan_matcher_histogram,
+    //   sensor::CompressedPointCloud(proto.high_resolution_point_cloud())
+    //       .Decompress(),
+    //   sensor::CompressedPointCloud(proto.low_resolution_point_cloud())
+    //       .Decompress(),
+    //   rotational_scan_matcher_histogram,
       transform::ToRigid3(proto.local_pose())};
 }
 

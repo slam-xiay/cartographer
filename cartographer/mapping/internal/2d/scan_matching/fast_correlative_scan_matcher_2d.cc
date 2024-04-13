@@ -75,18 +75,18 @@ class SlidingWindowMaximum {
 
 }  // namespace
 
-proto::FastCorrelativeScanMatcherOptions2D
-CreateFastCorrelativeScanMatcherOptions2D(
-    common::LuaParameterDictionary* const parameter_dictionary) {
-  proto::FastCorrelativeScanMatcherOptions2D options;
-  options.set_linear_search_window(
-      parameter_dictionary->GetDouble("linear_search_window"));
-  options.set_angular_search_window(
-      parameter_dictionary->GetDouble("angular_search_window"));
-  options.set_branch_and_bound_depth(
-      parameter_dictionary->GetInt("branch_and_bound_depth"));
-  return options;
-}
+// proto::FastCorrelativeScanMatcherOptions2D
+// CreateFastCorrelativeScanMatcherOptions2D(
+//     common::LuaParameterDictionary* const parameter_dictionary) {
+//   proto::FastCorrelativeScanMatcherOptions2D options;
+//   options.set_linear_search_window(
+//       parameter_dictionary->GetDouble("linear_search_window"));
+//   options.set_angular_search_window(
+//       parameter_dictionary->GetDouble("angular_search_window"));
+//   options.set_branch_and_bound_depth(
+//       parameter_dictionary->GetInt("branch_and_bound_depth"));
+//   return options;
+// }
 
 PrecomputationGrid2D::PrecomputationGrid2D(
     const Grid2D& grid, const CellLimits& limits, const int width,
@@ -168,30 +168,25 @@ uint8 PrecomputationGrid2D::ComputeCellValue(const float probability) const {
   return cell_value;
 }
 
-PrecomputationGridStack2D::PrecomputationGridStack2D(
-    const Grid2D& grid,
-    const proto::FastCorrelativeScanMatcherOptions2D& options) {
-  CHECK_GE(options.branch_and_bound_depth(), 1);
-  const int max_width = 1 << (options.branch_and_bound_depth() - 1);
-  precomputation_grids_.reserve(options.branch_and_bound_depth());
+PrecomputationGridStack2D::PrecomputationGridStack2D(const Grid2D& grid) {
+  CHECK_GE(kBranchAndBoundDepth, 1);
+  const int max_width = 1 << (kBranchAndBoundDepth - 1);
+  precomputation_grids_.reserve(kBranchAndBoundDepth);
   std::vector<float> reusable_intermediate_grid;
   const CellLimits limits = grid.limits().cell_limits();
   reusable_intermediate_grid.reserve((limits.num_x_cells + max_width - 1) *
                                      limits.num_y_cells);
-  for (int i = 0; i != options.branch_and_bound_depth(); ++i) {
+  for (int i = 0; i != kBranchAndBoundDepth; ++i) {
     const int width = 1 << i;
     precomputation_grids_.emplace_back(grid, limits, width,
                                        &reusable_intermediate_grid);
   }
 }
 
-FastCorrelativeScanMatcher2D::FastCorrelativeScanMatcher2D(
-    const Grid2D& grid,
-    const proto::FastCorrelativeScanMatcherOptions2D& options)
-    : options_(options),
-      limits_(grid.limits()),
+FastCorrelativeScanMatcher2D::FastCorrelativeScanMatcher2D(const Grid2D& grid)
+    : limits_(grid.limits()),
       precomputation_grid_stack_(
-          absl::make_unique<PrecomputationGridStack2D>(grid, options)) {}
+          absl::make_unique<PrecomputationGridStack2D>(grid)) {}
 
 FastCorrelativeScanMatcher2D::~FastCorrelativeScanMatcher2D() {}
 
@@ -199,8 +194,8 @@ bool FastCorrelativeScanMatcher2D::Match(
     const transform::Rigid2d& initial_pose_estimate,
     const sensor::PointCloud& point_cloud, const float min_score, float* score,
     transform::Rigid2d* pose_estimate) const {
-  const SearchParameters search_parameters(options_.linear_search_window(),
-                                           options_.angular_search_window(),
+  const SearchParameters search_parameters(kFastCSMLinearSearchWindow,
+                                           kFastCSMAngularSearchWindow,
                                            point_cloud, limits_.resolution());
   return MatchWithSearchParameters(search_parameters, initial_pose_estimate,
                                    point_cloud, min_score, score,

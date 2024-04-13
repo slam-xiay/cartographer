@@ -20,7 +20,7 @@
 #include <vector>
 
 #include "Eigen/Core"
-#include "cartographer/common/internal/ceres_solver_options.h"
+// #include "cartographer/common/internal/ceres_solver_options.h"
 #include "cartographer/common/lua_parameter_dictionary.h"
 #include "cartographer/mapping/2d/grid_2d.h"
 #include "cartographer/mapping/internal/2d/scan_matching/occupied_space_cost_function_2d.h"
@@ -36,26 +36,25 @@ namespace cartographer {
 namespace mapping {
 namespace scan_matching {
 
-proto::CeresScanMatcherOptions2D CreateCeresScanMatcherOptions2D(
-    common::LuaParameterDictionary* const parameter_dictionary) {
-  proto::CeresScanMatcherOptions2D options;
-  options.set_occupied_space_weight(
-      parameter_dictionary->GetDouble("occupied_space_weight"));
-  options.set_translation_weight(
-      parameter_dictionary->GetDouble("translation_weight"));
-  options.set_rotation_weight(
-      parameter_dictionary->GetDouble("rotation_weight"));
-  *options.mutable_ceres_solver_options() =
-      common::CreateCeresSolverOptionsProto(
-          parameter_dictionary->GetDictionary("ceres_solver_options").get());
-  return options;
-}
+// proto::CeresScanMatcherOptions2D CreateCeresScanMatcherOptions2D(
+//     common::LuaParameterDictionary* const parameter_dictionary) {
+//   proto::CeresScanMatcherOptions2D options;
+//   options.set_occupied_space_weight(
+//       parameter_dictionary->GetDouble("occupied_space_weight"));
+//   options.set_translation_weight(
+//       parameter_dictionary->GetDouble("translation_weight"));
+//   options.set_rotation_weight(
+//       parameter_dictionary->GetDouble("rotation_weight"));
+//   *options.mutable_ceres_solver_options() =
+//       common::CreateCeresSolverOptionsProto(
+//           parameter_dictionary->GetDictionary("ceres_solver_options").get());
+//   return options;
+// }
 
-CeresScanMatcher2D::CeresScanMatcher2D(
-    const proto::CeresScanMatcherOptions2D& options)
-    : options_(options),
-      ceres_solver_options_(
-          common::CreateCeresSolverOptions(options.ceres_solver_options())) {
+CeresScanMatcher2D::CeresScanMatcher2D() {
+  ceres_solver_options_.use_nonmonotonic_steps = kCSMUseNonmonotonicSteps;
+  ceres_solver_options_.max_num_iterations = kCSMMaxIterationsCount;
+  ceres_solver_options_.num_threads = kCSMCeresThreadsCount;
   ceres_solver_options_.linear_solver_type = ceres::DENSE_QR;
 }
 
@@ -71,12 +70,12 @@ void CeresScanMatcher2D::Match(const Eigen::Vector2d& target_translation,
                                    initial_pose_estimate.translation().y(),
                                    initial_pose_estimate.rotation().angle()};
   ceres::Problem problem;
-  CHECK_GT(options_.occupied_space_weight(), 0.);
+  //   CHECK_GT(kCSMOccupiedSapceWeight, 0.);==================
   switch (grid.GetGridType()) {
     case GridType::PROBABILITY_GRID:
       problem.AddResidualBlock(
           CreateOccupiedSpaceCostFunction2D(
-              options_.occupied_space_weight() /
+              kCSMOccupiedSapceWeight /
                   std::sqrt(static_cast<double>(point_cloud.size())),
               point_cloud, grid),
           nullptr /* loss function */, ceres_pose_estimate);
@@ -90,15 +89,15 @@ void CeresScanMatcher2D::Match(const Eigen::Vector2d& target_translation,
       //       nullptr /* loss function */, ceres_pose_estimate);
       //   break;
   }
-  CHECK_GT(options_.translation_weight(), 0.);
+  CHECK_GT(kCSMTranslationWeight, 0.);
   problem.AddResidualBlock(
       TranslationDeltaCostFunctor2D::CreateAutoDiffCostFunction(
-          options_.translation_weight(), target_translation),
+          kCSMTranslationWeight, target_translation),
       nullptr /* loss function */, ceres_pose_estimate);
-  CHECK_GT(options_.rotation_weight(), 0.);
+  CHECK_GT(kCSMRotationWeight, 0.);
   problem.AddResidualBlock(
       RotationDeltaCostFunctor2D::CreateAutoDiffCostFunction(
-          options_.rotation_weight(), ceres_pose_estimate[2]),
+          kCSMRotationWeight, ceres_pose_estimate[2]),
       nullptr /* loss function */, ceres_pose_estimate);
 
   ceres::Solve(ceres_solver_options_, &problem, summary);

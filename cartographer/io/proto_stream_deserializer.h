@@ -21,8 +21,8 @@
 #include "cartographer/io/proto_stream.h"
 #include "cartographer/mapping/proto/pose_graph.pb.h"
 #include "cartographer/mapping/proto/serialization.pb.h"
-#include "cartographer/mapping/proto/trajectory_builder_options.pb.h"
-
+// #include "cartographer/mapping/proto/trajectory_builder_options.pb.h"
+#include "cartographer/common/config.h"
 namespace cartographer {
 namespace io {
 
@@ -49,10 +49,10 @@ class ProtoStreamDeserializer {
     return pose_graph_.pose_graph();
   }
 
-  const mapping::proto::AllTrajectoryBuilderOptions&
-  all_trajectory_builder_options() {
-    return all_trajectory_builder_options_.all_trajectory_builder_options();
-  }
+  // const mapping::proto::AllTrajectoryBuilderOptions&
+  // all_trajectory_builder_options() {
+  //   return all_trajectory_builder_options_.all_trajectory_builder_options();
+  // }
 
   // Reads the next `SerializedData` message of the ProtoStream into `data`.
   // Returns `true` if the message was successfully read or `false` in case
@@ -64,7 +64,7 @@ class ProtoStreamDeserializer {
 
   mapping::proto::SerializationHeader header_;
   mapping::proto::SerializedData pose_graph_;
-  mapping::proto::SerializedData all_trajectory_builder_options_;
+  // mapping::proto::SerializedData all_trajectory_builder_options_;
 };
 
 }  // namespace io

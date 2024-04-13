@@ -23,21 +23,22 @@
 // #include "cartographer/mapping/map_builder_interface.h"
 #include "cartographer/mapping/internal/global_trajectory_builder.h"
 #include "cartographer/mapping/pose_graph.h"
-#include "cartographer/mapping/proto/map_builder_options.pb.h"
+// #include "cartographer/mapping/proto/map_builder_options.pb.h"
 // #include "cartographer/sensor/collator_interface.h"
 #include <set>
 #include <string>
 #include <vector>
 
 #include "Eigen/Geometry"
+#include "cartographer/common/config.h"
 #include "cartographer/common/lua_parameter_dictionary.h"
 #include "cartographer/common/port.h"
 #include "cartographer/io/proto_stream.h"
 #include "cartographer/mapping/id.h"
 #include "cartographer/mapping/pose_graph_interface.h"
-#include "cartographer/mapping/proto/map_builder_options.pb.h"
+// #include "cartographer/mapping/proto/map_builder_options.pb.h"
 #include "cartographer/mapping/proto/submap_visualization.pb.h"
-#include "cartographer/mapping/proto/trajectory_builder_options.pb.h"
+// #include "cartographer/mapping/proto/trajectory_builder_options.pb.h"
 #include "cartographer/mapping/submaps.h"
 #include "cartographer/mapping/trajectory_builder_interface.h"
 #include "cartographer/sensor/internal/collator.h"
@@ -45,8 +46,8 @@
 namespace cartographer {
 namespace mapping {
 
-proto::MapBuilderOptions CreateMapBuilderOptions(
-    common::LuaParameterDictionary* const parameter_dictionary);
+// proto::MapBuilderOptions CreateMapBuilderOptions(
+//     common::LuaParameterDictionary* const parameter_dictionary);
 // Wires up the complete SLAM stack with TrajectoryBuilders (for local submaps)
 // and a PoseGraph for loop closure.
 class MapBuilder {
@@ -55,21 +56,27 @@ class MapBuilder {
   //       TrajectoryBuilderInterface::LocalSlamResultCallback;
 
   //   using SensorId = TrajectoryBuilderInterface::SensorId;
-  explicit MapBuilder(const proto::MapBuilderOptions &options);
+  explicit MapBuilder();
+  // explicit MapBuilder(const proto::MapBuilderOptions &options);
   ~MapBuilder() {}
 
   MapBuilder(const MapBuilder &) = delete;
   MapBuilder &operator=(const MapBuilder &) = delete;
 
+  //   int AddTrajectoryBuilder(
+  //       const std::set<SensorId>& expected_sensor_ids,
+  //       const proto::TrajectoryBuilderOptions& trajectory_options,
+  //       LocalSlamResultCallback local_slam_result_callback);
+
   int AddTrajectoryBuilder(
       const std::set<SensorId>& expected_sensor_ids,
-      const proto::TrajectoryBuilderOptions& trajectory_options,
+      //   const proto::TrajectoryBuilderOptions& trajectory_options,
       LocalSlamResultCallback local_slam_result_callback);
 
-  int AddTrajectoryForDeserialization(
-      const proto::TrajectoryBuilderOptionsWithSensorIds&
-          options_with_sensor_ids_proto);
-
+  //   int AddTrajectoryForDeserialization(
+  //       const proto::TrajectoryBuilderOptionsWithSensorIds&
+  //           options_with_sensor_ids_proto);
+  int AddTrajectoryForDeserialization();
   void FinishTrajectory(int trajectory_id);
 
   std::string SubmapToProto(const SubmapId& submap_id,
@@ -95,13 +102,13 @@ class MapBuilder {
     return trajectory_builders_.at(trajectory_id).get();
   }
 
-  const std::vector<proto::TrajectoryBuilderOptionsWithSensorIds>&
-  GetAllTrajectoryBuilderOptions() const {
-    return all_trajectory_builder_options_;
-  }
+  //   const std::vector<proto::TrajectoryBuilderOptionsWithSensorIds>&
+  //   GetAllTrajectoryBuilderOptions() const {
+  //     return all_trajectory_builder_options_;
+  //   }
 
  private:
-  const proto::MapBuilderOptions options_;
+  //   const proto::MapBuilderOptions options_;
   common::ThreadPool thread_pool_;
 
   std::unique_ptr<PoseGraph2D> pose_graph_2d_;
@@ -112,12 +119,12 @@ class MapBuilder {
   //       trajectory_builders_;
   std::vector<std::shared_ptr<mapping::GlobalTrajectoryBuilder2D>>
       trajectory_builders_;
-  std::vector<proto::TrajectoryBuilderOptionsWithSensorIds>
-      all_trajectory_builder_options_;
+  //   std::vector<proto::TrajectoryBuilderOptionsWithSensorIds>
+  //       all_trajectory_builder_options_;
 };
 
-std::unique_ptr<MapBuilder> CreateMapBuilder(
-    const proto::MapBuilderOptions& options);
+// std::unique_ptr<MapBuilder> CreateMapBuilder(
+//     const proto::MapBuilderOptions& options);
 
 }  // namespace mapping
 }  // namespace cartographer

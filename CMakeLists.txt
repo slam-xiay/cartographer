@@ -187,9 +187,9 @@ list(APPEND ALL_LIBRARY_SRCS ${ALL_PROTO_SRCS})
 set(INSTALL_GENERATED_HDRS ${ALL_PROTO_HDRS})
 add_library(${PROJECT_NAME} STATIC ${ALL_LIBRARY_HDRS} ${ALL_LIBRARY_SRCS})
 
-configure_file(
-  ${PROJECT_SOURCE_DIR}/cartographer/common/config.h.cmake
-  ${PROJECT_BINARY_DIR}/cartographer/common/config.h)
+# configure_file(
+#   # ${PROJECT_SOURCE_DIR}/cartographer/common/config.h.cmake
+#   ${PROJECT_BINARY_DIR}/cartographer/common/config.h)
 
 # google_binary(cartographer_autogenerate_ground_truth
 #   SRCS

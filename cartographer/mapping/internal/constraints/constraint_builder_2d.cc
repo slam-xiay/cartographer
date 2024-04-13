@@ -31,8 +31,10 @@
 #include "absl/memory/memory.h"
 #include "cartographer/common/math.h"
 #include "cartographer/common/thread_pool.h"
-#include "cartographer/mapping/proto/scan_matching/ceres_scan_matcher_options_2d.pb.h"
-#include "cartographer/mapping/proto/scan_matching/fast_correlative_scan_matcher_options_2d.pb.h"
+// #include
+// "cartographer/mapping/proto/scan_matching/ceres_scan_matcher_options_2d.pb.h"
+// #include
+// "cartographer/mapping/proto/scan_matching/fast_correlative_scan_matcher_options_2d.pb.h"
 #include "cartographer/metrics/counter.h"
 #include "cartographer/metrics/gauge.h"
 #include "cartographer/metrics/histogram.h"
@@ -57,13 +59,20 @@ transform::Rigid2d ComputeSubmapPose(const Submap2D& submap) {
 }
 
 ConstraintBuilder2D::ConstraintBuilder2D(
-    const constraints::proto::ConstraintBuilderOptions& options,
     common::ThreadPoolInterface* const thread_pool)
-    : options_(options),
-      thread_pool_(thread_pool),
+    : thread_pool_(thread_pool),
       finish_node_task_(absl::make_unique<common::Task>()),
       when_done_task_(absl::make_unique<common::Task>()),
-      ceres_scan_matcher_(options.ceres_scan_matcher_options()) {}
+      ceres_scan_matcher_() {}
+
+// ConstraintBuilder2D::ConstraintBuilder2D(
+//     const constraints::proto::ConstraintBuilderOptions& options,
+//     common::ThreadPoolInterface* const thread_pool)
+//     : options_(options),
+//       thread_pool_(thread_pool),
+//       finish_node_task_(absl::make_unique<common::Task>()),
+//       when_done_task_(absl::make_unique<common::Task>()),
+//       ceres_scan_matcher_(options.ceres_scan_matcher_options()) {}
 
 ConstraintBuilder2D::~ConstraintBuilder2D() {
   absl::MutexLock locker(&mutex_);
@@ -78,13 +87,12 @@ void ConstraintBuilder2D::MaybeAddConstraint(
     const SubmapId& submap_id, const Submap2D* const submap,
     const NodeId& node_id, const TrajectoryNode::Data* const constant_data,
     const transform::Rigid2d& initial_relative_pose) {
-  if (initial_relative_pose.translation().norm() >
-      options_.max_constraint_distance()) {
+  if (initial_relative_pose.translation().norm() > kMaxConstrantDistance) {
     return;
   }
   if (!per_submap_sampler_
            .emplace(std::piecewise_construct, std::forward_as_tuple(submap_id),
-                    std::forward_as_tuple(options_.sampling_ratio()))
+                    std::forward_as_tuple(kSamplingRatio))
            .first->second.Pulse()) {
     return;
   }
@@ -172,14 +180,14 @@ ConstraintBuilder2D::DispatchScanMatcherConstruction(const SubmapId& submap_id,
   auto& submap_scan_matcher = submap_scan_matchers_[submap_id];
   // kNumSubmapScanMatchersMetric->Set(submap_scan_matchers_.size());
   submap_scan_matcher.grid = grid;
-  auto& scan_matcher_options = options_.fast_correlative_scan_matcher_options();
+  // auto& scan_matcher_options =
+  // options_.fast_correlative_scan_matcher_options();
   auto scan_matcher_task = absl::make_unique<common::Task>();
-  scan_matcher_task->SetWorkItem(
-      [&submap_scan_matcher, &scan_matcher_options]() {
-        submap_scan_matcher.fast_correlative_scan_matcher =
-            absl::make_unique<scan_matching::FastCorrelativeScanMatcher2D>(
-                *submap_scan_matcher.grid, scan_matcher_options);
-      });
+  scan_matcher_task->SetWorkItem([&submap_scan_matcher]() {
+    submap_scan_matcher.fast_correlative_scan_matcher =
+        absl::make_unique<scan_matching::FastCorrelativeScanMatcher2D>(
+            *submap_scan_matcher.grid);
+  });
   submap_scan_matcher.creation_task_handle =
       thread_pool_->Schedule(std::move(scan_matcher_task));
   return &submap_scan_matchers_.at(submap_id);
@@ -212,8 +220,8 @@ void ConstraintBuilder2D::ComputeConstraint(
     // kGlobalConstraintsSearchedMetric->Increment();
     if (submap_scan_matcher.fast_correlative_scan_matcher->MatchFullSubmap(
             constant_data->filtered_gravity_aligned_point_cloud,
-            options_.global_localization_min_score(), &score, &pose_estimate)) {
-      CHECK_GT(score, options_.global_localization_min_score());
+            kGlobalMatchMinScore, &score, &pose_estimate)) {
+      CHECK_GT(score, kGlobalMatchMinScore);
       CHECK_GE(node_id.trajectory_id, 0);
       CHECK_GE(submap_id.trajectory_id, 0);
       // kGlobalConstraintsFoundMetric->Increment();
@@ -225,9 +233,9 @@ void ConstraintBuilder2D::ComputeConstraint(
     // kConstraintsSearchedMetric->Increment();
     if (submap_scan_matcher.fast_correlative_scan_matcher->Match(
             initial_pose, constant_data->filtered_gravity_aligned_point_cloud,
-            options_.min_score(), &score, &pose_estimate)) {
+            kLocalMatchMinScore, &score, &pose_estimate)) {
       // We've reported a successful local match.
-      CHECK_GT(score, options_.min_score());
+      CHECK_GT(score, kLocalMatchMinScore);
       // kConstraintsFoundMetric->Increment();
       // kConstraintScoresMetric->Observe(score);
     } else {
@@ -250,14 +258,14 @@ void ConstraintBuilder2D::ComputeConstraint(
 
   const transform::Rigid2d constraint_transform =
       ComputeSubmapPose(*submap).inverse() * pose_estimate;
-  constraint->reset(new Constraint{submap_id,
-                                   node_id,
-                                   {transform::Embed3D(constraint_transform),
-                                    options_.loop_closure_translation_weight(),
-                                    options_.loop_closure_rotation_weight()},
-                                   Constraint::INTER_SUBMAP});
+  constraint->reset(new Constraint{
+      submap_id,
+      node_id,
+      {transform::Embed3D(constraint_transform), kLoopClosureTranslationWeight,
+       kLoopClosureRotationWeight},
+      Constraint::INTER_SUBMAP});
 
-  if (options_.log_matches()) {
+  if (kLogMatches) {
     std::ostringstream info;
     info << "Node " << node_id << " with "
          << constant_data->filtered_gravity_aligned_point_cloud.size()
@@ -286,7 +294,7 @@ void ConstraintBuilder2D::RunWhenDoneCallback() {
       if (constraint == nullptr) continue;
       result.push_back(*constraint);
     }
-    if (options_.log_matches()) {
+    if (kLogMatches) {
       LOG(INFO) << constraints_.size() << " computations resulted in "
                 << result.size() << " additional constraints.";
       LOG(INFO) << "Score histogram:\n" << score_histogram_.ToString(10);

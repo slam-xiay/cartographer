@@ -175,9 +175,10 @@ transform::Rigid2d ToPose(const std::array<double, 3>& values) {
 
 }  // namespace
 
-OptimizationProblem2D::OptimizationProblem2D(
-    const proto::OptimizationProblemOptions& options)
-    : options_(options) {}
+// OptimizationProblem2D::OptimizationProblem2D(
+//     const proto::OptimizationProblemOptions& options)
+//     : options_(options) {}
+OptimizationProblem2D::OptimizationProblem2D() {}
 
 OptimizationProblem2D::~OptimizationProblem2D() {}
 
@@ -239,11 +240,11 @@ void OptimizationProblem2D::TrimSubmap(const SubmapId& submap_id) {
   submap_data_.Trim(submap_id);
 }
 
-void OptimizationProblem2D::SetMaxNumIterations(
-    const int32 max_num_iterations) {
-  options_.mutable_ceres_solver_options()->set_max_num_iterations(
-      max_num_iterations);
-}
+// void OptimizationProblem2D::SetMaxNumIterations(
+//     const int32 max_num_iterations) {
+//   options_.mutable_ceres_solver_options()->set_max_num_iterations(
+//       max_num_iterations);
+// }
 
 // void OptimizationProblem2D::Solve(
 //     const std::vector<Constraint>& constraints,
@@ -303,7 +304,7 @@ void OptimizationProblem2D::Solve(
         CreateAutoDiffSpaCostFunction(constraint.pose),
         // Loop closure constraints should have a loss function.
         constraint.tag == Constraint::INTER_SUBMAP
-            ? new ceres::HuberLoss(options_.huber_scale())
+            ? new ceres::HuberLoss(kHuberScale)
             : nullptr,
         C_submaps.at(constraint.submap_id).data(),
         C_nodes.at(constraint.node_id).data());
@@ -340,9 +341,9 @@ void OptimizationProblem2D::Solve(
                                         second_node_data);
       if (relative_odometry != nullptr) {
         problem.AddResidualBlock(
-            CreateAutoDiffSpaCostFunction(Constraint::Pose{
-                *relative_odometry, options_.odometry_translation_weight(),
-                options_.odometry_rotation_weight()}),
+            CreateAutoDiffSpaCostFunction(
+                Constraint::Pose{*relative_odometry, kOdometryTranslationWeight,
+                                 kOdometryRotationWeight}),
             nullptr /* loss function */, C_nodes.at(first_node_id).data(),
             C_nodes.at(second_node_id).data());
       }
@@ -352,10 +353,9 @@ void OptimizationProblem2D::Solve(
           transform::Embed3D(first_node_data.local_pose_2d.inverse() *
                              second_node_data.local_pose_2d);
       problem.AddResidualBlock(
-          CreateAutoDiffSpaCostFunction(
-              Constraint::Pose{relative_local_slam_pose,
-                               options_.local_slam_pose_translation_weight(),
-                               options_.local_slam_pose_rotation_weight()}),
+          CreateAutoDiffSpaCostFunction(Constraint::Pose{
+              relative_local_slam_pose, kLocalSlmPoseTranslationWeight,
+              kLocalSlamPoseRotationWeight}),
           nullptr /* loss function */, C_nodes.at(first_node_id).data(),
           C_nodes.at(second_node_id).data());
     }
@@ -416,12 +416,10 @@ void OptimizationProblem2D::Solve(
 
   // Solve.
   ceres::Solver::Summary summary;
-  ceres::Solve(
-      common::CreateCeresSolverOptions(options_.ceres_solver_options()),
-      &problem, &summary);
-  if (options_.log_solver_summary()) {
-    LOG(INFO) << summary.FullReport();
-  }
+  ceres::Solve(common::CreateCeresSolverOptions(), &problem, &summary);
+  // if (options_.log_solver_summary()) {
+  //   LOG(INFO) << summary.FullReport();
+  // }
 
   // Store the result.
   for (const auto& C_submap_id_data : C_submaps) {

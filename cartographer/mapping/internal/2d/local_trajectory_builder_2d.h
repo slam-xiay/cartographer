@@ -27,8 +27,10 @@
 #include "cartographer/mapping/internal/motion_filter.h"
 #include "cartographer/mapping/internal/range_data_collator.h"
 #include "cartographer/mapping/pose_extrapolator.h"
-#include "cartographer/mapping/proto/local_trajectory_builder_options_2d.pb.h"
+// #include
+// "cartographer/mapping/proto/local_trajectory_builder_options_2d.pb.h"
 // #include "cartographer/metrics/family_factory.h"
+#include "cartographer/common/config.h"
 #include "cartographer/sensor/imu_data.h"
 #include "cartographer/sensor/internal/voxel_filter.h"
 #include "cartographer/sensor/odometry_data.h"
@@ -55,8 +57,10 @@ class LocalTrajectoryBuilder2D {
     std::unique_ptr<const InsertionResult> insertion_result;
   };
 
+  //   explicit LocalTrajectoryBuilder2D(
+  //       const proto::LocalTrajectoryBuilderOptions2D& options,
+  //       const std::vector<std::string>& expected_range_sensor_ids);
   explicit LocalTrajectoryBuilder2D(
-      const proto::LocalTrajectoryBuilderOptions2D& options,
       const std::vector<std::string>& expected_range_sensor_ids);
   ~LocalTrajectoryBuilder2D();
 
@@ -91,7 +95,7 @@ class LocalTrajectoryBuilder2D {
   // Lazily constructs a PoseExtrapolator.
   void InitializeExtrapolator(common::Time time);
 
-  const proto::LocalTrajectoryBuilderOptions2D options_;
+  //   const proto::LocalTrajectoryBuilderOptions2D options_;
   ActiveSubmaps2D active_submaps_;
 
   MotionFilter motion_filter_;
@@ -101,7 +105,7 @@ class LocalTrajectoryBuilder2D {
 
   std::unique_ptr<PoseExtrapolator> extrapolator_;
 
-  int num_accumulated_ = 0;
+  size_t num_accumulated_ = 0;
   sensor::RangeData accumulated_range_data_;
 
   absl::optional<std::chrono::steady_clock::time_point> last_wall_time_;

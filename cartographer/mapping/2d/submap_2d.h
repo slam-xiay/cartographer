@@ -26,10 +26,11 @@
 #include "cartographer/mapping/2d/map_limits.h"
 #include "cartographer/mapping/proto/serialization.pb.h"
 #include "cartographer/mapping/proto/submap_visualization.pb.h"
-#include "cartographer/mapping/proto/submaps_options_2d.pb.h"
+// #include "cartographer/mapping/proto/submaps_options_2d.pb.h"
 // #include "cartographer/mapping/range_data_inserter_interface.h"
 #include "cartographer/mapping/2d/probability_grid_range_data_inserter_2d.h"
 // #include "cartographer/mapping/range_data_inserter.h"
+#include "cartographer/common/config.h"
 #include "cartographer/mapping/submaps.h"
 #include "cartographer/mapping/trajectory_node.h"
 #include "cartographer/mapping/value_conversion_tables.h"
@@ -39,8 +40,8 @@
 namespace cartographer {
 namespace mapping {
 
-proto::SubmapsOptions2D CreateSubmapsOptions2D(
-    common::LuaParameterDictionary* parameter_dictionary);
+// proto::SubmapsOptions2D CreateSubmapsOptions2D(
+//     common::LuaParameterDictionary* parameter_dictionary);
 
 class Submap2D : public Submap {
  public:
@@ -84,8 +85,8 @@ class Submap2D : public Submap {
 // "new" submap gets created. The "old" submap is forgotten by this object.
 class ActiveSubmaps2D {
  public:
-  explicit ActiveSubmaps2D(const proto::SubmapsOptions2D& options);
-
+  //   explicit ActiveSubmaps2D(const proto::SubmapsOptions2D& options);
+  explicit ActiveSubmaps2D();
   ActiveSubmaps2D(const ActiveSubmaps2D&) = delete;
   ActiveSubmaps2D& operator=(const ActiveSubmaps2D&) = delete;
 
@@ -103,7 +104,7 @@ class ActiveSubmaps2D {
   void FinishSubmap();
   void AddSubmap(const Eigen::Vector2f& origin);
 
-  const proto::SubmapsOptions2D options_;
+  //   const proto::SubmapsOptions2D options_;
   std::vector<std::shared_ptr<Submap2D>> submaps_;
   std::unique_ptr<ProbabilityGridRangeDataInserter2D> range_data_inserter_;
   ValueConversionTables conversion_tables_;

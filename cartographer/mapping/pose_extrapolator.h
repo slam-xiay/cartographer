@@ -23,17 +23,18 @@
 #include "cartographer/common/time.h"
 #include "cartographer/mapping/imu_tracker.h"
 #include "cartographer/mapping/pose_extrapolator_interface.h"
-#include "cartographer/mapping/proto/pose_extrapolator_options.pb.h"
+// #include "cartographer/mapping/proto/pose_extrapolator_options.pb.h"
 #include "cartographer/sensor/imu_data.h"
 #include "cartographer/sensor/odometry_data.h"
 #include "cartographer/transform/rigid_transform.h"
 #include "cartographer/transform/timestamped_transform.h"
+#include "cartographer/common/config.h"
 
 namespace cartographer {
 namespace mapping {
 
-proto::PoseExtrapolatorOptions CreatePoseExtrapolatorOptions(
-    common::LuaParameterDictionary* const parameter_dictionary);
+// proto::PoseExtrapolatorOptions CreatePoseExtrapolatorOptions(
+//     common::LuaParameterDictionary* const parameter_dictionary);
 // Keep poses for a certain duration to estimate linear and angular velocity.
 // Uses the velocities to extrapolate motion. Uses IMU and/or odometry data if
 // available to improve the extrapolation.
@@ -76,7 +77,7 @@ class PoseExtrapolator {
   Eigen::Quaterniond EstimateGravityOrientation(common::Time time);
   //   // TODO: Remove dependency cycle.
   static std::unique_ptr<PoseExtrapolator> CreateWithImuData(
-      const proto::PoseExtrapolatorOptions& options,
+      // const proto::PoseExtrapolatorOptions& options,
       const std::vector<sensor::ImuData>& imu_data,
       const std::vector<transform::TimestampedTransform>& initial_poses);
 

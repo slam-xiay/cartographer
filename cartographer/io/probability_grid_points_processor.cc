@@ -65,23 +65,23 @@ std::string FileExtensionFromOutputType(
   LOG(FATAL) << "OutputType does not exist!";
 }
 
-ProbabilityGridPointsProcessor::OutputType OutputTypeFromString(
-    const std::string& output_type) {
-  if (output_type == "png") {
-    return ProbabilityGridPointsProcessor::OutputType::kPng;
-  } else if (output_type == "pb") {
-    return ProbabilityGridPointsProcessor::OutputType::kPb;
-  } else {
-    LOG(FATAL) << "OutputType " << output_type << " does not exist!";
-  }
-}
+// ProbabilityGridPointsProcessor::OutputType OutputTypeFromString(
+//     const std::string& output_type) {
+//   if (output_type == "png") {
+//     return ProbabilityGridPointsProcessor::OutputType::kPng;
+//   } else if (output_type == "pb") {
+//     return ProbabilityGridPointsProcessor::OutputType::kPb;
+//   } else {
+//     LOG(FATAL) << "OutputType " << output_type << " does not exist!";
+//   }
+// }
 
 }  // namespace
 
 ProbabilityGridPointsProcessor::ProbabilityGridPointsProcessor(
     const double resolution,
-    const mapping::proto::ProbabilityGridRangeDataInserterOptions2D&
-        probability_grid_range_data_inserter_options,
+    // const mapping::proto::ProbabilityGridRangeDataInserterOptions2D&
+    //     probability_grid_range_data_inserter_options,
     const DrawTrajectories& draw_trajectories, const OutputType& output_type,
     std::unique_ptr<FileWriter> file_writer,
     const std::vector<mapping::proto::Trajectory>& trajectories,
@@ -91,7 +91,7 @@ ProbabilityGridPointsProcessor::ProbabilityGridPointsProcessor(
       trajectories_(trajectories),
       file_writer_(std::move(file_writer)),
       next_(next),
-      range_data_inserter_(probability_grid_range_data_inserter_options),
+      // range_data_inserter_(probability_grid_range_data_inserter_options),
       probability_grid_(
           CreateProbabilityGrid(resolution, &conversion_tables_)) {
   LOG_IF(WARNING, output_type == OutputType::kPb &&
@@ -100,29 +100,29 @@ ProbabilityGridPointsProcessor::ProbabilityGridPointsProcessor(
          "probability grid as protobuf.";
 }
 
-std::unique_ptr<ProbabilityGridPointsProcessor>
-ProbabilityGridPointsProcessor::FromDictionary(
-    const std::vector<mapping::proto::Trajectory>& trajectories,
-    const FileWriterFactory& file_writer_factory,
-    common::LuaParameterDictionary* const dictionary,
-    PointsProcessor* const next) {
-  const auto draw_trajectories = (!dictionary->HasKey("draw_trajectories") ||
-                                  dictionary->GetBool("draw_trajectories"))
-                                     ? DrawTrajectories::kYes
-                                     : DrawTrajectories::kNo;
-  const auto output_type =
-      dictionary->HasKey("output_type")
-          ? OutputTypeFromString(dictionary->GetString("output_type"))
-          : OutputType::kPng;
-  return absl::make_unique<ProbabilityGridPointsProcessor>(
-      dictionary->GetDouble("resolution"),
-      mapping::CreateProbabilityGridRangeDataInserterOptions2D(
-          dictionary->GetDictionary("range_data_inserter").get()),
-      draw_trajectories, output_type,
-      file_writer_factory(dictionary->GetString("filename") +
-                          FileExtensionFromOutputType(output_type)),
-      trajectories, next);
-}
+// std::unique_ptr<ProbabilityGridPointsProcessor>
+// ProbabilityGridPointsProcessor::FromDictionary(
+//     const std::vector<mapping::proto::Trajectory>& trajectories,
+//     const FileWriterFactory& file_writer_factory,
+//     common::LuaParameterDictionary* const dictionary,
+//     PointsProcessor* const next) {
+//   const auto draw_trajectories = (!dictionary->HasKey("draw_trajectories") ||
+//                                   dictionary->GetBool("draw_trajectories"))
+//                                      ? DrawTrajectories::kYes
+//                                      : DrawTrajectories::kNo;
+//   const auto output_type =
+//       dictionary->HasKey("output_type")
+//           ? OutputTypeFromString(dictionary->GetString("output_type"))
+//           : OutputType::kPng;
+//   return absl::make_unique<ProbabilityGridPointsProcessor>(
+//       dictionary->GetDouble("resolution"),
+//       mapping::CreateProbabilityGridRangeDataInserterOptions2D(
+//           dictionary->GetDictionary("range_data_inserter").get()),
+//       draw_trajectories, output_type,
+//       file_writer_factory(dictionary->GetString("filename") +
+//                           FileExtensionFromOutputType(output_type)),
+//       trajectories, next);
+// }
 
 void ProbabilityGridPointsProcessor::Process(
     std::unique_ptr<PointsBatch> batch) {

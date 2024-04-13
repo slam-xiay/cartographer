@@ -29,19 +29,21 @@
 #include <vector>
 
 #include "Eigen/Core"
+#include "cartographer/common/config.h"
 #include "cartographer/common/port.h"
 #include "cartographer/mapping/2d/grid_2d.h"
 #include "cartographer/mapping/internal/2d/scan_matching/correlative_scan_matcher_2d.h"
-#include "cartographer/mapping/proto/scan_matching/fast_correlative_scan_matcher_options_2d.pb.h"
+// #include
+// "cartographer/mapping/proto/scan_matching/fast_correlative_scan_matcher_options_2d.pb.h"
 #include "cartographer/sensor/point_cloud.h"
 
 namespace cartographer {
 namespace mapping {
 namespace scan_matching {
 
-proto::FastCorrelativeScanMatcherOptions2D
-CreateFastCorrelativeScanMatcherOptions2D(
-    common::LuaParameterDictionary* parameter_dictionary);
+// proto::FastCorrelativeScanMatcherOptions2D
+// CreateFastCorrelativeScanMatcherOptions2D(
+//     common::LuaParameterDictionary* parameter_dictionary);
 
 // A precomputed grid that contains in each cell (x0, y0) the maximum
 // probability in the width x width area defined by x0 <= x < x0 + width and
@@ -94,10 +96,10 @@ class PrecomputationGrid2D {
 
 class PrecomputationGridStack2D {
  public:
-  PrecomputationGridStack2D(
-      const Grid2D& grid,
-      const proto::FastCorrelativeScanMatcherOptions2D& options);
-
+  // PrecomputationGridStack2D(
+  //     const Grid2D& grid,
+  //     const proto::FastCorrelativeScanMatcherOptions2D& options);
+  PrecomputationGridStack2D(const Grid2D& grid);
   const PrecomputationGrid2D& Get(int index) {
     return precomputation_grids_[index];
   }
@@ -111,9 +113,7 @@ class PrecomputationGridStack2D {
 // An implementation of "Real-Time Correlative Scan Matching" by Olson.
 class FastCorrelativeScanMatcher2D {
  public:
-  FastCorrelativeScanMatcher2D(
-      const Grid2D& grid,
-      const proto::FastCorrelativeScanMatcherOptions2D& options);
+  FastCorrelativeScanMatcher2D(const Grid2D& grid);
   ~FastCorrelativeScanMatcher2D();
 
   FastCorrelativeScanMatcher2D(const FastCorrelativeScanMatcher2D&) = delete;
@@ -158,7 +158,7 @@ class FastCorrelativeScanMatcher2D {
                              const std::vector<Candidate2D>& candidates,
                              int candidate_depth, float min_score) const;
 
-  const proto::FastCorrelativeScanMatcherOptions2D options_;
+  // const proto::FastCorrelativeScanMatcherOptions2D options_;
   MapLimits limits_;
   std::unique_ptr<PrecomputationGridStack2D> precomputation_grid_stack_;
 };

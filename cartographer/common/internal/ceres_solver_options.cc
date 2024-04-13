@@ -16,28 +16,30 @@
 
 #include "cartographer/common/internal/ceres_solver_options.h"
 
+#include "cartographer/common/config.h"
+
 namespace cartographer {
 namespace common {
 
-proto::CeresSolverOptions CreateCeresSolverOptionsProto(
-    common::LuaParameterDictionary* parameter_dictionary) {
-  proto::CeresSolverOptions proto;
-  proto.set_use_nonmonotonic_steps(
-      parameter_dictionary->GetBool("use_nonmonotonic_steps"));
-  proto.set_max_num_iterations(
-      parameter_dictionary->GetNonNegativeInt("max_num_iterations"));
-  proto.set_num_threads(parameter_dictionary->GetNonNegativeInt("num_threads"));
-  CHECK_GT(proto.max_num_iterations(), 0);
-  CHECK_GT(proto.num_threads(), 0);
-  return proto;
-}
+// proto::CeresSolverOptions CreateCeresSolverOptionsProto(
+//     common::LuaParameterDictionary* parameter_dictionary) {
+//   proto::CeresSolverOptions proto;
+//   proto.set_use_nonmonotonic_steps(
+//       parameter_dictionary->GetBool("use_nonmonotonic_steps"));
+//   proto.set_max_num_iterations(
+//       parameter_dictionary->GetNonNegativeInt("max_num_iterations"));
+//
+// proto.set_num_threads(parameter_dictionary->GetNonNegativeInt("num_threads"));
+//   CHECK_GT(proto.max_num_iterations(), 0);
+//   CHECK_GT(proto.num_threads(), 0);
+//   return proto;
+// }
 
-ceres::Solver::Options CreateCeresSolverOptions(
-    const proto::CeresSolverOptions& proto) {
+ceres::Solver::Options CreateCeresSolverOptions() {
   ceres::Solver::Options options;
-  options.use_nonmonotonic_steps = proto.use_nonmonotonic_steps();
-  options.max_num_iterations = proto.max_num_iterations();
-  options.num_threads = proto.num_threads();
+  options.use_nonmonotonic_steps = kCSMUseNonmonotonicSteps;
+  options.max_num_iterations = kCSMMaxIterationsCount;
+  options.num_threads = kCSMCeresThreadsCount;
   return options;
 }
 

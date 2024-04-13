@@ -1719,6 +1719,7 @@ graph TD
     //         static_cast<PoseGraph2D*>(pose_graph_.get()),
     //         local_slam_result_callback, pose_graph_odometry_motion_filter)));
     // }
+    改为
 ```
 
 根据报错信息进一步修改
@@ -1730,7 +1731,888 @@ class LocalSlamResult2D : public LocalSlamResultData
 改为class LocalSlamResult2D
 ```
 
+优化后可以删除文件
 
+```
+rm gloabal_trajectory_builder
+rm trajectory_builder_interface
+rm collated_trajectory_builder
+```
+
+### 梳理配置
+
+在common文件夹新建config.h
+
+```
+#ifndef CARTOGRAPHER_COMMON_CONFIG_H_
+#define CARTOGRAPHER_COMMON_CONFIG_H_
+namespace cartographer {
+namespace common {}}
+#endif
+```
+
+
+
+### 梳理PoseGraphInterface
+
+```mermaid
+graph TD
+1(constrait_builder)
+2(constrait_builder_2d)
+3(constrait_builder_3d)
+4(PoseGraph2D)
+5(PoseGraph3D)
+2-->4
+3-->5
+6(PoseGraph)
+4-->6
+5-->6
+7(PoseGraphInterface)
+6-->7
+```
+
+
+
+最终优化后得到
+
+```mermaid
+graph TD
+1(ConstraitBuilder2D)
+2(PoseGraph2D)
+1-->2
+```
+
+
+
+```
+constrait_builder只有一个Create函数，把这个函数放入PoseGraph后删除。
+然后把constrait_builder,posegraph都屏蔽
+
+```
+
+
+
+```
+enum class SubmapState { kNoConstraintSearch, kFinished };
+
+struct InternalTrajectoryState {
+  enum class DeletionState {
+    NORMAL,
+    SCHEDULED_FOR_DELETION,
+    WAIT_FOR_DELETION
+  };
+
+  PoseGraphInterface::TrajectoryState state =
+      PoseGraphInterface::TrajectoryState::ACTIVE;
+  DeletionState deletion_state = DeletionState::NORMAL;
+};
+
+struct InternalSubmapData {
+  std::shared_ptr<const Submap> submap;
+  SubmapState state = SubmapState::kNoConstraintSearch;
+
+  // IDs of the nodes that were inserted into this map together with
+  // constraints for them. They are not to be matched again when this submap
+  // becomes 'kFinished'.
+  std::set<NodeId> node_ids;
+};
+
+struct PoseGraphData {
+  // Submaps get assigned an ID and state as soon as they are seen, even
+  // before they take part in the background computations.
+  MapById<SubmapId, InternalSubmapData> submap_data;
+
+  // Global submap poses currently used for displaying data.
+  MapById<SubmapId, optimization::SubmapSpec2D> global_submap_poses_2d;
+  // MapById<SubmapId, optimization::SubmapSpec3D> global_submap_poses_3d;
+
+  // Data that are currently being shown.
+  MapById<NodeId, TrajectoryNode> trajectory_nodes;
+
+  // Global landmark poses with all observations.
+  // std::map<std::string /* landmark ID */, PoseGraphInterface::LandmarkNode>
+  //     landmark_nodes;
+
+  // How our various trajectories are related.
+  TrajectoryConnectivityState trajectory_connectivity_state;
+  int num_trajectory_nodes = 0;
+  std::map<int, InternalTrajectoryState> trajectories_state;
+
+  // Set of all initial trajectory poses.
+  std::map<int, PoseGraph::InitialTrajectoryPose> initial_trajectory_poses;
+
+  std::vector<PoseGraphInterface::Constraint> constraints;
+};
+```
+
+把pose_grapher_data.h的结构体拷贝到之后
+
+```
+struct Constraint {
+    struct Pose {
+      transform::Rigid3d zbar_ij;
+      double translation_weight;
+      double rotation_weight;
+    };
+
+    SubmapId submap_id;  // 'i' in the paper.
+    NodeId node_id;      // 'j' in the paper.
+
+    // Pose of the node 'j' relative to submap 'i'.
+    Pose pose;
+
+    // Differentiates between intra-submap (where node 'j' was inserted into
+    // submap 'i') and inter-submap constraints (where node 'j' was not inserted
+    // into submap 'i').
+    enum Tag { INTRA_SUBMAP, INTER_SUBMAP } tag;
+  };
+
+  // struct LandmarkNode {
+  //   struct LandmarkObservation {
+  //     int trajectory_id;
+  //     common::Time time;
+  //     transform::Rigid3d landmark_to_tracking_transform;
+  //     double translation_weight;
+  //     double rotation_weight;
+  //   };
+  //   std::vector<LandmarkObservation> landmark_observations;
+  //   absl::optional<transform::Rigid3d> global_landmark_pose;
+  //   bool frozen = false;
+  // };
+
+  struct SubmapPose {
+    int version;
+    transform::Rigid3d pose;
+  };
+
+  struct SubmapData {
+    std::shared_ptr<const Submap> submap;
+    transform::Rigid3d pose;
+  };
+
+  struct TrajectoryData {
+    double gravity_constant = 9.8;
+    std::array<double, 4> imu_calibration{{1., 0., 0., 0.}};
+    absl::optional<transform::Rigid3d> fixed_frame_origin_in_map;
+  };
+
+  enum class TrajectoryState { ACTIVE, FINISHED, FROZEN, DELETED };
+
+  using GlobalSlamOptimizationCallback =
+      std::function<void(const std::map<int /* trajectory_id */, SubmapId>&,
+                         const std::map<int /* trajectory_id */, NodeId>&)>;
+```
+
+把pose_grapher.cc的结构体 拷贝到之后
+
+```
+//   struct InitialTrajectoryPose {
+//     int to_trajectory_id;
+//     transform::Rigid3d relative_pose;
+//     common::Time time;
+//   };
+```
+
+删除pose_graph_2d里使用 结构体的前缀。
+
+```
+PoseGraph::InitialTrajectoryPose
+改为
+InitialTrajectoryPose
+```
+
+把pose_graph.h头文件拷贝到pose_graph_2d.h
+
+```
+#include "cartographer/mapping/proto/pose_graph.pb.h"
+#include "cartographer/mapping/proto/pose_graph_options.pb.h"
+#include "cartographer/mapping/proto/serialization.pb.h"
+```
+
+```
+MaybeAddPureLocalizationTrimmer 的 PoseGraph改为PoseGraph2D
+```
+
+## 优化配置参数
+
+参数传递方向
+
+```mermaid
+graph TD
+1(LocalTrajectoryBuilderOptions2D)
+2(ActiveSubmaps2D)
+3(MotionFilter)
+4(RealTimeCorrelativeScanMatcher2D)
+5(CeresScanMatcher2D)
+6(ProbabilityGridPointsProcessor)
+7(range_data_inserter_)
+1-->2
+1-->3
+1-->4
+1-->5
+2-->6
+6-->7
+```
+
+### ProbabilityGridRangeDataInserter2D参数优化
+
+.h修改
+
+```
+#include "cartographer/common/config.h"
+// #include
+// "cartographer/mapping/proto/probability_grid_range_data_inserter_options_2d.pb.h"
+// #include "cartographer/mapping/range_data_inserter_interface.h"
+// #include "cartographer/mapping/2d/probability_grid_range_data_inserter_2d.h"
+// proto::ProbabilityGridRangeDataInserterOptions2D
+// CreateProbabilityGridRangeDataInserterOptions2D(
+//     common::LuaParameterDictionary* parameter_dictionary);
+// proto::RangeDataInserterOptions CreateRangeDataInserterOptions(
+//     common::LuaParameterDictionary* const parameter_dictionary);
+  //   explicit ProbabilityGridRangeDataInserter2D(
+  //       const proto::ProbabilityGridRangeDataInserterOptions2D& options);
+  explicit ProbabilityGridRangeDataInserter2D();
+  //   const proto::ProbabilityGridRangeDataInserterOptions2D options_;
+```
+
+.cc
+
+```
+// proto::ProbabilityGridRangeDataInserterOptions2D
+// CreateProbabilityGridRangeDataInserterOptions2D(
+//     common::LuaParameterDictionary* parameter_dictionary) {
+//   proto::ProbabilityGridRangeDataInserterOptions2D options;
+//   options.set_hit_probability(
+//       parameter_dictionary->GetDouble("hit_probability"));
+//   options.set_miss_probability(
+//       parameter_dictionary->GetDouble("miss_probability"));
+//   options.set_insert_free_space(
+//       parameter_dictionary->HasKey("insert_free_space")
+//           ? parameter_dictionary->GetBool("insert_free_space")
+//           : true);
+//   CHECK_GT(options.hit_probability(), 0.5);
+//   CHECK_LT(options.miss_probability(), 0.5);
+//   return options;
+// }
+
+// proto::RangeDataInserterOptions CreateRangeDataInserterOptions(
+//     common::LuaParameterDictionary* const parameter_dictionary) {
+//   proto::RangeDataInserterOptions options;
+//   const std::string range_data_inserter_type_string =
+//       parameter_dictionary->GetString("range_data_inserter_type");
+//   proto::RangeDataInserterOptions_RangeDataInserterType
+//       range_data_inserter_type;
+//   CHECK(proto::RangeDataInserterOptions_RangeDataInserterType_Parse(
+//       range_data_inserter_type_string, &range_data_inserter_type))
+//       << "Unknown RangeDataInserterOptions_RangeDataInserterType kind: "
+//       << range_data_inserter_type_string;
+//   options.set_range_data_inserter_type(range_data_inserter_type);
+//   *options.mutable_probability_grid_range_data_inserter_options_2d() =
+//       CreateProbabilityGridRangeDataInserterOptions2D(
+//           parameter_dictionary
+//               ->GetDictionary("probability_grid_range_data_inserter")
+//               .get());
+//   //   *options.mutable_tsdf_range_data_inserter_options_2d() =
+//   //       CreateTSDFRangeDataInserterOptions2D(
+//   // parameter_dictionary->GetDictionary("tsdf_range_data_inserter")
+//   //               .get());
+//   return options;
+// }
+
+// ProbabilityGridRangeDataInserter2D::ProbabilityGridRangeDataInserter2D(
+//     const proto::ProbabilityGridRangeDataInserterOptions2D& options)
+//     : options_(options),
+//       hit_table_(ComputeLookupTableToApplyCorrespondenceCostOdds(
+//           Odds(options.hit_probability()))),
+//       miss_table_(ComputeLookupTableToApplyCorrespondenceCostOdds(
+//           Odds(options.miss_probability()))) {}
+
+ProbabilityGridRangeDataInserter2D::ProbabilityGridRangeDataInserter2D()
+    : hit_table_(ComputeLookupTableToApplyCorrespondenceCostOdds(
+          Odds(kSubmapsHitPorbility))),
+      miss_table_(ComputeLookupTableToApplyCorrespondenceCostOdds(
+          Odds(kSubmapsMissPorbility))) {}    
+          
+          
+options_.insert_free_space() -- kSubmapsInsertFreeSpace
+options.hit_probability() -- kSubmapsHitProbability
+options.miss_probability() -- kSubmapMissProbability
+
+
+```
+
+### ProbabilityGridPointsProcessor参数优化
+
+.h
+
+```
+ProbabilityGridPointsProcessor(
+      double resolution,
+      //const mapping::proto::ProbabilityGridRangeDataInserterOptions2D&
+      //    probability_grid_range_data_inserter_options,
+      const DrawTrajectories& draw_trajectories, const OutputType& output_type,
+      std::unique_ptr<FileWriter> file_writer,
+      const std::vector<mapping::proto::Trajectory>& trajectories,
+      PointsProcessor* next);
+```
+
+.cc
+
+```
+// const mapping::proto::ProbabilityGridRangeDataInserterOptions2D&
+//     probability_grid_range_data_inserter_options,
+ // range_data_inserter_(probability_grid_range_data_inserter_options),
+
+// std::unique_ptr<ProbabilityGridPointsProcessor>
+// ProbabilityGridPointsProcessor::FromDictionary(
+//     const std::vector<mapping::proto::Trajectory>& trajectories,
+//     const FileWriterFactory& file_writer_factory,
+//     common::LuaParameterDictionary* const dictionary,
+//     PointsProcessor* const next) {
+//   const auto draw_trajectories = (!dictionary->HasKey("draw_trajectories") ||
+//                                   dictionary->GetBool("draw_trajectories"))
+//                                      ? DrawTrajectories::kYes
+//                                      : DrawTrajectories::kNo;
+//   const auto output_type =
+//       dictionary->HasKey("output_type")
+//           ? OutputTypeFromString(dictionary->GetString("output_type"))
+//           : OutputType::kPng;
+//   return absl::make_unique<ProbabilityGridPointsProcessor>(
+//       dictionary->GetDouble("resolution"),
+//       mapping::CreateProbabilityGridRangeDataInserterOptions2D(
+//           dictionary->GetDictionary("range_data_inserter").get()),
+//       draw_trajectories, output_type,
+//       file_writer_factory(dictionary->GetString("filename") +
+//                           FileExtensionFromOutputType(output_type)),
+//       trajectories, next);
+// }
+
+// ProbabilityGridPointsProcessor::OutputType OutputTypeFromString(
+//     const std::string& output_type) {
+//   if (output_type == "png") {
+//     return ProbabilityGridPointsProcessor::OutputType::kPng;
+//   } else if (output_type == "pb") {
+//     return ProbabilityGridPointsProcessor::OutputType::kPb;
+//   } else {
+//     LOG(FATAL) << "OutputType " << output_type << " does not exist!";
+//   }
+// }
+```
+
+### ActiveSubmaps2D参数优化
+
+submap_2d.h修改
+
+```
+#include "cartographer/common/config.h"
+//#include "cartographer/mapping/proto/submaps_options_2d.pb.h"
+// proto::SubmapsOptions2D CreateSubmapsOptions2D(
+//     common::LuaParameterDictionary* parameter_dictionary);
+//   explicit ActiveSubmaps2D(const proto::SubmapsOptions2D& options);
+  explicit ActiveSubmaps2D();
+//const proto::SubmapsOptions2D options_;
+```
+
+submap_2d.cc修改
+
+```
+// proto::SubmapsOptions2D CreateSubmapsOptions2D(
+//     common::LuaParameterDictionary* const parameter_dictionary) {
+//   proto::SubmapsOptions2D options;
+//   options.set_num_range_data(
+//       parameter_dictionary->GetNonNegativeInt("num_range_data"));
+//   *options.mutable_grid_options_2d() = CreateGridOptions2D(
+//       parameter_dictionary->GetDictionary("grid_options_2d").get());
+//   *options.mutable_range_data_inserter_options() =
+//       CreateRangeDataInserterOptions(
+//           parameter_dictionary->GetDictionary("range_data_inserter").get());
+
+//   bool valid_range_data_inserter_grid_combination = false;
+//   const proto::GridOptions2D_GridType& grid_type =
+//       options.grid_options_2d().grid_type();
+//   const proto::RangeDataInserterOptions_RangeDataInserterType&
+//       range_data_inserter_type =
+//           options.range_data_inserter_options().range_data_inserter_type();
+//   if (grid_type == proto::GridOptions2D::PROBABILITY_GRID &&
+//       range_data_inserter_type ==
+//           proto::RangeDataInserterOptions::PROBABILITY_GRID_INSERTER_2D) {
+//     valid_range_data_inserter_grid_combination = true;
+//   }
+//   // if (grid_type == proto::GridOptions2D::TSDF &&
+//   //     range_data_inserter_type ==
+//   //         proto::RangeDataInserterOptions::TSDF_INSERTER_2D) {
+//   //   valid_range_data_inserter_grid_combination = true;
+//   // }
+//   CHECK(valid_range_data_inserter_grid_combination)
+//       << "Invalid combination grid_type " << grid_type
+//       << " with range_data_inserter_type " << range_data_inserter_type;
+//   CHECK_GT(options.num_range_data(), 0);
+//   return options;
+// }
+
+// std::unique_ptr<ProbabilityGridRangeDataInserter2D>
+// ActiveSubmaps2D::CreateRangeDataInserter() {
+//   switch (options_.range_data_inserter_options().range_data_inserter_type())
+//   {
+//     case proto::RangeDataInserterOptions::PROBABILITY_GRID_INSERTER_2D:
+//       return absl::make_unique<ProbabilityGridRangeDataInserter2D>(
+//           options_.range_data_inserter_options()
+//               .probability_grid_range_data_inserter_options_2d());
+//     // case proto::RangeDataInserterOptions::TSDF_INSERTER_2D:
+//     //   return absl::make_unique<TSDFRangeDataInserter2D>(
+//     //       options_.range_data_inserter_options()
+//     //           .tsdf_range_data_inserter_options_2d());
+//     default:
+//       LOG(FATAL) << "Unknown RangeDataInserterType.";
+//   }
+// }
+std::unique_ptr<ProbabilityGridRangeDataInserter2D>
+ActiveSubmaps2D::CreateRangeDataInserter() {
+  return absl::make_unique<ProbabilityGridRangeDataInserter2D>();
+}
+
+// std::unique_ptr<Grid2D> ActiveSubmaps2D::CreateGrid(
+//     const Eigen::Vector2f& origin) {
+//   constexpr int kInitialSubmapSize = 100;
+//   float resolution = kResolution;
+//   switch (options_.grid_options_2d().grid_type()) {
+//     case proto::GridOptions2D::PROBABILITY_GRID:
+//       return absl::make_unique<ProbabilityGrid>(
+//           MapLimits(resolution,
+//                     origin.cast<double>() + 0.5 * kInitialSubmapSize *
+//                                                 resolution *
+//                                                 Eigen::Vector2d::Ones(),
+//                     CellLimits(kInitialSubmapSize, kInitialSubmapSize)),
+//           &conversion_tables_);
+//     // case proto::GridOptions2D::TSDF:
+//     //   return absl::make_unique<TSDF2D>(
+//     //       MapLimits(resolution,
+//     //                 origin.cast<double>() + 0.5 * kInitialSubmapSize *
+//     //                                             resolution *
+//     //                                             Eigen::Vector2d::Ones(),
+//     //                 CellLimits(kInitialSubmapSize, kInitialSubmapSize)),
+//     //       options_.range_data_inserter_options()
+//     //           .tsdf_range_data_inserter_options_2d()
+//     //           .truncation_distance(),
+//     //       options_.range_data_inserter_options()
+//     //           .tsdf_range_data_inserter_options_2d()
+//     //           .maximum_weight(),
+//     //       &conversion_tables_);
+//     default:
+//       LOG(FATAL) << "Unknown GridType.";
+//   }
+// }
+
+std::unique_ptr<Grid2D> ActiveSubmaps2D::CreateGrid(
+    const Eigen::Vector2f& origin) {
+  constexpr int kInitialSubmapSize = 100;
+  return absl::make_unique<ProbabilityGrid>(
+      MapLimits(kResolution,
+                origin.cast<double>() + 0.5 * kInitialSubmapSize * kResolution *
+                                            Eigen::Vector2d::Ones(),
+                CellLimits(kInitialSubmapSize, kInitialSubmapSize)),
+      &conversion_tables_);
+}
+
+```
+
+```
+options_.num_range_data() 改为kSubmapNodes
+options_.grid_options_2d().resolution() -- kResolution
+options_.grid_options_2d().resolution() -- kResolution
+```
+
+```
+// ActiveSubmaps2D::ActiveSubmaps2D(const proto::SubmapsOptions2D& options)
+//     : options_(options), range_data_inserter_(CreateRangeDataInserter()) {}
+
+ActiveSubmaps2D::ActiveSubmaps2D()
+    : range_data_inserter_(CreateRangeDataInserter()) {}
+```
+
+### MotionFilter参数优化
+
+.h
+
+```
+// #include "cartographer/common/lua_parameter_dictionary.h"
+#include "cartographer/common/config.h"
+// #include "cartographer/mapping/proto/motion_filter_options.pb.h"
+// proto::MotionFilterOptions CreateMotionFilterOptions(
+//     common::LuaParameterDictionary* parameter_dictionary);
+//explicit MotionFilter(const proto::MotionFilterOptions& options);
+explicit MotionFilter();
+/ const proto::MotionFilterOptions options_;
+```
+
+.cc
+
+```
+// proto::MotionFilterOptions CreateMotionFilterOptions(
+//     common::LuaParameterDictionary* const parameter_dictionary) {
+//   proto::MotionFilterOptions options;
+//   options.set_max_time_seconds(
+//       parameter_dictionary->GetDouble("max_time_seconds"));
+//   options.set_max_distance_meters(
+//       parameter_dictionary->GetDouble("max_distance_meters"));
+//   options.set_max_angle_radians(
+//       parameter_dictionary->GetDouble("max_angle_radians"));
+//   return options;
+// }
+MotionFilter::MotionFilter()  {}
+```
+
+```
+options_.max_time_seconds()--kMotionFilterMaxDuration
+options_.max_distance_meters()--  kMotionFilterTranslation
+options_.max_angle_radians()--kMotionFilterRotaiton
+```
+
+### RealTimeCorrelativeScanMatcher2D参数优化
+
+.h
+
+```
+#include "cartographer/common/config.h"
+// #include "cartographer/mapping/proto/scan_matching/real_time_correlative_scan_matcher_options.pb.h"
+  //   explicit RealTimeCorrelativeScanMatcher2D(
+  //       const proto::RealTimeCorrelativeScanMatcherOptions& options);
+  explicit RealTimeCorrelativeScanMatcher2D();
+```
+
+.cc
+
+```
+// RealTimeCorrelativeScanMatcher2D::RealTimeCorrelativeScanMatcher2D(
+//     const proto::RealTimeCorrelativeScanMatcherOptions& options)
+//     : options_(options) {}
+```
+
+替换
+
+```
+options_.linear_search_window()--kRealTimeCSMLinearSearchWindow
+options_.angular_search_window()--
+options_.translation_delta_cost_weight()--kRealTimeCSMTranslationDeltaCostWeight
+options_.rotation_delta_cost_weight()--kRealTimeCSMRotationDeltaCostWeight
+```
+
+### OptimizationProblem2D参数优化
+
+删除CreatePoseGraphOptions
+
+.h修改
+
+```
+#include "cartographer/common/config.h"
+```
+
+在config.h里加入
+
+```
+constexpr double kHuberScale = 1e1;
+constexpr double kOdometryTranslationWeight = 1e5; //
+constexpr double kOdometryRotationWeight = 1e5;
+```
+
+```
+  
+  // explicit OptimizationProblem2D(
+  //     const optimization::proto::OptimizationProblemOptions& options);
+  改为explicit OptimizationProblem2D();
+  
+初始化不传入option,删除options_变量
+//#include "cartographer/mapping/proto/pose_graph/optimization_problem_options.pb.h"
+```
+
+```
+options_.global_constraint_search_after_n_seconds()
+```
+
+### CeresScanMatcher2D参数优化
+
+.h修改
+
+```
+// #include
+// "cartographer/mapping/proto/scan_matching/ceres_scan_matcher_options_2d.pb.h"
+#include "cartographer/common/config.h"
+// proto::CeresScanMatcherOptions2D CreateCeresScanMatcherOptions2D(
+//     common::LuaParameterDictionary* parameter_dictionary);
+  // explicit CeresScanMatcher2D(const proto::CeresScanMatcherOptions2D&
+  // options);
+  explicit CeresScanMatcher2D();
+    // const proto::CeresScanMatcherOptions2D options_;
+  // ceres::Solver::Options ceres_solver_options_;
+```
+
+.cc修改
+
+```
+// proto::CeresScanMatcherOptions2D CreateCeresScanMatcherOptions2D(
+//     common::LuaParameterDictionary* const parameter_dictionary) {
+//   proto::CeresScanMatcherOptions2D options;
+//   options.set_occupied_space_weight(
+//       parameter_dictionary->GetDouble("occupied_space_weight"));
+//   options.set_translation_weight(
+//       parameter_dictionary->GetDouble("translation_weight"));
+//   options.set_rotation_weight(
+//       parameter_dictionary->GetDouble("rotation_weight"));
+//   *options.mutable_ceres_solver_options() =
+//       common::CreateCeresSolverOptionsProto(
+//           parameter_dictionary->GetDictionary("ceres_solver_options").get());
+//   return options;
+// }
+```
+
+### LocalTrajectoryBuilder2D参数优化
+
+.h
+
+```
+ #include "cartographer/common/config.h"
+ // #include
+// "cartographer/mapping/proto/local_trajectory_builder_options_2d.pb.h"
+  //   explicit LocalTrajectoryBuilder2D(
+  //       const proto::LocalTrajectoryBuilderOptions2D& options,
+  //       const std::vector<std::string>& expected_range_sensor_ids);
+  explicit LocalTrajectoryBuilder2D(
+      const std::vector<std::string>& expected_range_sensor_ids);
+```
+
+.cc
+
+```
+// LocalTrajectoryBuilder2D::LocalTrajectoryBuilder2D(
+//     const proto::LocalTrajectoryBuilderOptions2D& options,
+//     const std::vector<std::string>& expected_range_sensor_ids)
+//     :  // options_(options),
+//       active_submaps_(options.submaps_options()),
+//       motion_filter_(options_.motion_filter_options()),
+//       real_time_correlative_scan_matcher_(
+//           options_.real_time_correlative_scan_matcher_options()),
+//       ceres_scan_matcher_(options_.ceres_scan_matcher_options()),
+//       range_data_collator_(expected_range_sensor_ids) {}
+
+LocalTrajectoryBuilder2D::LocalTrajectoryBuilder2D(
+    const std::vector<std::string>& expected_range_sensor_ids)
+    : range_data_collator_(expected_range_sensor_ids) {}
+```
+
+### VoxelFilter
+
+```
+options.max_length() -- kAdaptiveVoxelFilterMaxLength
+```
+
+### MapBuilder
+
+```
+  // absl::optional<MotionFilter> pose_graph_odometry_motion_filter;
+  // if (trajectory_options.has_pose_graph_odometry_motion_filter()) {
+  //   LOG(INFO) << "Using a motion filter for adding odometry to the pose
+  //   graph."; pose_graph_odometry_motion_filter.emplace(
+  //       MotionFilter(trajectory_options.pose_graph_odometry_motion_filter()));
+  // }
+  
+// std::shared_ptr<LocalTrajectoryBuilder2D> local_trajectory_builder_2d =
+  //     std::make_shared<LocalTrajectoryBuilder2D>(
+  //         trajectory_options.trajectory_builder_2d_options(),
+  //         SelectRangeSensorIds(expected_sensor_ids));
+  std::shared_ptr<LocalTrajectoryBuilder2D> local_trajectory_builder_2d =
+      std::make_shared<LocalTrajectoryBuilder2D>(
+          SelectRangeSensorIds(expected_sensor_ids));
+          
+          
+          // MapBuilder::MapBuilder(const proto::MapBuilderOptions& options)
+//     : options_(options), thread_pool_(options.num_background_threads()) {
+//   // CHECK(options.use_trajectory_builder_2d() ^
+//   //       options.use_trajectory_builder_3d());
+//   if (options.use_trajectory_builder_2d()) {
+//     pose_graph_2d_ = absl::make_unique<PoseGraph2D>(
+//         options_.pose_graph_options(),
+//         absl::make_unique<optimization::OptimizationProblem2D>(
+//             options_.pose_graph_options().optimization_problem_options()),
+//         &thread_pool_);
+//   }
+//   // if (options.use_trajectory_builder_3d()) {
+//   //   pose_graph_ = absl::make_unique<PoseGraph3D>(
+//   //       options_.pose_graph_options(),
+//   //       absl::make_unique<optimization::OptimizationProblem3D>(
+//   //           options_.pose_graph_options().optimization_problem_options()),
+//   //       &thread_pool_);
+//   // }
+//   // if (options.collate_by_trajectory()) {
+//   //   sensor_collator_ = absl::make_unique<sensor::TrajectoryCollator>();
+//   // } else {
+//   sensor_collator_ = absl::make_unique<sensor::Collator>();
+//   // }
+// }
+
+MapBuilder::MapBuilder() : thread_pool_(kBackgroundThreadsCount) {
+  pose_graph_2d_ = absl::make_unique<PoseGraph2D>(
+      absl::make_unique<optimization::OptimizationProblem2D>(), &thread_pool_);
+  sensor_collator_ = absl::make_unique<sensor::Collator>();
+}
+```
+
+### PoseExtrapolator参数优化
+
+.h
+
+```
+// #include "cartographer/mapping/proto/pose_extrapolator_options.pb.h"
+#include "cartographer/common/config.h"
+
+// proto::PoseExtrapolatorOptions CreatePoseExtrapolatorOptions(
+//     common::LuaParameterDictionary* const parameter_dictionary);
+
+std::unique_ptr<PoseExtrapolator> PoseExtrapolator::CreateWithImuData(
+    // const proto::PoseExtrapolatorOptions& options,
+    const std::vector<sensor::ImuData>& imu_data,
+    const std::vector<transform::TimestampedTransform>& initial_poses) 
+    
+    
+```
+
+.cc
+
+```
+std::unique_ptr<PoseExtrapolator> PoseExtrapolator::CreateWithImuData(
+    // const proto::PoseExtrapolatorOptions& options,
+    const std::vector<sensor::ImuData>& imu_data,
+    const std::vector<transform::TimestampedTransform>& initial_poses) 
+    
+    options.constant_velocity().pose_queue_duration() 改为 kPoseExtrapolatorDuration         
+    options.constant_velocity().imu_gravity_time_constant() 改为 kImuGravityTimeConstant
+```
+
+### FastCorrelativeScanMatcher2D参数优化
+
+.h
+
+```
+#include "cartographer/common/config.h"
+// #include
+// "cartographer/mapping/proto/scan_matching/fast_correlative_scan_matcher_options_2d.pb.h"
+proto::FastCorrelativeScanMatcherOptions2D
+CreateFastCorrelativeScanMatcherOptions2D(
+    common::LuaParameterDictionary* parameter_dictionary);
+PrecomputationGridStack2D(const Grid2D& grid);
+  //FastCorrelativeScanMatcher2D(
+  //    const Grid2D& grid,
+  //    const proto::FastCorrelativeScanMatcherOptions2D& options);
+      FastCorrelativeScanMatcher2D(const Grid2D& grid);
+        // const proto::FastCorrelativeScanMatcherOptions2D options_;
+```
+
+.cc
+
+```
+options.branch_and_bound_depth() k
+options_.linear_search_window() kFastCSMLinearSearchWindow
+options_.angular_search_window() kFastCSMAngularSearchWindow
+```
+
+
+
+### ConstraintBuilder2D参数优化
+
+.h
+
+```
+// #include "cartographer/mapping/proto/pose_graph/constraint_builder_options.pb.h"
+#include "cartographer/common/config.h"
+
+//   const constraints::proto::ConstraintBuilderOptions options_;
+```
+
+.cc
+
+```
+options_.max_constraint_distance() -- kMaxConstrantDistance
+options_.sampling_ratio() -- kSamplingRatio
+options_.global_localization_min_score() -- kGlobalMatchMinScore
+options_.min_score() kLocalMatchMinScore
+                                    options_.loop_closure_translation_weight(), kLoopClosureTranslationWeight
+                                    options_.loop_closure_rotation_weight() kLoopClosureRotationWeight
+                                   options_.log_matches() -- 
+```
+
+```
+  scan_matcher_task->SetWorkItem(
+      [&submap_scan_matcher, &scan_matcher_options]() {
+        submap_scan_matcher.fast_correlative_scan_matcher =
+            absl::make_unique<scan_matching::FastCorrelativeScanMatcher2D>(
+                *submap_scan_matcher.grid, scan_matcher_options);
+      });
+      改为
+    scan_matcher_task->SetWorkItem(
+      [&submap_scan_matcher]() {
+        submap_scan_matcher.fast_correlative_scan_matcher =
+            absl::make_unique<scan_matching::FastCorrelativeScanMatcher2D>(
+                *submap_scan_matcher.grid, scan_matcher_options);
+      });    
+      
+      
+        scan_matcher_task->SetWorkItem(
+      [&submap_scan_matcher]() {
+        submap_scan_matcher.fast_correlative_scan_matcher =
+            absl::make_unique<scan_matching::FastCorrelativeScanMatcher2D>(
+                *submap_scan_matcher.grid, scan_matcher_options);
+      });
+      
+      改为 
+        scan_matcher_task->SetWorkItem([&submap_scan_matcher]() {
+    submap_scan_matcher.fast_correlative_scan_matcher =
+        absl::make_unique<scan_matching::FastCorrelativeScanMatcher2D>(
+            *submap_scan_matcher.grid);
+  });
+      
+```
+
+
+
+### posegraph2d参数优化
+
+```
+options_.matcher_translation_weight() --kCSMTranslationWeight
+options_.matcher_rotation_weight() -- kCMSRotationWeight
+options_.optimize_every_n_nodes()--kOptimizeEveryNNodes
+```
+
+### Grid2d参数优化
+
+
+
+### PoseGraph去接口
+
+.h修改
+
+```
+// #include "cartographer/mapping/proto/submaps_options_2d.pb.h"
+#include "cartographer/maaping/internal/2d/config.h"
+
+// proto::GridOptions2D CreateGridOptions2D(
+//     common::LuaParameterDictionary* const parameter_dictionary);
+```
+
+.cc修改
+
+```
+// proto::GridOptions2D CreateGridOptions2D(
+//     common::LuaParameterDictionary* const parameter_dictionary) {
+//   proto::GridOptions2D options;
+//   const std::string grid_type_string =
+//       parameter_dictionary->GetString("grid_type");
+//   proto::GridOptions2D_GridType grid_type;
+//   CHECK(proto::GridOptions2D_GridType_Parse(grid_type_string, &grid_type))
+//       << "Unknown GridOptions2D_GridType kind: " << grid_type_string;
+//   options.set_grid_type(grid_type);
+//   options.set_resolution(parameter_dictionary->GetDouble("resolution"));
+//   return options;
+// }
+```
 
 
 

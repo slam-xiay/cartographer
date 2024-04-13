@@ -35,33 +35,32 @@ PointCloud FilterByMaxRange(const PointCloud& point_cloud,
   });
 }
 
-PointCloud AdaptivelyVoxelFiltered(
-    const proto::AdaptiveVoxelFilterOptions& options,
-    const PointCloud& point_cloud) {
-  if (point_cloud.size() <= options.min_num_points()) {
+PointCloud AdaptivelyVoxelFiltered(const PointCloud& point_cloud) {
+  if (point_cloud.size() <= kAdaptiveVoxelFilterCount) {
     // 'point_cloud' is already sparse enough.
     return point_cloud;
   }
-  PointCloud result = VoxelFilter(point_cloud, options.max_length());
-  if (result.size() >= options.min_num_points()) {
+  PointCloud result = VoxelFilter(point_cloud, kAdaptiveVoxelFilterMaxLength);
+  if (result.size() >= kAdaptiveVoxelFilterCount) {
     // Filtering with 'max_length' resulted in a sufficiently dense point cloud.
     return result;
   }
   // Search for a 'low_length' that is known to result in a sufficiently
   // dense point cloud. We give up and use the full 'point_cloud' if reducing
   // the edge length by a factor of 1e-2 is not enough.
-  for (float high_length = options.max_length();
-       high_length > 1e-2f * options.max_length(); high_length /= 2.f) {
+  for (float high_length = kAdaptiveVoxelFilterMaxLength;
+       high_length > 1e-2f * kAdaptiveVoxelFilterMaxLength;
+       high_length /= 2.f) {
     float low_length = high_length / 2.f;
     result = VoxelFilter(point_cloud, low_length);
-    if (result.size() >= options.min_num_points()) {
+    if (result.size() >= kAdaptiveVoxelFilterMaxLength) {
       // Binary search to find the right amount of filtering. 'low_length' gave
       // a sufficiently dense 'result', 'high_length' did not. We stop when the
       // edge length is at most 10% off.
       while ((high_length - low_length) / low_length > 1e-1f) {
         const float mid_length = (low_length + high_length) / 2.f;
         const PointCloud candidate = VoxelFilter(point_cloud, mid_length);
-        if (candidate.size() >= options.min_num_points()) {
+        if (candidate.size() >= kAdaptiveVoxelFilterMaxLength) {
           low_length = mid_length;
           result = candidate;
         } else {
@@ -179,22 +178,26 @@ std::vector<sensor::TimedPointCloudOriginData::RangeMeasurement> VoxelFilter(
       });
 }
 
-proto::AdaptiveVoxelFilterOptions CreateAdaptiveVoxelFilterOptions(
-    common::LuaParameterDictionary* const parameter_dictionary) {
-  proto::AdaptiveVoxelFilterOptions options;
-  options.set_max_length(parameter_dictionary->GetDouble("max_length"));
-  options.set_min_num_points(
-      parameter_dictionary->GetNonNegativeInt("min_num_points"));
-  options.set_max_range(parameter_dictionary->GetDouble("max_range"));
-  return options;
+// proto::AdaptiveVoxelFilterOptions CreateAdaptiveVoxelFilterOptions(
+//     common::LuaParameterDictionary* const parameter_dictionary) {
+//   proto::AdaptiveVoxelFilterOptions options;
+//   options.set_max_length(parameter_dictionary->GetDouble("max_length"));
+//   options.set_min_num_points(
+//       parameter_dictionary->GetNonNegativeInt("min_num_points"));
+//   options.set_max_range(parameter_dictionary->GetDouble("max_range"));
+//   return options;
+// }
+
+PointCloud AdaptiveVoxelFilter(const PointCloud& point_cloud) {
+  return AdaptivelyVoxelFiltered(FilterByMaxRange(point_cloud, kLidarMaxRange));
 }
 
-PointCloud AdaptiveVoxelFilter(
-    const PointCloud& point_cloud,
-    const proto::AdaptiveVoxelFilterOptions& options) {
-  return AdaptivelyVoxelFiltered(
-      options, FilterByMaxRange(point_cloud, options.max_range()));
-}
+// PointCloud AdaptiveVoxelFilter(
+//     const PointCloud& point_cloud,
+//     const proto::AdaptiveVoxelFilterOptions& options) {
+//   return AdaptivelyVoxelFiltered(
+//       options, FilterByMaxRange(point_cloud, options.max_range()));
+// }
 
 }  // namespace sensor
 }  // namespace cartographer

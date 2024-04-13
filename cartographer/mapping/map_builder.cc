@@ -39,39 +39,39 @@
 #include "cartographer/io/proto_stream.h"
 #include "cartographer/mapping/id.h"
 #include "cartographer/mapping/pose_graph_interface.h"
-#include "cartographer/mapping/proto/map_builder_options.pb.h"
+// #include "cartographer/mapping/proto/map_builder_options.pb.h"
 #include "cartographer/mapping/proto/submap_visualization.pb.h"
-#include "cartographer/mapping/proto/trajectory_builder_options.pb.h"
+// #include "cartographer/mapping/proto/trajectory_builder_options.pb.h"
 #include "cartographer/mapping/submaps.h"
 #include "cartographer/mapping/trajectory_builder_interface.h"
 #include "cartographer/sensor/internal/voxel_filter.h"
 #include "cartographer/transform/rigid_transform.h"
 // #include "cartographer/mapping/map_builder_interface.h"
 #include "cartographer/mapping/pose_graph.h"
-#include "cartographer/mapping/proto/map_builder_options.pb.h"
+// #include "cartographer/mapping/proto/map_builder_options.pb.h"
 // #include "cartographer/sensor/collator_interface.h"
 #include "cartographer/sensor/internal/collator.h"
 #include "cartographer/transform/transform.h"
 
 namespace cartographer {
 namespace mapping {
-proto::MapBuilderOptions CreateMapBuilderOptions(
-    common::LuaParameterDictionary* const parameter_dictionary) {
-  proto::MapBuilderOptions options;
-  options.set_use_trajectory_builder_2d(
-      parameter_dictionary->GetBool("use_trajectory_builder_2d"));
-  //   options.set_use_trajectory_builder_3d(
-  //       parameter_dictionary->GetBool("use_trajectory_builder_3d"));
-  options.set_num_background_threads(
-      parameter_dictionary->GetNonNegativeInt("num_background_threads"));
-  options.set_collate_by_trajectory(
-      parameter_dictionary->GetBool("collate_by_trajectory"));
-  *options.mutable_pose_graph_options() = CreatePoseGraphOptions(
-      parameter_dictionary->GetDictionary("pose_graph").get());
-  //   CHECK_NE(options.use_trajectory_builder_2d(),
-  //            options.use_trajectory_builder_3d());
-  return options;
-}
+// proto::MapBuilderOptions CreateMapBuilderOptions(
+//     common::LuaParameterDictionary* const parameter_dictionary) {
+//   proto::MapBuilderOptions options;
+//   options.set_use_trajectory_builder_2d(
+//       parameter_dictionary->GetBool("use_trajectory_builder_2d"));
+//   //   options.set_use_trajectory_builder_3d(
+//   //       parameter_dictionary->GetBool("use_trajectory_builder_3d"));
+//   options.set_num_background_threads(
+//       parameter_dictionary->GetNonNegativeInt("num_background_threads"));
+//   options.set_collate_by_trajectory(
+//       parameter_dictionary->GetBool("collate_by_trajectory"));
+//   *options.mutable_pose_graph_options() = CreatePoseGraphOptions(
+//       parameter_dictionary->GetDictionary("pose_graph").get());
+//   //   CHECK_NE(options.use_trajectory_builder_2d(),
+//   //            options.use_trajectory_builder_3d());
+//   return options;
+// }
 namespace {
 
 using mapping::proto::SerializedData;
@@ -87,64 +87,90 @@ std::vector<std::string> SelectRangeSensorIds(
   return range_sensor_ids;
 }
 
-void MaybeAddPureLocalizationTrimmer(
-    const int trajectory_id,
-    const proto::TrajectoryBuilderOptions& trajectory_options,
-    PoseGraph* pose_graph) {
-  if (trajectory_options.pure_localization()) {
-    LOG(WARNING)
-        << "'TrajectoryBuilderOptions::pure_localization' field is deprecated. "
-           "Use 'TrajectoryBuilderOptions::pure_localization_trimmer' instead.";
-    pose_graph->AddTrimmer(absl::make_unique<PureLocalizationTrimmer>(
-        trajectory_id, 3 /* max_submaps_to_keep */));
-    return;
-  }
-  if (trajectory_options.has_pure_localization_trimmer()) {
-    pose_graph->AddTrimmer(absl::make_unique<PureLocalizationTrimmer>(
-        trajectory_id,
-        trajectory_options.pure_localization_trimmer().max_submaps_to_keep()));
-  }
-}
+// void MaybeAddPureLocalizationTrimmer(
+//     const int trajectory_id,
+//     const proto::TrajectoryBuilderOptions& trajectory_options,
+//     PoseGraph* pose_graph) {
+//   if (trajectory_options.pure_localization()) {
+//     LOG(WARNING)
+//         << "'TrajectoryBuilderOptions::pure_localization' field is
+//         deprecated. "
+//            "Use 'TrajectoryBuilderOptions::pure_localization_trimmer'
+//            instead.";
+//     pose_graph->AddTrimmer(absl::make_unique<PureLocalizationTrimmer>(
+//         trajectory_id, 3 /* max_submaps_to_keep */));
+//     return;
+//   }
+//   if (trajectory_options.has_pure_localization_trimmer()) {
+//     pose_graph->AddTrimmer(absl::make_unique<PureLocalizationTrimmer>(
+//         trajectory_id,
+//         trajectory_options.pure_localization_trimmer().max_submaps_to_keep()));
+//   }
+// }
+
+// void MaybeAddPureLocalizationTrimmer(const int trajectory_id,
+//                                      PoseGraph* pose_graph) {
+//   if (trajectory_options.pure_localization()) {
+//     LOG(WARNING)
+//         << "'TrajectoryBuilderOptions::pure_localization' field is
+//         deprecated. "
+//            "Use 'TrajectoryBuilderOptions::pure_localization_trimmer'
+//            instead.";
+//     pose_graph->AddTrimmer(absl::make_unique<PureLocalizationTrimmer>(
+//         trajectory_id, 3 /* max_submaps_to_keep */));
+//     return;
+//   }
+//   if (trajectory_options.has_pure_localization_trimmer()) {
+//     pose_graph->AddTrimmer(absl::make_unique<PureLocalizationTrimmer>(
+//         trajectory_id,
+//         trajectory_options.pure_localization_trimmer().max_submaps_to_keep()));
+//   }
+// }
 
 }  // namespace
 
-MapBuilder::MapBuilder(const proto::MapBuilderOptions& options)
-    : options_(options), thread_pool_(options.num_background_threads()) {
-  // CHECK(options.use_trajectory_builder_2d() ^
-  //       options.use_trajectory_builder_3d());
-  if (options.use_trajectory_builder_2d()) {
-    pose_graph_2d_ = absl::make_unique<PoseGraph2D>(
-        options_.pose_graph_options(),
-        absl::make_unique<optimization::OptimizationProblem2D>(
-            options_.pose_graph_options().optimization_problem_options()),
-        &thread_pool_);
-  }
-  // if (options.use_trajectory_builder_3d()) {
-  //   pose_graph_ = absl::make_unique<PoseGraph3D>(
-  //       options_.pose_graph_options(),
-  //       absl::make_unique<optimization::OptimizationProblem3D>(
-  //           options_.pose_graph_options().optimization_problem_options()),
-  //       &thread_pool_);
-  // }
-  // if (options.collate_by_trajectory()) {
-  //   sensor_collator_ = absl::make_unique<sensor::TrajectoryCollator>();
-  // } else {
+MapBuilder::MapBuilder() : thread_pool_(kBackgroundThreadsCount) {
+  pose_graph_2d_ = absl::make_unique<PoseGraph2D>(
+      absl::make_unique<optimization::OptimizationProblem2D>(), &thread_pool_);
   sensor_collator_ = absl::make_unique<sensor::Collator>();
-  // }
 }
+
+// MapBuilder::MapBuilder(const proto::MapBuilderOptions& options)
+//     : options_(options), thread_pool_(options.num_background_threads()) {
+//   // CHECK(options.use_trajectory_builder_2d() ^
+//   //       options.use_trajectory_builder_3d());
+//   if (options.use_trajectory_builder_2d()) {
+//     pose_graph_2d_ = absl::make_unique<PoseGraph2D>(
+//         options_.pose_graph_options(),
+//         absl::make_unique<optimization::OptimizationProblem2D>(
+//             options_.pose_graph_options().optimization_problem_options()),
+//         &thread_pool_);
+//   }
+//   // if (options.use_trajectory_builder_3d()) {
+//   //   pose_graph_ = absl::make_unique<PoseGraph3D>(
+//   //       options_.pose_graph_options(),
+//   //       absl::make_unique<optimization::OptimizationProblem3D>(
+//   //           options_.pose_graph_options().optimization_problem_options()),
+//   //       &thread_pool_);
+//   // }
+//   // if (options.collate_by_trajectory()) {
+//   //   sensor_collator_ = absl::make_unique<sensor::TrajectoryCollator>();
+//   // } else {
+//   sensor_collator_ = absl::make_unique<sensor::Collator>();
+//   // }
+// }
 
 int MapBuilder::AddTrajectoryBuilder(
     const std::set<SensorId>& expected_sensor_ids,
-    const proto::TrajectoryBuilderOptions& trajectory_options,
+    // const proto::TrajectoryBuilderOptions& trajectory_options,
     LocalSlamResultCallback local_slam_result_callback) {
   const int trajectory_id = trajectory_builders_.size();
-
   absl::optional<MotionFilter> pose_graph_odometry_motion_filter;
-  if (trajectory_options.has_pose_graph_odometry_motion_filter()) {
-    LOG(INFO) << "Using a motion filter for adding odometry to the pose graph.";
-    pose_graph_odometry_motion_filter.emplace(
-        MotionFilter(trajectory_options.pose_graph_odometry_motion_filter()));
-  }
+  // if (trajectory_options.has_pose_graph_odometry_motion_filter()) {
+  //   LOG(INFO) << "Using a motion filter for adding odometry to the pose
+  //   graph."; pose_graph_odometry_motion_filter.emplace(
+  //       MotionFilter(trajectory_options.pose_graph_odometry_motion_filter()));
+  // }
 
   // if (options_.use_trajectory_builder_3d()) {
   //   std::unique_ptr<LocalTrajectoryBuilder3D> local_trajectory_builder;
@@ -162,9 +188,12 @@ int MapBuilder::AddTrajectoryBuilder(
   //           static_cast<PoseGraph3D*>(pose_graph_.get()),
   //           local_slam_result_callback, pose_graph_odometry_motion_filter)));
   // } else {
+  // std::shared_ptr<LocalTrajectoryBuilder2D> local_trajectory_builder_2d =
+  //     std::make_shared<LocalTrajectoryBuilder2D>(
+  //         trajectory_options.trajectory_builder_2d_options(),
+  //         SelectRangeSensorIds(expected_sensor_ids));
   std::shared_ptr<LocalTrajectoryBuilder2D> local_trajectory_builder_2d =
       std::make_shared<LocalTrajectoryBuilder2D>(
-          trajectory_options.trajectory_builder_2d_options(),
           SelectRangeSensorIds(expected_sensor_ids));
 
   std::shared_ptr<GlobalTrajectoryBuilder2D> gloabal_trajectory_builder_2d =
@@ -190,35 +219,47 @@ int MapBuilder::AddTrajectoryBuilder(
   //         static_cast<PoseGraph2D*>(pose_graph_.get()),
   //         local_slam_result_callback, pose_graph_odometry_motion_filter)));
   // }
-  MaybeAddPureLocalizationTrimmer(trajectory_id, trajectory_options,
-                                  pose_graph_2d_.get());
+  // MaybeAddPureLocalizationTrimmer(trajectory_id, trajectory_options,
+  //                                 pose_graph_2d_.get());
 
-  if (trajectory_options.has_initial_trajectory_pose()) {
-    const auto& initial_trajectory_pose =
-        trajectory_options.initial_trajectory_pose();
-    pose_graph_2d_->SetInitialTrajectoryPose(
-        trajectory_id, initial_trajectory_pose.to_trajectory_id(),
-        transform::ToRigid3(initial_trajectory_pose.relative_pose()),
-        common::FromUniversal(initial_trajectory_pose.timestamp()));
-    }
-  proto::TrajectoryBuilderOptionsWithSensorIds options_with_sensor_ids_proto;
-  for (const auto& sensor_id : expected_sensor_ids) {
-    *options_with_sensor_ids_proto.add_sensor_id() = ToProto(sensor_id);
-  }
-  *options_with_sensor_ids_proto.mutable_trajectory_builder_options() =
-      trajectory_options;
-  all_trajectory_builder_options_.push_back(options_with_sensor_ids_proto);
-  CHECK_EQ(trajectory_builders_.size(), all_trajectory_builder_options_.size());
+  // if (trajectory_options.has_initial_trajectory_pose()) {
+  //   const auto& initial_trajectory_pose =
+  //       trajectory_options.initial_trajectory_pose();
+  //   pose_graph_2d_->SetInitialTrajectoryPose(
+  //       trajectory_id, initial_trajectory_pose.to_trajectory_id(),
+  //       transform::ToRigid3(initial_trajectory_pose.relative_pose()),
+  //       common::FromUniversal(initial_trajectory_pose.timestamp()));
+  //   }
+  // proto::TrajectoryBuilderOptionsWithSensorIds options_with_sensor_ids_proto;
+  // for (const auto& sensor_id : expected_sensor_ids) {
+  //   *options_with_sensor_ids_proto.add_sensor_id() = ToProto(sensor_id);
+  // }
+  // *options_with_sensor_ids_proto.mutable_trajectory_builder_options() =
+  //     trajectory_options;
+  // all_trajectory_builder_options_.push_back(options_with_sensor_ids_proto);
+  // CHECK_EQ(trajectory_builders_.size(),
+  // all_trajectory_builder_options_.size());
   return trajectory_id;
 }
 
-int MapBuilder::AddTrajectoryForDeserialization(
-    const proto::TrajectoryBuilderOptionsWithSensorIds&
-        options_with_sensor_ids_proto) {
+// int MapBuilder::AddTrajectoryForDeserialization(
+//     const proto::TrajectoryBuilderOptionsWithSensorIds&
+//         options_with_sensor_ids_proto) {
+//   const int trajectory_id = trajectory_builders_.size();
+//   trajectory_builders_.emplace_back();
+//   //
+//   all_trajectory_builder_options_.push_back(options_with_sensor_ids_proto);
+//   // CHECK_EQ(trajectory_builders_.size(),
+//   // all_trajectory_builder_options_.size());
+//   return trajectory_id;
+// }
+
+int MapBuilder::AddTrajectoryForDeserialization() {
   const int trajectory_id = trajectory_builders_.size();
   trajectory_builders_.emplace_back();
-  all_trajectory_builder_options_.push_back(options_with_sensor_ids_proto);
-  CHECK_EQ(trajectory_builders_.size(), all_trajectory_builder_options_.size());
+  // all_trajectory_builder_options_.push_back(options_with_sensor_ids_proto);
+  // CHECK_EQ(trajectory_builders_.size(),
+  // all_trajectory_builder_options_.size());
   return trajectory_id;
 }
 
@@ -248,15 +289,17 @@ std::string MapBuilder::SubmapToProto(
 
 void MapBuilder::SerializeState(bool include_unfinished_submaps,
                                 io::ProtoStreamWriter* const writer) {
-  io::WritePbStream(*pose_graph_2d_, all_trajectory_builder_options_, writer,
-                    include_unfinished_submaps);
+  io::WritePbStream(*pose_graph_2d_,
+                    // all_trajectory_builder_options_,
+                    writer, include_unfinished_submaps);
 }
 
 bool MapBuilder::SerializeStateToFile(bool include_unfinished_submaps,
                                       const std::string& filename) {
   io::ProtoStreamWriter writer(filename);
-  io::WritePbStream(*pose_graph_2d_, all_trajectory_builder_options_, &writer,
-                    include_unfinished_submaps);
+  io::WritePbStream(*pose_graph_2d_,
+                    // all_trajectory_builder_options_,
+                    &writer, include_unfinished_submaps);
   return (writer.Close());
 }
 
@@ -264,16 +307,15 @@ std::map<int, int> MapBuilder::LoadState(io::ProtoStreamReader* const reader,
                                          bool load_frozen_state) {
   io::ProtoStreamDeserializer deserializer(reader);
   proto::PoseGraph pose_graph_proto = deserializer.pose_graph();
-  const auto& all_builder_options_proto =
-      deserializer.all_trajectory_builder_options();
+  // const auto& all_builder_options_proto =
+  //     deserializer.all_trajectory_builder_options();
 
   std::map<int, int> trajectory_remapping;
   for (int i = 0; i < pose_graph_proto.trajectory_size(); ++i) {
     auto& trajectory_proto = *pose_graph_proto.mutable_trajectory(i);
-    const auto& options_with_sensor_ids_proto =
-        all_builder_options_proto.options_with_sensor_ids(i);
-    const int new_trajectory_id =
-        AddTrajectoryForDeserialization(options_with_sensor_ids_proto);
+    // const auto& options_with_sensor_ids_proto =
+    //     all_builder_options_proto.options_with_sensor_ids(i);
+    const int new_trajectory_id = AddTrajectoryForDeserialization();
     CHECK(trajectory_remapping
               .emplace(trajectory_proto.trajectory_id(), new_trajectory_id)
               .second)
@@ -441,10 +483,10 @@ std::map<int, int> MapBuilder::LoadStateFromFile(
   return LoadState(&stream, load_frozen_state);
 }
 
-std::unique_ptr<MapBuilder> CreateMapBuilder(
-    const proto::MapBuilderOptions& options) {
-  return absl::make_unique<MapBuilder>(options);
-}
+// std::unique_ptr<MapBuilder> CreateMapBuilder(
+//     const proto::MapBuilderOptions& options) {
+//   return absl::make_unique<MapBuilder>(options);
+// }
 
 }  // namespace mapping
 }  // namespace cartographer

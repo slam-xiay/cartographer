@@ -29,31 +29,31 @@ using mapping::SubmapId;
 using mapping::TrajectoryNode;
 using mapping::proto::SerializedData;
 
-mapping::proto::AllTrajectoryBuilderOptions
-CreateAllTrajectoryBuilderOptionsProto(
-    const std::vector<mapping::proto::TrajectoryBuilderOptionsWithSensorIds>&
-        all_options_with_sensor_ids,
-    const std::vector<int>& trajectory_ids_to_serialize) {
-  mapping::proto::AllTrajectoryBuilderOptions all_options_proto;
-  for (auto id : trajectory_ids_to_serialize) {
-    *all_options_proto.add_options_with_sensor_ids() =
-        all_options_with_sensor_ids[id];
-  }
-  return all_options_proto;
-}
+// mapping::proto::AllTrajectoryBuilderOptions
+// CreateAllTrajectoryBuilderOptionsProto(
+//     const std::vector<mapping::proto::TrajectoryBuilderOptionsWithSensorIds>&
+//         all_options_with_sensor_ids,
+//     const std::vector<int>& trajectory_ids_to_serialize) {
+//   mapping::proto::AllTrajectoryBuilderOptions all_options_proto;
+//   for (auto id : trajectory_ids_to_serialize) {
+//     *all_options_proto.add_options_with_sensor_ids() =
+//         all_options_with_sensor_ids[id];
+//   }
+//   return all_options_proto;
+// }
 
 // Will return all trajectory ids, that have `state != DELETED`.
-std::vector<int> GetValidTrajectoryIds(
-    const std::map<int, PoseGraphInterface::TrajectoryState>&
-        trajectory_states) {
-  std::vector<int> valid_trajectories;
-  for (const auto& t : trajectory_states) {
-    if (t.second != PoseGraphInterface::TrajectoryState::DELETED) {
-      valid_trajectories.push_back(t.first);
-    }
-  }
-  return valid_trajectories;
-}
+// std::vector<int> GetValidTrajectoryIds(
+//     const std::map<int, PoseGraphInterface::TrajectoryState>&
+//         trajectory_states) {
+//   std::vector<int> valid_trajectories;
+//   for (const auto& t : trajectory_states) {
+//     if (t.second != PoseGraphInterface::TrajectoryState::DELETED) {
+//       valid_trajectories.push_back(t.first);
+//     }
+//   }
+//   return valid_trajectories;
+// }
 
 mapping::proto::SerializationHeader CreateHeader() {
   mapping::proto::SerializationHeader header;
@@ -68,16 +68,16 @@ SerializedData SerializePoseGraph(const mapping::PoseGraph& pose_graph,
   return proto;
 }
 
-SerializedData SerializeTrajectoryBuilderOptions(
-    const std::vector<mapping::proto::TrajectoryBuilderOptionsWithSensorIds>&
-        trajectory_builder_options,
-    const std::vector<int>& trajectory_ids_to_serialize) {
-  SerializedData proto;
-  *proto.mutable_all_trajectory_builder_options() =
-      CreateAllTrajectoryBuilderOptionsProto(trajectory_builder_options,
-                                             trajectory_ids_to_serialize);
-  return proto;
-}
+// SerializedData SerializeTrajectoryBuilderOptions(
+//     const std::vector<mapping::proto::TrajectoryBuilderOptionsWithSensorIds>&
+//         trajectory_builder_options,
+//     const std::vector<int>& trajectory_ids_to_serialize) {
+//   SerializedData proto;
+//   *proto.mutable_all_trajectory_builder_options() =
+//       CreateAllTrajectoryBuilderOptionsProto(trajectory_builder_options,
+//                                              trajectory_ids_to_serialize);
+//   return proto;
+// }
 
 void SerializeSubmaps(
     const MapById<SubmapId, PoseGraphInterface::SubmapData>& submap_data,
@@ -214,15 +214,15 @@ void SerializeOdometryData(
 
 void WritePbStream(
     const mapping::PoseGraph& pose_graph,
-    const std::vector<mapping::proto::TrajectoryBuilderOptionsWithSensorIds>&
-        trajectory_builder_options,
+    // const std::vector<mapping::proto::TrajectoryBuilderOptionsWithSensorIds>&
+    //     trajectory_builder_options,
     ProtoStreamWriter* const writer, bool include_unfinished_submaps) {
   writer->WriteProto(CreateHeader());
   writer->WriteProto(
       SerializePoseGraph(pose_graph, include_unfinished_submaps));
-  writer->WriteProto(SerializeTrajectoryBuilderOptions(
-      trajectory_builder_options,
-      GetValidTrajectoryIds(pose_graph.GetTrajectoryStates())));
+  // writer->WriteProto(SerializeTrajectoryBuilderOptions(
+  //     trajectory_builder_options,
+  //     GetValidTrajectoryIds(pose_graph.GetTrajectoryStates())));
 
   SerializeSubmaps(pose_graph.GetAllSubmapData(), include_unfinished_submaps,
                    writer);

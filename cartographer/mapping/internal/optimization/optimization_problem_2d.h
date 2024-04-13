@@ -35,12 +35,14 @@
 #include "cartographer/common/time.h"
 #include "cartographer/mapping/id.h"
 #include "cartographer/mapping/pose_graph_interface.h"
-#include "cartographer/mapping/proto/pose_graph/optimization_problem_options.pb.h"
+// #include
+// "cartographer/mapping/proto/pose_graph/optimization_problem_options.pb.h"
 #include "cartographer/sensor/imu_data.h"
 #include "cartographer/sensor/map_by_time.h"
 #include "cartographer/sensor/odometry_data.h"
 #include "cartographer/transform/timestamped_transform.h"
 // #include "cartographer/sensor/fixed_frame_pose_data.h"
+#include "cartographer/common/config.h"
 #include "cartographer/sensor/imu_data.h"
 #include "cartographer/sensor/map_by_time.h"
 #include "cartographer/sensor/odometry_data.h"
@@ -64,8 +66,9 @@ struct SubmapSpec2D {
 class OptimizationProblem2D {
  public:
   using Constraint = PoseGraphInterface::Constraint;
-  explicit OptimizationProblem2D(
-      const optimization::proto::OptimizationProblemOptions& options);
+  // explicit OptimizationProblem2D(
+  //     const optimization::proto::OptimizationProblemOptions& options);
+  explicit OptimizationProblem2D();
   ~OptimizationProblem2D();
 
   OptimizationProblem2D(const OptimizationProblem2D&) = delete;
@@ -82,7 +85,7 @@ class OptimizationProblem2D {
   void InsertSubmap(const SubmapId& submap_id,
                     const transform::Rigid2d& global_submap_pose);
   void TrimSubmap(const SubmapId& submap_id);
-  void SetMaxNumIterations(int32 max_num_iterations);
+  // void SetMaxNumIterations(int32 max_num_iterations);
 
   // void Solve(
   //     const std::vector<Constraint>& constraints,
@@ -132,7 +135,7 @@ class OptimizationProblem2D {
       int trajectory_id, const NodeSpec2D& first_node_data,
       const NodeSpec2D& second_node_data) const;
 
-  optimization::proto::OptimizationProblemOptions options_;
+  // optimization::proto::OptimizationProblemOptions options_;
   MapById<NodeId, NodeSpec2D> node_data_;
   MapById<SubmapId, SubmapSpec2D> submap_data_;
   // std::map<std::string, transform::Rigid3d> landmark_data_;

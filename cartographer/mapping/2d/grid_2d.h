@@ -25,14 +25,15 @@
 #include "cartographer/mapping/probability_values.h"
 #include "cartographer/mapping/proto/grid_2d.pb.h"
 #include "cartographer/mapping/proto/submap_visualization.pb.h"
-#include "cartographer/mapping/proto/submaps_options_2d.pb.h"
+// #include "cartographer/mapping/proto/submaps_options_2d.pb.h"
+#include "cartographer/common/config.h"
 #include "cartographer/mapping/value_conversion_tables.h"
 
 namespace cartographer {
 namespace mapping {
 
-proto::GridOptions2D CreateGridOptions2D(
-    common::LuaParameterDictionary* const parameter_dictionary);
+// proto::GridOptions2D CreateGridOptions2D(
+//     common::LuaParameterDictionary* const parameter_dictionary);
 
 enum class GridType { PROBABILITY_GRID };
 

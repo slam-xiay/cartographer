@@ -17,7 +17,8 @@
 #include "cartographer/mapping/pose_graph.h"
 
 #include "cartographer/mapping/internal/constraints/constraint_builder.h"
-#include "cartographer/mapping/internal/optimization/optimization_problem_options.h"
+// #include
+// "cartographer/mapping/internal/optimization/optimization_problem_options.h"
 #include "cartographer/transform/transform.h"
 #include "glog/logging.h"
 
@@ -69,50 +70,51 @@ std::vector<PoseGraph::Constraint> FromProto(
   return constraints;
 }
 
-void PopulateOverlappingSubmapsTrimmerOptions2D(
-    proto::PoseGraphOptions* const pose_graph_options,
-    common::LuaParameterDictionary* const parameter_dictionary) {
-  constexpr char kDictionaryKey[] = "overlapping_submaps_trimmer_2d";
-  if (!parameter_dictionary->HasKey(kDictionaryKey)) return;
+// void PopulateOverlappingSubmapsTrimmerOptions2D(
+//     proto::PoseGraphOptions* const pose_graph_options,
+//     common::LuaParameterDictionary* const parameter_dictionary) {
+//   constexpr char kDictionaryKey[] = "overlapping_submaps_trimmer_2d";
+//   if (!parameter_dictionary->HasKey(kDictionaryKey)) return;
 
-  auto options_dictionary = parameter_dictionary->GetDictionary(kDictionaryKey);
-  auto* options = pose_graph_options->mutable_overlapping_submaps_trimmer_2d();
-  options->set_fresh_submaps_count(
-      options_dictionary->GetInt("fresh_submaps_count"));
-  options->set_min_covered_area(
-      options_dictionary->GetDouble("min_covered_area"));
-  options->set_min_added_submaps_count(
-      options_dictionary->GetInt("min_added_submaps_count"));
-}
+//   auto options_dictionary =
+//   parameter_dictionary->GetDictionary(kDictionaryKey); auto* options =
+//   pose_graph_options->mutable_overlapping_submaps_trimmer_2d();
+//   options->set_fresh_submaps_count(
+//       options_dictionary->GetInt("fresh_submaps_count"));
+//   options->set_min_covered_area(
+//       options_dictionary->GetDouble("min_covered_area"));
+//   options->set_min_added_submaps_count(
+//       options_dictionary->GetInt("min_added_submaps_count"));
+// }
 
-proto::PoseGraphOptions CreatePoseGraphOptions(
-    common::LuaParameterDictionary* const parameter_dictionary) {
-  proto::PoseGraphOptions options;
-  options.set_optimize_every_n_nodes(
-      parameter_dictionary->GetInt("optimize_every_n_nodes"));
-  *options.mutable_constraint_builder_options() =
-      constraints::CreateConstraintBuilderOptions(
-          parameter_dictionary->GetDictionary("constraint_builder").get());
-  options.set_matcher_translation_weight(
-      parameter_dictionary->GetDouble("matcher_translation_weight"));
-  options.set_matcher_rotation_weight(
-      parameter_dictionary->GetDouble("matcher_rotation_weight"));
-  *options.mutable_optimization_problem_options() =
-      optimization::CreateOptimizationProblemOptions(
-          parameter_dictionary->GetDictionary("optimization_problem").get());
-  options.set_max_num_final_iterations(
-      parameter_dictionary->GetNonNegativeInt("max_num_final_iterations"));
-  CHECK_GT(options.max_num_final_iterations(), 0);
-  options.set_global_sampling_ratio(
-      parameter_dictionary->GetDouble("global_sampling_ratio"));
-  options.set_log_residual_histograms(
-      parameter_dictionary->GetBool("log_residual_histograms"));
-  options.set_global_constraint_search_after_n_seconds(
-      parameter_dictionary->GetDouble(
-          "global_constraint_search_after_n_seconds"));
-  PopulateOverlappingSubmapsTrimmerOptions2D(&options, parameter_dictionary);
-  return options;
-}
+// proto::PoseGraphOptions CreatePoseGraphOptions(
+//     common::LuaParameterDictionary* const parameter_dictionary) {
+//   proto::PoseGraphOptions options;
+//   options.set_optimize_every_n_nodes(
+//       parameter_dictionary->GetInt("optimize_every_n_nodes"));
+//   *options.mutable_constraint_builder_options() =
+//       constraints::CreateConstraintBuilderOptions(
+//           parameter_dictionary->GetDictionary("constraint_builder").get());
+//   options.set_matcher_translation_weight(
+//       parameter_dictionary->GetDouble("matcher_translation_weight"));
+//   options.set_matcher_rotation_weight(
+//       parameter_dictionary->GetDouble("matcher_rotation_weight"));
+//   *options.mutable_optimization_problem_options() =
+//       optimization::CreateOptimizationProblemOptions(
+//           parameter_dictionary->GetDictionary("optimization_problem").get());
+//   options.set_max_num_final_iterations(
+//       parameter_dictionary->GetNonNegativeInt("max_num_final_iterations"));
+//   CHECK_GT(options.max_num_final_iterations(), 0);
+//   options.set_global_sampling_ratio(
+//       parameter_dictionary->GetDouble("global_sampling_ratio"));
+//   options.set_log_residual_histograms(
+//       parameter_dictionary->GetBool("log_residual_histograms"));
+//   options.set_global_constraint_search_after_n_seconds(
+//       parameter_dictionary->GetDouble(
+//           "global_constraint_search_after_n_seconds"));
+//   PopulateOverlappingSubmapsTrimmerOptions2D(&options, parameter_dictionary);
+//   return options;
+// }
 
 proto::PoseGraph::Constraint ToProto(const PoseGraph::Constraint& constraint) {
   proto::PoseGraph::Constraint constraint_proto;

@@ -40,11 +40,11 @@ void Run(const std::string& pbstream_filename, bool all_debug_strings) {
   io::ProtoStreamDeserializer deserializer(&reader);
   const auto header = deserializer.header();
   LOG(INFO) << "Header: " << header.DebugString();
-  for (const mapping::proto::TrajectoryBuilderOptionsWithSensorIds&
-           trajectory_options : deserializer.all_trajectory_builder_options()
-                                    .options_with_sensor_ids()) {
-    LOG(INFO) << "Trajectory options: " << trajectory_options.DebugString();
-  }
+  // for (const mapping::proto::TrajectoryBuilderOptionsWithSensorIds&
+  //          trajectory_options : deserializer.all_trajectory_builder_options()
+  //                                   .options_with_sensor_ids()) {
+  //   LOG(INFO) << "Trajectory options: " << trajectory_options.DebugString();
+  // }
   const mapping::proto::PoseGraph pose_graph = deserializer.pose_graph();
   for (const mapping::proto::Trajectory& trajectory : pose_graph.trajectory()) {
     LOG(INFO) << "Trajectory id: " << trajectory.trajectory_id()

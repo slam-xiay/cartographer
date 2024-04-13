@@ -19,9 +19,10 @@
 
 #include <bitset>
 
-#include "cartographer/common/lua_parameter_dictionary.h"
+#include "cartographer/common/config.h"
+// #include "cartographer/common/lua_parameter_dictionary.h"
 #include "cartographer/sensor/point_cloud.h"
-#include "cartographer/sensor/proto/adaptive_voxel_filter_options.pb.h"
+// #include "cartographer/sensor/proto/adaptive_voxel_filter_options.pb.h"
 #include "cartographer/sensor/timed_point_cloud_data.h"
 
 namespace cartographer {
@@ -37,12 +38,14 @@ std::vector<sensor::TimedPointCloudOriginData::RangeMeasurement> VoxelFilter(
         range_measurements,
     const float resolution);
 
-proto::AdaptiveVoxelFilterOptions CreateAdaptiveVoxelFilterOptions(
-    common::LuaParameterDictionary* const parameter_dictionary);
+// proto::AdaptiveVoxelFilterOptions CreateAdaptiveVoxelFilterOptions(
+//     common::LuaParameterDictionary* const parameter_dictionary);
 
-PointCloud AdaptiveVoxelFilter(
-    const PointCloud& point_cloud,
-    const proto::AdaptiveVoxelFilterOptions& options);
+PointCloud AdaptiveVoxelFilter(const PointCloud& point_cloud);
+
+// PointCloud AdaptiveVoxelFilter(
+//     const PointCloud& point_cloud,
+//     const proto::AdaptiveVoxelFilterOptions& options);
 
 }  // namespace sensor
 }  // namespace cartographer

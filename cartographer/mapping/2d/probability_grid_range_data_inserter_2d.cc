@@ -96,54 +96,60 @@ void CastRays(const sensor::RangeData& range_data,
 }
 }  // namespace
 
-proto::ProbabilityGridRangeDataInserterOptions2D
-CreateProbabilityGridRangeDataInserterOptions2D(
-    common::LuaParameterDictionary* parameter_dictionary) {
-  proto::ProbabilityGridRangeDataInserterOptions2D options;
-  options.set_hit_probability(
-      parameter_dictionary->GetDouble("hit_probability"));
-  options.set_miss_probability(
-      parameter_dictionary->GetDouble("miss_probability"));
-  options.set_insert_free_space(
-      parameter_dictionary->HasKey("insert_free_space")
-          ? parameter_dictionary->GetBool("insert_free_space")
-          : true);
-  CHECK_GT(options.hit_probability(), 0.5);
-  CHECK_LT(options.miss_probability(), 0.5);
-  return options;
-}
+// proto::ProbabilityGridRangeDataInserterOptions2D
+// CreateProbabilityGridRangeDataInserterOptions2D(
+//     common::LuaParameterDictionary* parameter_dictionary) {
+//   proto::ProbabilityGridRangeDataInserterOptions2D options;
+//   options.set_hit_probability(
+//       parameter_dictionary->GetDouble("hit_probability"));
+//   options.set_miss_probability(
+//       parameter_dictionary->GetDouble("miss_probability"));
+//   options.set_insert_free_space(
+//       parameter_dictionary->HasKey("insert_free_space")
+//           ? parameter_dictionary->GetBool("insert_free_space")
+//           : true);
+//   CHECK_GT(options.hit_probability(), 0.5);
+//   CHECK_LT(options.miss_probability(), 0.5);
+//   return options;
+// }
 
-proto::RangeDataInserterOptions CreateRangeDataInserterOptions(
-    common::LuaParameterDictionary* const parameter_dictionary) {
-  proto::RangeDataInserterOptions options;
-  const std::string range_data_inserter_type_string =
-      parameter_dictionary->GetString("range_data_inserter_type");
-  proto::RangeDataInserterOptions_RangeDataInserterType
-      range_data_inserter_type;
-  CHECK(proto::RangeDataInserterOptions_RangeDataInserterType_Parse(
-      range_data_inserter_type_string, &range_data_inserter_type))
-      << "Unknown RangeDataInserterOptions_RangeDataInserterType kind: "
-      << range_data_inserter_type_string;
-  options.set_range_data_inserter_type(range_data_inserter_type);
-  *options.mutable_probability_grid_range_data_inserter_options_2d() =
-      CreateProbabilityGridRangeDataInserterOptions2D(
-          parameter_dictionary
-              ->GetDictionary("probability_grid_range_data_inserter")
-              .get());
-  //   *options.mutable_tsdf_range_data_inserter_options_2d() =
-  //       CreateTSDFRangeDataInserterOptions2D(
-  // parameter_dictionary->GetDictionary("tsdf_range_data_inserter")
-  //               .get());
-  return options;
-}
+// proto::RangeDataInserterOptions CreateRangeDataInserterOptions(
+//     common::LuaParameterDictionary* const parameter_dictionary) {
+//   proto::RangeDataInserterOptions options;
+//   const std::string range_data_inserter_type_string =
+//       parameter_dictionary->GetString("range_data_inserter_type");
+//   proto::RangeDataInserterOptions_RangeDataInserterType
+//       range_data_inserter_type;
+//   CHECK(proto::RangeDataInserterOptions_RangeDataInserterType_Parse(
+//       range_data_inserter_type_string, &range_data_inserter_type))
+//       << "Unknown RangeDataInserterOptions_RangeDataInserterType kind: "
+//       << range_data_inserter_type_string;
+//   options.set_range_data_inserter_type(range_data_inserter_type);
+//   *options.mutable_probability_grid_range_data_inserter_options_2d() =
+//       CreateProbabilityGridRangeDataInserterOptions2D(
+//           parameter_dictionary
+//               ->GetDictionary("probability_grid_range_data_inserter")
+//               .get());
+//   //   *options.mutable_tsdf_range_data_inserter_options_2d() =
+//   //       CreateTSDFRangeDataInserterOptions2D(
+//   // parameter_dictionary->GetDictionary("tsdf_range_data_inserter")
+//   //               .get());
+//   return options;
+// }
 
-ProbabilityGridRangeDataInserter2D::ProbabilityGridRangeDataInserter2D(
-    const proto::ProbabilityGridRangeDataInserterOptions2D& options)
-    : options_(options),
-      hit_table_(ComputeLookupTableToApplyCorrespondenceCostOdds(
-          Odds(options.hit_probability()))),
+// ProbabilityGridRangeDataInserter2D::ProbabilityGridRangeDataInserter2D(
+//     const proto::ProbabilityGridRangeDataInserterOptions2D& options)
+//     : options_(options),
+//       hit_table_(ComputeLookupTableToApplyCorrespondenceCostOdds(
+//           Odds(options.hit_probability()))),
+//       miss_table_(ComputeLookupTableToApplyCorrespondenceCostOdds(
+//           Odds(options.miss_probability()))) {}
+
+ProbabilityGridRangeDataInserter2D::ProbabilityGridRangeDataInserter2D()
+    : hit_table_(ComputeLookupTableToApplyCorrespondenceCostOdds(
+          Odds(kSubmapsHitPorbility))),
       miss_table_(ComputeLookupTableToApplyCorrespondenceCostOdds(
-          Odds(options.miss_probability()))) {}
+          Odds(kSubmapsMissPorbility))) {}
 
 void ProbabilityGridRangeDataInserter2D::Insert(
     const sensor::RangeData& range_data, Grid2D* const grid) const {
@@ -151,7 +157,7 @@ void ProbabilityGridRangeDataInserter2D::Insert(
   CHECK(probability_grid != nullptr);
   // By not finishing the update after hits are inserted, we give hits priority
   // (i.e. no hits will be ignored because of a miss in the same cell).
-  CastRays(range_data, hit_table_, miss_table_, options_.insert_free_space(),
+  CastRays(range_data, hit_table_, miss_table_, kSubmapsInsertFreeSpace,
            probability_grid);
   probability_grid->FinishUpdate();
 }

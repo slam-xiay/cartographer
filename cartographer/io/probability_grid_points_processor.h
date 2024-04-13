@@ -44,8 +44,8 @@ class ProbabilityGridPointsProcessor : public PointsProcessor {
   enum class OutputType { kPng, kPb };
   ProbabilityGridPointsProcessor(
       double resolution,
-      const mapping::proto::ProbabilityGridRangeDataInserterOptions2D&
-          probability_grid_range_data_inserter_options,
+      //   const mapping::proto::ProbabilityGridRangeDataInserterOptions2D&
+      //       probability_grid_range_data_inserter_options,
       const DrawTrajectories& draw_trajectories, const OutputType& output_type,
       std::unique_ptr<FileWriter> file_writer,
       const std::vector<mapping::proto::Trajectory>& trajectories,
@@ -55,10 +55,10 @@ class ProbabilityGridPointsProcessor : public PointsProcessor {
   ProbabilityGridPointsProcessor& operator=(
       const ProbabilityGridPointsProcessor&) = delete;
 
-  static std::unique_ptr<ProbabilityGridPointsProcessor> FromDictionary(
-      const std::vector<mapping::proto::Trajectory>& trajectories,
-      const FileWriterFactory& file_writer_factory,
-      common::LuaParameterDictionary* dictionary, PointsProcessor* next);
+  //   static std::unique_ptr<ProbabilityGridPointsProcessor> FromDictionary(
+  //       const std::vector<mapping::proto::Trajectory>& trajectories,
+  //       const FileWriterFactory& file_writer_factory,
+  //       common::LuaParameterDictionary* dictionary, PointsProcessor* next);
 
   ~ProbabilityGridPointsProcessor() override {}
 

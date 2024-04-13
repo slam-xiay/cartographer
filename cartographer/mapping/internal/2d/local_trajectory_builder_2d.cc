@@ -35,16 +35,20 @@ namespace mapping {
 // static auto* kScanMatcherResidualDistanceMetric = metrics::Histogram::Null();
 // static auto* kScanMatcherResidualAngleMetric = metrics::Histogram::Null();
 
+// LocalTrajectoryBuilder2D::LocalTrajectoryBuilder2D(
+//     const proto::LocalTrajectoryBuilderOptions2D& options,
+//     const std::vector<std::string>& expected_range_sensor_ids)
+//     :  // options_(options),
+//       active_submaps_(options.submaps_options()),
+//       motion_filter_(options_.motion_filter_options()),
+//       real_time_correlative_scan_matcher_(
+//           options_.real_time_correlative_scan_matcher_options()),
+//       ceres_scan_matcher_(options_.ceres_scan_matcher_options()),
+//       range_data_collator_(expected_range_sensor_ids) {}
+
 LocalTrajectoryBuilder2D::LocalTrajectoryBuilder2D(
-    const proto::LocalTrajectoryBuilderOptions2D& options,
     const std::vector<std::string>& expected_range_sensor_ids)
-    : options_(options),
-      active_submaps_(options.submaps_options()),
-      motion_filter_(options_.motion_filter_options()),
-      real_time_correlative_scan_matcher_(
-          options_.real_time_correlative_scan_matcher_options()),
-      ceres_scan_matcher_(options_.ceres_scan_matcher_options()),
-      range_data_collator_(expected_range_sensor_ids) {}
+    : range_data_collator_(expected_range_sensor_ids) {}
 
 LocalTrajectoryBuilder2D::~LocalTrajectoryBuilder2D() {}
 
@@ -55,11 +59,10 @@ LocalTrajectoryBuilder2D::TransformToGravityAlignedFrameAndFilter(
   const sensor::RangeData cropped =
       sensor::CropRangeData(sensor::TransformRangeData(
                                 range_data, transform_to_gravity_aligned_frame),
-                            options_.min_z(), options_.max_z());
+                            kMinHeight, kMaxHeight);
   return sensor::RangeData{
-      cropped.origin,
-      sensor::VoxelFilter(cropped.returns, options_.voxel_filter_size()),
-      sensor::VoxelFilter(cropped.misses, options_.voxel_filter_size())};
+      cropped.origin, sensor::VoxelFilter(cropped.returns, kVoxelFilterSize),
+      sensor::VoxelFilter(cropped.misses, kVoxelFilterSize)};
 }
 
 std::unique_ptr<transform::Rigid2d> LocalTrajectoryBuilder2D::ScanMatch(
@@ -74,7 +77,7 @@ std::unique_ptr<transform::Rigid2d> LocalTrajectoryBuilder2D::ScanMatch(
   // the Ceres scan matcher.
   transform::Rigid2d initial_ceres_pose = pose_prediction;
 
-  if (options_.use_online_correlative_scan_matching()) {
+  if (kUseOnlineCSM) {
     // const double score =
     real_time_correlative_scan_matcher_.Match(
         pose_prediction, filtered_gravity_aligned_point_cloud,
@@ -115,7 +118,11 @@ LocalTrajectoryBuilder2D::AddRangeData(
 
   const common::Time& time = synchronized_data.time;
   // Initialize extrapolator now if we do not ever use an IMU.
-  if (!options_.use_imu_data()) {
+  // if (!options_.use_imu_data()) {
+  //   InitializeExtrapolator(time);
+  // }
+
+  if (kUseImuData) {
     InitializeExtrapolator(time);
   }
 
@@ -173,20 +180,29 @@ LocalTrajectoryBuilder2D::AddRangeData(
         range_data_poses[i] * sensor::ToRangefinderPoint(hit);
     const Eigen::Vector3f delta = hit_in_local.position - origin_in_local;
     const float range = delta.norm();
-    if (range >= options_.min_range()) {
-      if (range <= options_.max_range()) {
+    if (range >= kLidarMinRange) {
+      if (range <= kLidarMaxRange) {
         accumulated_range_data_.returns.push_back(hit_in_local);
       } else {
         hit_in_local.position =
-            origin_in_local +
-            options_.missing_data_ray_length() / range * delta;
+            origin_in_local + kMissingDataRayDistance / range * delta;
         accumulated_range_data_.misses.push_back(hit_in_local);
       }
     }
+    // if (range >= options_.min_range()) {
+    //   if (range <= options_.max_range()) {
+    //     accumulated_range_data_.returns.push_back(hit_in_local);
+    //   } else {
+    //     hit_in_local.position =
+    //         origin_in_local +
+    //         options_.missing_data_ray_length() / range * delta;
+    //     accumulated_range_data_.misses.push_back(hit_in_local);
+    //   }
+    // }
   }
   ++num_accumulated_;
 
-  if (num_accumulated_ >= options_.num_accumulated_range_data()) {
+  if (num_accumulated_ >= kAccumulatedRangeCount) {
     const common::Time current_sensor_time = synchronized_data.time;
     absl::optional<common::Duration> sensor_duration;
     if (last_sensor_time_.has_value()) {
@@ -227,13 +243,11 @@ LocalTrajectoryBuilder2D::AddAccumulatedRangeData(
       non_gravity_aligned_pose_prediction * gravity_alignment.inverse());
 
   const sensor::PointCloud& filtered_gravity_aligned_point_cloud =
-      sensor::AdaptiveVoxelFilter(gravity_aligned_range_data.returns,
-                                  options_.adaptive_voxel_filter_options());
+      sensor::AdaptiveVoxelFilter(gravity_aligned_range_data.returns);
   if (filtered_gravity_aligned_point_cloud.empty()) {
     return nullptr;
   }
 
-  // local map frame <- gravity-aligned frame
   std::unique_ptr<transform::Rigid2d> pose_estimate_2d =
       ScanMatch(time, pose_prediction, filtered_gravity_aligned_point_cloud);
   if (pose_estimate_2d == nullptr) {
@@ -302,7 +316,8 @@ LocalTrajectoryBuilder2D::InsertIntoSubmap(
 }
 
 void LocalTrajectoryBuilder2D::AddImuData(const sensor::ImuData& imu_data) {
-  CHECK(options_.use_imu_data()) << "An unexpected IMU packet was added.";
+  // CHECK(options_.use_imu_data()) << "An unexpected IMU packet was added.";
+  CHECK(kUseImuData) << "An unexpected IMU packet was added.";
   InitializeExtrapolator(imu_data.time);
   extrapolator_->AddImuData(imu_data);
 }
@@ -324,12 +339,8 @@ void LocalTrajectoryBuilder2D::InitializeExtrapolator(const common::Time time) {
   // CHECK(!options_.pose_extrapolator_options().use_imu_based());
   // TODO(gaschler): Consider using InitializeWithImu as 3D does.
   extrapolator_ = absl::make_unique<PoseExtrapolator>(
-      ::cartographer::common::FromSeconds(options_.pose_extrapolator_options()
-                                              .constant_velocity()
-                                              .pose_queue_duration()),
-      options_.pose_extrapolator_options()
-          .constant_velocity()
-          .imu_gravity_time_constant());
+      ::cartographer::common::FromSeconds(kPoseExtrapolatorDuration),
+      kImuGravityTimeConstant);
   extrapolator_->AddPose(time, transform::Rigid3d::Identity());
 }
 

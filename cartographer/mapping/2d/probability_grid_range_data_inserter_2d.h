@@ -24,27 +24,29 @@
 #include "cartographer/common/port.h"
 #include "cartographer/mapping/2d/probability_grid.h"
 #include "cartographer/mapping/2d/xy_index.h"
-#include "cartographer/mapping/proto/probability_grid_range_data_inserter_options_2d.pb.h"
+// #include
+// "cartographer/mapping/proto/probability_grid_range_data_inserter_options_2d.pb.h"
 // #include "cartographer/mapping/range_data_inserter_interface.h"
-#include "cartographer/mapping/2d/probability_grid_range_data_inserter_2d.h"
+// #include "cartographer/mapping/2d/probability_grid_range_data_inserter_2d.h"
+#include "cartographer/common/config.h"
 #include "cartographer/sensor/point_cloud.h"
 #include "cartographer/sensor/range_data.h"
 
 namespace cartographer {
 namespace mapping {
 
-proto::ProbabilityGridRangeDataInserterOptions2D
-CreateProbabilityGridRangeDataInserterOptions2D(
-    common::LuaParameterDictionary* parameter_dictionary);
+// proto::ProbabilityGridRangeDataInserterOptions2D
+// CreateProbabilityGridRangeDataInserterOptions2D(
+//     common::LuaParameterDictionary* parameter_dictionary);
 
-proto::RangeDataInserterOptions CreateRangeDataInserterOptions(
-    common::LuaParameterDictionary* const parameter_dictionary);
+// proto::RangeDataInserterOptions CreateRangeDataInserterOptions(
+//     common::LuaParameterDictionary* const parameter_dictionary);
 
 class ProbabilityGridRangeDataInserter2D {
  public:
-  explicit ProbabilityGridRangeDataInserter2D(
-      const proto::ProbabilityGridRangeDataInserterOptions2D& options);
-
+  //   explicit ProbabilityGridRangeDataInserter2D(
+  //       const proto::ProbabilityGridRangeDataInserterOptions2D& options);
+  explicit ProbabilityGridRangeDataInserter2D();
   ProbabilityGridRangeDataInserter2D(
       const ProbabilityGridRangeDataInserter2D&) = delete;
   ProbabilityGridRangeDataInserter2D& operator=(
@@ -56,7 +58,7 @@ class ProbabilityGridRangeDataInserter2D {
   virtual void Insert(const sensor::RangeData& range_data, Grid2D* grid) const;
 
  private:
-  const proto::ProbabilityGridRangeDataInserterOptions2D options_;
+  //   const proto::ProbabilityGridRangeDataInserterOptions2D options_;
   const std::vector<uint16> hit_table_;
   const std::vector<uint16> miss_table_;
 };

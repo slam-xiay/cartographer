@@ -44,11 +44,11 @@
 // #include "cartographer/metrics/family_factory.h"
 // #include "cartographer/sensor/fixed_frame_pose_data.h"
 // #include "cartographer/sensor/landmark_data.h"
+#include "cartographer/common/config.h"
 #include "cartographer/sensor/odometry_data.h"
 #include "cartographer/sensor/point_cloud.h"
 #include "cartographer/transform/rigid_transform.h"
 #include "cartographer/transform/transform.h"
-
 namespace cartographer {
 namespace mapping {
 
@@ -63,8 +63,11 @@ namespace mapping {
 // All constraints are between a submap i and a node j.
 class PoseGraph2D : public PoseGraph {
  public:
+  //   PoseGraph2D(
+  //       const proto::PoseGraphOptions& options,
+  //       std::unique_ptr<optimization::OptimizationProblem2D>
+  //       optimization_problem, common::ThreadPool* thread_pool);
   PoseGraph2D(
-      const proto::PoseGraphOptions& options,
       std::unique_ptr<optimization::OptimizationProblem2D> optimization_problem,
       common::ThreadPool* thread_pool);
   ~PoseGraph2D() override;
@@ -239,7 +242,7 @@ class PoseGraph2D : public PoseGraph {
   void UpdateTrajectoryConnectivity(const Constraint& constraint)
       EXCLUSIVE_LOCKS_REQUIRED(mutex_);
 
-  const proto::PoseGraphOptions options_;
+  //   const proto::PoseGraphOptions options_;
   GlobalSlamOptimizationCallback global_slam_optimization_callback_;
   mutable absl::Mutex mutex_;
   absl::Mutex work_queue_mutex_;
@@ -253,7 +256,7 @@ class PoseGraph2D : public PoseGraph {
       global_localization_samplers_ GUARDED_BY(mutex_);
 
   // Number of nodes added since last loop closure.
-  int num_nodes_since_last_loop_closure_ GUARDED_BY(mutex_) = 0;
+  size_t num_nodes_since_last_loop_closure_ GUARDED_BY(mutex_) = 0;
 
   // Current optimization problem.
   std::unique_ptr<optimization::OptimizationProblem2D> optimization_problem_;

@@ -32,7 +32,7 @@
 #include "absl/memory/memory.h"
 #include "cartographer/common/math.h"
 #include "cartographer/mapping/internal/2d/overlapping_submaps_trimmer_2d.h"
-#include "cartographer/mapping/proto/pose_graph/constraint_builder_options.pb.h"
+// #include "cartographer/mapping/proto/pose_graph/constraint_builder_options.pb.h"
 #include "cartographer/sensor/compressed_point_cloud.h"
 #include "cartographer/sensor/internal/voxel_filter.h"
 #include "cartographer/transform/transform.h"
@@ -49,21 +49,36 @@ namespace mapping {
 // static auto* kFrozenSubmapsMetric = metrics::Gauge::Null();
 // static auto* kDeletedSubmapsMetric = metrics::Gauge::Null();
 
+// PoseGraph2D::PoseGraph2D(
+//     const proto::PoseGraphOptions& options,
+//     std::unique_ptr<optimization::OptimizationProblem2D>
+//     optimization_problem, common::ThreadPool* thread_pool) :
+//     options_(options),
+//       optimization_problem_(std::move(optimization_problem)),
+//       constraint_builder_(options_.constraint_builder_options(),
+//       thread_pool), thread_pool_(thread_pool) {
+//   if (options.has_overlapping_submaps_trimmer_2d()) {
+//     const auto& trimmer_options = options.overlapping_submaps_trimmer_2d();
+//     AddTrimmer(absl::make_unique<OverlappingSubmapsTrimmer2D>(
+//         trimmer_options.fresh_submaps_count(),
+//         trimmer_options.min_covered_area(),
+//         trimmer_options.min_added_submaps_count()));
+//   }
+// }
+
 PoseGraph2D::PoseGraph2D(
-    const proto::PoseGraphOptions& options,
     std::unique_ptr<optimization::OptimizationProblem2D> optimization_problem,
     common::ThreadPool* thread_pool)
-    : options_(options),
-      optimization_problem_(std::move(optimization_problem)),
-      constraint_builder_(options_.constraint_builder_options(), thread_pool),
+    : optimization_problem_(std::move(optimization_problem)),
+      constraint_builder_(thread_pool),
       thread_pool_(thread_pool) {
-  if (options.has_overlapping_submaps_trimmer_2d()) {
-    const auto& trimmer_options = options.overlapping_submaps_trimmer_2d();
-    AddTrimmer(absl::make_unique<OverlappingSubmapsTrimmer2D>(
-        trimmer_options.fresh_submaps_count(),
-        trimmer_options.min_covered_area(),
-        trimmer_options.min_added_submaps_count()));
-  }
+  // if (options.has_overlapping_submaps_trimmer_2d()) {
+  //   const auto& trimmer_options = options.overlapping_submaps_trimmer_2d();
+  //   AddTrimmer(absl::make_unique<OverlappingSubmapsTrimmer2D>(
+  //       trimmer_options.fresh_submaps_count(),
+  //       trimmer_options.min_covered_area(),
+  //       trimmer_options.min_added_submaps_count()));
+  // }
 }
 
 PoseGraph2D::~PoseGraph2D() {
@@ -201,8 +216,9 @@ void PoseGraph2D::AddTrajectoryIfNeeded(const int trajectory_id) {
   // Make sure we have a sampler for this trajectory.
   if (!global_localization_samplers_[trajectory_id]) {
     global_localization_samplers_[trajectory_id] =
-        absl::make_unique<common::FixedRatioSampler>(
-            options_.global_sampling_ratio());
+        absl::make_unique<common::FixedRatioSampler>(kGlobalSamplingRatio);
+    // absl::make_unique<common::FixedRatioSampler>(
+    //     options_.global_sampling_ratio());
   }
 }
 
@@ -280,10 +296,8 @@ void PoseGraph2D::ComputeConstraint(const NodeId& node_id,
         data_.trajectory_connectivity_state.LastConnectionTime(
             node_id.trajectory_id, submap_id.trajectory_id);
     if (node_id.trajectory_id == submap_id.trajectory_id ||
-        node_time <
-            last_connection_time +
-                common::FromSeconds(
-                    options_.global_constraint_search_after_n_seconds())) {
+        node_time < last_connection_time +
+                        common::FromSeconds(kGlobalConstraintSearchInterval)) {
       // If the node and the submap belong to the same trajectory or if there
       // has been a recent global constraint that ties that node's trajectory to
       // the submap's trajectory, it suffices to do a match constrained to a
@@ -353,8 +367,7 @@ WorkItem::Result PoseGraph2D::ComputeConstraintsForNode(
           Constraint{submap_id,
                      node_id,
                      {transform::Embed3D(constraint_transform),
-                      options_.matcher_translation_weight(),
-                      options_.matcher_rotation_weight()},
+                      kCSMTranslationWeight, kCSMRotationWeight},
                      Constraint::INTRA_SUBMAP});
     }
 
@@ -396,8 +409,8 @@ WorkItem::Result PoseGraph2D::ComputeConstraintsForNode(
   constraint_builder_.NotifyEndOfNode();
   absl::MutexLock locker(&mutex_);
   ++num_nodes_since_last_loop_closure_;
-  if (options_.optimize_every_n_nodes() > 0 &&
-      num_nodes_since_last_loop_closure_ > options_.optimize_every_n_nodes()) {
+  if (kOptimizeEveryNNodes > 0 &&
+      num_nodes_since_last_loop_closure_ > kOptimizeEveryNNodes) {
     return WorkItem::Result::kRunOptimization;
   }
   return WorkItem::Result::kDoNotRunOptimization;
@@ -844,16 +857,16 @@ void PoseGraph2D::RunFinalOptimization() {
   {
     AddWorkItem([this]() LOCKS_EXCLUDED(mutex_) {
       absl::MutexLock locker(&mutex_);
-      optimization_problem_->SetMaxNumIterations(
-          options_.max_num_final_iterations());
+      // optimization_problem_->SetMaxNumIterations(
+      //     options_.max_num_final_iterations());
       return WorkItem::Result::kRunOptimization;
     });
     AddWorkItem([this]() LOCKS_EXCLUDED(mutex_) {
       absl::MutexLock locker(&mutex_);
-      optimization_problem_->SetMaxNumIterations(
-          options_.optimization_problem_options()
-              .ceres_solver_options()
-              .max_num_iterations());
+      // optimization_problem_->SetMaxNumIterations(
+      //     options_.optimization_problem_options()
+      //         .ceres_solver_options()
+      //         .max_num_iterations());
       return WorkItem::Result::kDoNotRunOptimization;
     });
   }

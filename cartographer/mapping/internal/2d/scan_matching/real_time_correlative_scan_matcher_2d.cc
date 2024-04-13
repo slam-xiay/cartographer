@@ -76,9 +76,11 @@ float ComputeCandidateScore(const ProbabilityGrid& probability_grid,
 
 }  // namespace
 
-RealTimeCorrelativeScanMatcher2D::RealTimeCorrelativeScanMatcher2D(
-    const proto::RealTimeCorrelativeScanMatcherOptions& options)
-    : options_(options) {}
+// RealTimeCorrelativeScanMatcher2D::RealTimeCorrelativeScanMatcher2D(
+//     const proto::RealTimeCorrelativeScanMatcherOptions& options)
+//     : options_(options) {}
+
+RealTimeCorrelativeScanMatcher2D::RealTimeCorrelativeScanMatcher2D() {}
 
 std::vector<Candidate2D>
 RealTimeCorrelativeScanMatcher2D::GenerateExhaustiveSearchCandidates(
@@ -126,7 +128,7 @@ double RealTimeCorrelativeScanMatcher2D::Match(
       transform::Rigid3f::Rotation(Eigen::AngleAxisf(
           initial_rotation.cast<float>().angle(), Eigen::Vector3f::UnitZ())));
   const SearchParameters search_parameters(
-      options_.linear_search_window(), options_.angular_search_window(),
+      kRealTimeCSMLinearSearchWindow, kRealTimeCSMAngularSearchWindow,
       rotated_point_cloud, grid.limits().resolution());
 
   const std::vector<sensor::PointCloud> rotated_scans =
@@ -167,11 +169,10 @@ void RealTimeCorrelativeScanMatcher2D::ScoreCandidates(
         //       candidate.y_index_offset);
         //   break;
     }
-    candidate.score *=
-        std::exp(-common::Pow2(std::hypot(candidate.x, candidate.y) *
-                                   options_.translation_delta_cost_weight() +
-                               std::abs(candidate.orientation) *
-                                   options_.rotation_delta_cost_weight()));
+    candidate.score *= std::exp(-common::Pow2(
+        std::hypot(candidate.x, candidate.y) *
+            kRealTimeCSMTranslationDeltaCostWeight +
+        std::abs(candidate.orientation) * kRealTimeCSMRotationDeltaCostWeight));
   }
 }
 

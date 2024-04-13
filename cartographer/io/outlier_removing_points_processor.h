@@ -17,7 +17,7 @@
 #ifndef CARTOGRAPHER_IO_OUTLIER_REMOVING_POINTS_PROCESSOR_H_
 #define CARTOGRAPHER_IO_OUTLIER_REMOVING_POINTS_PROCESSOR_H_
 
-#include "cartographer/common/lua_parameter_dictionary.h"
+// #include "cartographer/common/lua_parameter_dictionary.h"
 #include "cartographer/io/points_processor.h"
 #include "cartographer/mapping/3d/hybrid_grid.h"
 
@@ -34,8 +34,8 @@ class OutlierRemovingPointsProcessor : public PointsProcessor {
   OutlierRemovingPointsProcessor(double voxel_size, double miss_per_hit_limit,
                                  PointsProcessor* next);
 
-  static std::unique_ptr<OutlierRemovingPointsProcessor> FromDictionary(
-      common::LuaParameterDictionary* dictionary, PointsProcessor* next);
+  // static std::unique_ptr<OutlierRemovingPointsProcessor> FromDictionary(
+  //     common::LuaParameterDictionary* dictionary, PointsProcessor* next);
 
   ~OutlierRemovingPointsProcessor() override {}
 

@@ -18,7 +18,7 @@
 #define CARTOGRAPHER_IO_FRAME_ID_FILTERING_POINTS_PROCESSOR_H_
 
 #include "absl/container/flat_hash_set.h"
-#include "cartographer/common/lua_parameter_dictionary.h"
+// #include "cartographer/common/lua_parameter_dictionary.h"
 #include "cartographer/io/points_processor.h"
 
 namespace cartographer {
@@ -34,8 +34,8 @@ class FrameIdFilteringPointsProcessor : public PointsProcessor {
       const absl::flat_hash_set<std::string>& keep_frame_ids,
       const absl::flat_hash_set<std::string>& drop_frame_ids,
       PointsProcessor* next);
-  static std::unique_ptr<FrameIdFilteringPointsProcessor> FromDictionary(
-      common::LuaParameterDictionary* dictionary, PointsProcessor* next);
+  //   static std::unique_ptr<FrameIdFilteringPointsProcessor> FromDictionary(
+  //       common::LuaParameterDictionary* dictionary, PointsProcessor* next);
   ~FrameIdFilteringPointsProcessor() override {}
 
   FrameIdFilteringPointsProcessor(const FrameIdFilteringPointsProcessor&) =

@@ -25,14 +25,14 @@ XyzWriterPointsProcessor::XyzWriterPointsProcessor(
     std::unique_ptr<FileWriter> file_writer, PointsProcessor* const next)
     : next_(next), file_writer_(std::move(file_writer)) {}
 
-std::unique_ptr<XyzWriterPointsProcessor>
-XyzWriterPointsProcessor::FromDictionary(
-    const FileWriterFactory& file_writer_factory,
-    common::LuaParameterDictionary* const dictionary,
-    PointsProcessor* const next) {
-  return absl::make_unique<XyzWriterPointsProcessor>(
-      file_writer_factory(dictionary->GetString("filename")), next);
-}
+// std::unique_ptr<XyzWriterPointsProcessor>
+// XyzWriterPointsProcessor::FromDictionary(
+//     const FileWriterFactory& file_writer_factory,
+//     common::LuaParameterDictionary* const dictionary,
+//     PointsProcessor* const next) {
+//   return absl::make_unique<XyzWriterPointsProcessor>(
+//       file_writer_factory(dictionary->GetString("filename")), next);
+// }
 
 PointsProcessor::FlushResult XyzWriterPointsProcessor::Flush() {
   CHECK(file_writer_->Close()) << "Closing XYZ file failed.";

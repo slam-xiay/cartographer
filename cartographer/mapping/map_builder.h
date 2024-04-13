@@ -31,7 +31,7 @@
 
 #include "Eigen/Geometry"
 #include "cartographer/common/config.h"
-#include "cartographer/common/lua_parameter_dictionary.h"
+// #include "cartographer/common/lua_parameter_dictionary.h"
 #include "cartographer/common/port.h"
 #include "cartographer/io/proto_stream.h"
 #include "cartographer/mapping/id.h"

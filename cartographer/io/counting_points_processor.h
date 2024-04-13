@@ -17,7 +17,7 @@
 #ifndef CARTOGRAPHER_IO_COUNTING_POINTS_PROCESSOR_H_
 #define CARTOGRAPHER_IO_COUNTING_POINTS_PROCESSOR_H_
 
-#include "cartographer/common/lua_parameter_dictionary.h"
+// #include "cartographer/common/lua_parameter_dictionary.h"
 #include "cartographer/io/points_processor.h"
 
 namespace cartographer {
@@ -30,8 +30,8 @@ class CountingPointsProcessor : public PointsProcessor {
   constexpr static const char* kConfigurationFileActionName = "dump_num_points";
   explicit CountingPointsProcessor(PointsProcessor* next);
 
-  static std::unique_ptr<CountingPointsProcessor> FromDictionary(
-      common::LuaParameterDictionary* dictionary, PointsProcessor* next);
+  // static std::unique_ptr<CountingPointsProcessor> FromDictionary(
+  //     common::LuaParameterDictionary* dictionary, PointsProcessor* next);
 
   ~CountingPointsProcessor() override {}
 

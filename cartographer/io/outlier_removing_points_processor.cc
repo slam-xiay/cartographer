@@ -17,27 +17,27 @@
 #include "cartographer/io/outlier_removing_points_processor.h"
 
 #include "absl/memory/memory.h"
-#include "cartographer/common/lua_parameter_dictionary.h"
+// #include "cartographer/common/lua_parameter_dictionary.h"
 #include "glog/logging.h"
 
 namespace cartographer {
 namespace io {
 
-std::unique_ptr<OutlierRemovingPointsProcessor>
-OutlierRemovingPointsProcessor::FromDictionary(
-    common::LuaParameterDictionary* const dictionary,
-    PointsProcessor* const next) {
-  const double miss_per_hit_limit = [&]() {
-    if (!dictionary->HasKey("miss_per_hit_limit")) {
-      LOG(INFO) << "Using default value of 3 for miss_per_hit_limit.";
-      return 3.;
-    } else {
-      return dictionary->GetDouble("miss_per_hit_limit");
-    }
-  }();
-  return absl::make_unique<OutlierRemovingPointsProcessor>(
-      dictionary->GetDouble("voxel_size"), miss_per_hit_limit, next);
-}
+// std::unique_ptr<OutlierRemovingPointsProcessor>
+// OutlierRemovingPointsProcessor::FromDictionary(
+//     common::LuaParameterDictionary* const dictionary,
+//     PointsProcessor* const next) {
+//   const double miss_per_hit_limit = [&]() {
+//     if (!dictionary->HasKey("miss_per_hit_limit")) {
+//       LOG(INFO) << "Using default value of 3 for miss_per_hit_limit.";
+//       return 3.;
+//     } else {
+//       return dictionary->GetDouble("miss_per_hit_limit");
+//     }
+//   }();
+//   return absl::make_unique<OutlierRemovingPointsProcessor>(
+//       dictionary->GetDouble("voxel_size"), miss_per_hit_limit, next);
+// }
 
 OutlierRemovingPointsProcessor::OutlierRemovingPointsProcessor(
     const double voxel_size, const double miss_per_hit_limit,

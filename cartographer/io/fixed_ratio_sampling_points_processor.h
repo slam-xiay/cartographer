@@ -20,7 +20,7 @@
 #include <memory>
 
 #include "cartographer/common/fixed_ratio_sampler.h"
-#include "cartographer/common/lua_parameter_dictionary.h"
+// #include "cartographer/common/lua_parameter_dictionary.h"
 #include "cartographer/io/points_processor.h"
 
 namespace cartographer {
@@ -36,8 +36,8 @@ class FixedRatioSamplingPointsProcessor : public PointsProcessor {
   FixedRatioSamplingPointsProcessor(double sampling_ratio,
                                     PointsProcessor* next);
 
-  static std::unique_ptr<FixedRatioSamplingPointsProcessor> FromDictionary(
-      common::LuaParameterDictionary* dictionary, PointsProcessor* next);
+  //   static std::unique_ptr<FixedRatioSamplingPointsProcessor> FromDictionary(
+  //       common::LuaParameterDictionary* dictionary, PointsProcessor* next);
 
   ~FixedRatioSamplingPointsProcessor() override{};
 

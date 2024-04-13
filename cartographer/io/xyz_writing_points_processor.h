@@ -21,7 +21,7 @@
 #include <memory>
 #include <string>
 
-#include "cartographer/common/lua_parameter_dictionary.h"
+// #include "cartographer/common/lua_parameter_dictionary.h"
 #include "cartographer/io/file_writer.h"
 #include "cartographer/io/points_processor.h"
 
@@ -35,9 +35,9 @@ class XyzWriterPointsProcessor : public PointsProcessor {
 
   XyzWriterPointsProcessor(std::unique_ptr<FileWriter>, PointsProcessor* next);
 
-  static std::unique_ptr<XyzWriterPointsProcessor> FromDictionary(
-      const FileWriterFactory& file_writer_factory,
-      common::LuaParameterDictionary* dictionary, PointsProcessor* next);
+  // static std::unique_ptr<XyzWriterPointsProcessor> FromDictionary(
+  //     const FileWriterFactory& file_writer_factory,
+  //     common::LuaParameterDictionary* dictionary, PointsProcessor* next);
 
   ~XyzWriterPointsProcessor() override {}
 

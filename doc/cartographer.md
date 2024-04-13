@@ -2696,9 +2696,7 @@ real_time_correlative_scan_matcher.cc
         candidate.y_index_offset);
 ```
 
-
-
-### PoseGraph去接口
+### PoseGraph参数优化
 
 .h修改
 
@@ -2725,6 +2723,43 @@ real_time_correlative_scan_matcher.cc
 //   options.set_resolution(parameter_dictionary->GetDouble("resolution"));
 //   return options;
 // }
+```
+
+### 剥离lua依赖
+
+屏蔽 lua_parameter_dictionary.h lua_parameter_directonary.cc
+
+屏蔽 normal_estimation_2d.h normal_estimation_2d.cc
+
+全局屏蔽 删除FromDictionary
+
+```
+// #include "cartographer/common/lua_parameter_dictionary.h"
+```
+
+在CMakeLists.txt删除lua
+
+```
+//find_package(LuaGoogle REQUIRED)
+# set(CARTOGRAPHER_CONFIGURATION_FILES_DIRECTORY ${CMAKE_INSTALL_PREFIX}/share/cartographer/configuration_files
+#   CACHE PATH ".lua configuration files directory")
+# target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC
+#   "${LUA_INCLUDE_DIR}")
+# target_link_libraries(${PROJECT_NAME} PUBLIC ${LUA_LIBRARIES})
+```
+
+删除配置文件文件夹
+
+```
+rm -rf configuration_files
+```
+
+## 优化ABSL
+
+### 删除histogram
+
+```
+删除 score_histogram_
 ```
 
 

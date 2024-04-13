@@ -23,16 +23,16 @@
 namespace cartographer {
 namespace io {
 
-std::unique_ptr<FixedRatioSamplingPointsProcessor>
-FixedRatioSamplingPointsProcessor::FromDictionary(
-    common::LuaParameterDictionary* const dictionary,
-    PointsProcessor* const next) {
-  const double sampling_ratio(dictionary->GetDouble("sampling_ratio"));
-  CHECK_LT(0., sampling_ratio) << "Sampling ratio <= 0 makes no sense.";
-  CHECK_LT(sampling_ratio, 1.) << "Sampling ratio >= 1 makes no sense.";
-  return absl::make_unique<FixedRatioSamplingPointsProcessor>(sampling_ratio,
-                                                              next);
-}
+// std::unique_ptr<FixedRatioSamplingPointsProcessor>
+// FixedRatioSamplingPointsProcessor::FromDictionary(
+//     common::LuaParameterDictionary* const dictionary,
+//     PointsProcessor* const next) {
+//   const double sampling_ratio(dictionary->GetDouble("sampling_ratio"));
+//   CHECK_LT(0., sampling_ratio) << "Sampling ratio <= 0 makes no sense.";
+//   CHECK_LT(sampling_ratio, 1.) << "Sampling ratio >= 1 makes no sense.";
+//   return absl::make_unique<FixedRatioSamplingPointsProcessor>(sampling_ratio,
+//                                                               next);
+// }
 
 FixedRatioSamplingPointsProcessor::FixedRatioSamplingPointsProcessor(
     const double sampling_ratio, PointsProcessor* next)

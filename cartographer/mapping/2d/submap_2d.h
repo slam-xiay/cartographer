@@ -21,7 +21,7 @@
 #include <vector>
 
 #include "Eigen/Core"
-#include "cartographer/common/lua_parameter_dictionary.h"
+// #include "cartographer/common/lua_parameter_dictionary.h"
 #include "cartographer/mapping/2d/grid_2d.h"
 #include "cartographer/mapping/2d/map_limits.h"
 #include "cartographer/mapping/proto/serialization.pb.h"

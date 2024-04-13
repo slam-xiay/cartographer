@@ -33,7 +33,7 @@
 #include "cartographer/sensor/internal/collator.h"
 // #include "cartographer/sensor/internal/trajectory_collator.h"
 #include "Eigen/Geometry"
-#include "cartographer/common/lua_parameter_dictionary.h"
+// #include "cartographer/common/lua_parameter_dictionary.h"
 #include "cartographer/common/port.h"
 #include "cartographer/common/thread_pool.h"
 #include "cartographer/io/proto_stream.h"

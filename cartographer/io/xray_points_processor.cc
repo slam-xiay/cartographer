@@ -23,7 +23,7 @@
 #include "Eigen/Core"
 #include "absl/memory/memory.h"
 #include "absl/strings/str_cat.h"
-#include "cartographer/common/lua_parameter_dictionary.h"
+// #include "cartographer/common/lua_parameter_dictionary.h"
 #include "cartographer/common/math.h"
 #include "cartographer/io/draw_trajectories.h"
 #include "cartographer/io/image.h"
@@ -137,35 +137,35 @@ XRayPointsProcessor::XRayPointsProcessor(
   }
 }
 
-std::unique_ptr<XRayPointsProcessor> XRayPointsProcessor::FromDictionary(
-    const std::vector<mapping::proto::Trajectory>& trajectories,
-    FileWriterFactory file_writer_factory,
-    common::LuaParameterDictionary* const dictionary,
-    PointsProcessor* const next) {
-  std::vector<mapping::Floor> floors;
-  const bool separate_floor = dictionary->HasKey("separate_floors") &&
-                              dictionary->GetBool("separate_floors");
-  const auto draw_trajectories = (!dictionary->HasKey("draw_trajectories") ||
-                                  dictionary->GetBool("draw_trajectories"))
-                                     ? DrawTrajectories::kYes
-                                     : DrawTrajectories::kNo;
-  const double saturation_factor =
-      dictionary->HasKey("saturation_factor")
-          ? dictionary->GetDouble("saturation_factor")
-          : 1.;
-  if (separate_floor) {
-    CHECK_EQ(trajectories.size(), 1)
-        << "Can only detect floors with a single trajectory.";
-    floors = mapping::DetectFloors(trajectories.at(0));
-  }
+// std::unique_ptr<XRayPointsProcessor> XRayPointsProcessor::FromDictionary(
+//     const std::vector<mapping::proto::Trajectory>& trajectories,
+//     FileWriterFactory file_writer_factory,
+//     common::LuaParameterDictionary* const dictionary,
+//     PointsProcessor* const next) {
+//   std::vector<mapping::Floor> floors;
+//   const bool separate_floor = dictionary->HasKey("separate_floors") &&
+//                               dictionary->GetBool("separate_floors");
+//   const auto draw_trajectories = (!dictionary->HasKey("draw_trajectories") ||
+//                                   dictionary->GetBool("draw_trajectories"))
+//                                      ? DrawTrajectories::kYes
+//                                      : DrawTrajectories::kNo;
+//   const double saturation_factor =
+//       dictionary->HasKey("saturation_factor")
+//           ? dictionary->GetDouble("saturation_factor")
+//           : 1.;
+//   if (separate_floor) {
+//     CHECK_EQ(trajectories.size(), 1)
+//         << "Can only detect floors with a single trajectory.";
+//     floors = mapping::DetectFloors(trajectories.at(0));
+//   }
 
-  return absl::make_unique<XRayPointsProcessor>(
-      dictionary->GetDouble("voxel_size"), saturation_factor,
-      transform::FromDictionary(dictionary->GetDictionary("transform").get())
-          .cast<float>(),
-      floors, draw_trajectories, dictionary->GetString("filename"),
-      trajectories, file_writer_factory, next);
-}
+//   return absl::make_unique<XRayPointsProcessor>(
+//       dictionary->GetDouble("voxel_size"), saturation_factor,
+//       transform::FromDictionary(dictionary->GetDictionary("transform").get())
+//           .cast<float>(),
+//       floors, draw_trajectories, dictionary->GetString("filename"),
+//       trajectories, file_writer_factory, next);
+// }
 
 void XRayPointsProcessor::WriteVoxels(const Aggregation& aggregation,
                                       FileWriter* const file_writer) {

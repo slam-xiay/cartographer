@@ -20,7 +20,7 @@
 #include <map>
 
 #include "Eigen/Core"
-#include "cartographer/common/lua_parameter_dictionary.h"
+// #include "cartographer/common/lua_parameter_dictionary.h"
 #include "cartographer/io/file_writer.h"
 #include "cartographer/io/points_processor.h"
 #include "cartographer/mapping/3d/hybrid_grid.h"
@@ -46,10 +46,10 @@ class XRayPointsProcessor : public PointsProcessor {
       const std::vector<mapping::proto::Trajectory>& trajectories,
       FileWriterFactory file_writer_factory, PointsProcessor* next);
 
-  static std::unique_ptr<XRayPointsProcessor> FromDictionary(
-      const std::vector<mapping::proto::Trajectory>& trajectories,
-      FileWriterFactory file_writer_factory,
-      common::LuaParameterDictionary* dictionary, PointsProcessor* next);
+  // static std::unique_ptr<XRayPointsProcessor> FromDictionary(
+  //     const std::vector<mapping::proto::Trajectory>& trajectories,
+  //     FileWriterFactory file_writer_factory,
+  //     common::LuaParameterDictionary* dictionary, PointsProcessor* next);
 
   ~XRayPointsProcessor() override {}
 

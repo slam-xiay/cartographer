@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include "cartographer/common/lua_parameter_dictionary.h"
+// #include "cartographer/common/lua_parameter_dictionary.h"
 #include "cartographer/io/file_writer.h"
 #include "cartographer/io/points_processor.h"
 
@@ -29,9 +29,9 @@ class PlyWritingPointsProcessor : public PointsProcessor {
                             const std::vector<std::string>& comments,
                             PointsProcessor* next);
 
-  static std::unique_ptr<PlyWritingPointsProcessor> FromDictionary(
-      const FileWriterFactory& file_writer_factory,
-      common::LuaParameterDictionary* dictionary, PointsProcessor* next);
+  //   static std::unique_ptr<PlyWritingPointsProcessor> FromDictionary(
+  //       const FileWriterFactory& file_writer_factory,
+  //       common::LuaParameterDictionary* dictionary, PointsProcessor* next);
 
   ~PlyWritingPointsProcessor() override {}
 

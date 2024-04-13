@@ -17,30 +17,31 @@
 #include "cartographer/io/frame_id_filtering_points_processor.h"
 
 #include "absl/memory/memory.h"
-#include "cartographer/common/lua_parameter_dictionary.h"
+// #include "cartographer/common/lua_parameter_dictionary.h"
 #include "cartographer/io/points_batch.h"
 #include "glog/logging.h"
 
 namespace cartographer {
 namespace io {
 
-std::unique_ptr<FrameIdFilteringPointsProcessor>
-FrameIdFilteringPointsProcessor::FromDictionary(
-    common::LuaParameterDictionary* dictionary, PointsProcessor* next) {
-  std::vector<std::string> keep_frames, drop_frames;
-  if (dictionary->HasKey("keep_frames")) {
-    keep_frames =
-        dictionary->GetDictionary("keep_frames")->GetArrayValuesAsStrings();
-  }
-  if (dictionary->HasKey("drop_frames")) {
-    drop_frames =
-        dictionary->GetDictionary("drop_frames")->GetArrayValuesAsStrings();
-  }
-  return absl::make_unique<FrameIdFilteringPointsProcessor>(
-      absl::flat_hash_set<std::string>(keep_frames.begin(), keep_frames.end()),
-      absl::flat_hash_set<std::string>(drop_frames.begin(), drop_frames.end()),
-      next);
-}
+// std::unique_ptr<FrameIdFilteringPointsProcessor>
+// FrameIdFilteringPointsProcessor::FromDictionary(
+//     common::LuaParameterDictionary* dictionary, PointsProcessor* next) {
+//   std::vector<std::string> keep_frames, drop_frames;
+//   if (dictionary->HasKey("keep_frames")) {
+//     keep_frames =
+//         dictionary->GetDictionary("keep_frames")->GetArrayValuesAsStrings();
+//   }
+//   if (dictionary->HasKey("drop_frames")) {
+//     drop_frames =
+//         dictionary->GetDictionary("drop_frames")->GetArrayValuesAsStrings();
+//   }
+//   return absl::make_unique<FrameIdFilteringPointsProcessor>(
+//       absl::flat_hash_set<std::string>(keep_frames.begin(),
+//       keep_frames.end()),
+//       absl::flat_hash_set<std::string>(drop_frames.begin(),
+//       drop_frames.end()), next);
+// }
 
 FrameIdFilteringPointsProcessor::FrameIdFilteringPointsProcessor(
     const absl::flat_hash_set<std::string>& keep_frame_ids,

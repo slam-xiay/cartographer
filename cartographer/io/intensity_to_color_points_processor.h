@@ -19,7 +19,7 @@
 
 #include <memory>
 
-#include "cartographer/common/lua_parameter_dictionary.h"
+// #include "cartographer/common/lua_parameter_dictionary.h"
 #include "cartographer/io/points_batch.h"
 #include "cartographer/io/points_processor.h"
 
@@ -38,8 +38,8 @@ class IntensityToColorPointsProcessor : public PointsProcessor {
                                   const std::string& frame_id,
                                   PointsProcessor* next);
 
-  static std::unique_ptr<IntensityToColorPointsProcessor> FromDictionary(
-      common::LuaParameterDictionary* dictionary, PointsProcessor* next);
+  //   static std::unique_ptr<IntensityToColorPointsProcessor> FromDictionary(
+  //       common::LuaParameterDictionary* dictionary, PointsProcessor* next);
 
   ~IntensityToColorPointsProcessor() override{};
 

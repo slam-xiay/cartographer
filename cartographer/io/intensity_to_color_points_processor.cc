@@ -24,17 +24,18 @@
 namespace cartographer {
 namespace io {
 
-std::unique_ptr<IntensityToColorPointsProcessor>
-IntensityToColorPointsProcessor::FromDictionary(
-    common::LuaParameterDictionary* const dictionary,
-    PointsProcessor* const next) {
-  const std::string frame_id =
-      dictionary->HasKey("frame_id") ? dictionary->GetString("frame_id") : "";
-  const float min_intensity = dictionary->GetDouble("min_intensity");
-  const float max_intensity = dictionary->GetDouble("max_intensity");
-  return absl::make_unique<IntensityToColorPointsProcessor>(
-      min_intensity, max_intensity, frame_id, next);
-}
+// std::unique_ptr<IntensityToColorPointsProcessor>
+// IntensityToColorPointsProcessor::FromDictionary(
+//     common::LuaParameterDictionary* const dictionary,
+//     PointsProcessor* const next) {
+//   const std::string frame_id =
+//       dictionary->HasKey("frame_id") ? dictionary->GetString("frame_id") :
+//       "";
+//   const float min_intensity = dictionary->GetDouble("min_intensity");
+//   const float max_intensity = dictionary->GetDouble("max_intensity");
+//   return absl::make_unique<IntensityToColorPointsProcessor>(
+//       min_intensity, max_intensity, frame_id, next);
+// }
 
 IntensityToColorPointsProcessor::IntensityToColorPointsProcessor(
     const float min_intensity, const float max_intensity,

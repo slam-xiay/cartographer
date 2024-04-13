@@ -155,20 +155,25 @@ void RealTimeCorrelativeScanMatcher2D::ScoreCandidates(
     const SearchParameters& search_parameters,
     std::vector<Candidate2D>* const candidates) const {
   for (Candidate2D& candidate : *candidates) {
-    switch (grid.GetGridType()) {
-      case GridType::PROBABILITY_GRID:
-        candidate.score = ComputeCandidateScore(
-            static_cast<const ProbabilityGrid&>(grid),
-            discrete_scans[candidate.scan_index], candidate.x_index_offset,
-            candidate.y_index_offset);
-        break;
-        // case GridType::TSDF:
-        //   candidate.score = ComputeCandidateScore(
-        //       static_cast<const TSDF2D&>(grid),
-        //       discrete_scans[candidate.scan_index], candidate.x_index_offset,
-        //       candidate.y_index_offset);
-        //   break;
-    }
+    // switch (grid.GetGridType()) {
+    //   case GridType::PROBABILITY_GRID:
+    //     candidate.score = ComputeCandidateScore(
+    //         static_cast<const ProbabilityGrid&>(grid),
+    //         discrete_scans[candidate.scan_index], candidate.x_index_offset,
+    //         candidate.y_index_offset);
+    //     break;
+    //     // case GridType::TSDF:
+    //     //   candidate.score = ComputeCandidateScore(
+    //     //       static_cast<const TSDF2D&>(grid),
+    //     //       discrete_scans[candidate.scan_index],
+    //     candidate.x_index_offset,
+    //     //       candidate.y_index_offset);
+    //     //   break;
+    // }
+    candidate.score = ComputeCandidateScore(
+        static_cast<const ProbabilityGrid&>(grid),
+        discrete_scans[candidate.scan_index], candidate.x_index_offset,
+        candidate.y_index_offset);
     candidate.score *= std::exp(-common::Pow2(
         std::hypot(candidate.x, candidate.y) *
             kRealTimeCSMTranslationDeltaCostWeight +

@@ -2583,6 +2583,119 @@ options_.optimize_every_n_nodes()--kOptimizeEveryNNodes
 
 ### Grid2d参数优化
 
+.h
+
+```
+// #include "cartographer/mapping/proto/submaps_options_2d.pb.h"
+#include "cartographer/common/config.h"
+// proto::GridOptions2D CreateGridOptions2D(
+//     common::LuaParameterDictionary* const parameter_dictionary);
+```
+
+.cc
+
+```
+// proto::GridOptions2D CreateGridOptions2D(
+//     common::LuaParameterDictionary* const parameter_dictionary) {
+//   proto::GridOptions2D options;
+//   const std::string grid_type_string =
+//       parameter_dictionary->GetString("grid_type");
+//   proto::GridOptions2D_GridType grid_type;
+//   CHECK(proto::GridOptions2D_GridType_Parse(grid_type_string, &grid_type))
+//       << "Unknown GridOptions2D_GridType kind: " << grid_type_string;
+//   options.set_grid_type(grid_type);
+//   options.set_resolution(parameter_dictionary->GetDouble("resolution"));
+//   return options;
+// }
+```
+
+### 删除GridType
+
+由于我们删除了TSDF，栅格里只有一种格式，不需要关心GridType
+
+grid_2d.h
+
+```
+//enum class GridType { PROBABILITY_GRID };
+  // virtual GridType GetGridType() const = 0;
+```
+
+grid_2d.cc
+
+```
+// GridType ProbabilityGrid::GetGridType() const {
+//   return GridType::PROBABILITY_GRID;
+// }
+```
+
+probability_grid.h
+
+```
+// GridType GetGridType() const override;
+```
+
+probability_grid.cc
+
+```
+// GridType ProbabilityGrid::GetGridType() const {
+//   return GridType::PROBABILITY_GRID;
+// }
+```
+
+ceres_scan_matcher_2d.cc
+
+```
+  //   CHECK_GT(kCSMOccupiedSapceWeight, 0.);==================
+  //   switch (grid.GetGridType()) {
+  //     case GridType::PROBABILITY_GRID:
+  //       problem.AddResidualBlock(
+  //           CreateOccupiedSpaceCostFunction2D(
+  //               kCSMOccupiedSapceWeight /
+  //                   std::sqrt(static_cast<double>(point_cloud.size())),
+  //               point_cloud, grid),
+  //           nullptr /* loss function */, ceres_pose_estimate);
+  //       break;
+  //       // case GridType::TSDF:
+  //       //   problem.AddResidualBlock(
+  //       //       CreateTSDFMatchCostFunction2D(
+  //       //           options_.occupied_space_weight() /
+  //       //               std::sqrt(static_cast<double>(point_cloud.size())),
+  //       //           point_cloud, static_cast<const TSDF2D&>(grid)),
+  //       //       nullptr /* loss function */, ceres_pose_estimate);
+  //       //   break;
+  //   }
+  problem.AddResidualBlock(
+      CreateOccupiedSpaceCostFunction2D(
+          kCSMOccupiedSapceWeight /
+              std::sqrt(static_cast<double>(point_cloud.size())),
+          point_cloud, grid),
+      nullptr /* loss function */, ceres_pose_estimate);
+```
+
+real_time_correlative_scan_matcher.cc
+
+```
+    // switch (grid.GetGridType()) {
+    //   case GridType::PROBABILITY_GRID:
+    //     candidate.score = ComputeCandidateScore(
+    //         static_cast<const ProbabilityGrid&>(grid),
+    //         discrete_scans[candidate.scan_index], candidate.x_index_offset,
+    //         candidate.y_index_offset);
+    //     break;
+    //     // case GridType::TSDF:
+    //     //   candidate.score = ComputeCandidateScore(
+    //     //       static_cast<const TSDF2D&>(grid),
+    //     //       discrete_scans[candidate.scan_index],
+    //     candidate.x_index_offset,
+    //     //       candidate.y_index_offset);
+    //     //   break;
+    // }
+        candidate.score = ComputeCandidateScore(
+        static_cast<const ProbabilityGrid&>(grid),
+        discrete_scans[candidate.scan_index], candidate.x_index_offset,
+        candidate.y_index_offset);
+```
+
 
 
 ### PoseGraph去接口

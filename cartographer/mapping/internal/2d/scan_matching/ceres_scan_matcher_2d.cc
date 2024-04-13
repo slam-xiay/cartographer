@@ -71,24 +71,30 @@ void CeresScanMatcher2D::Match(const Eigen::Vector2d& target_translation,
                                    initial_pose_estimate.rotation().angle()};
   ceres::Problem problem;
   //   CHECK_GT(kCSMOccupiedSapceWeight, 0.);==================
-  switch (grid.GetGridType()) {
-    case GridType::PROBABILITY_GRID:
-      problem.AddResidualBlock(
-          CreateOccupiedSpaceCostFunction2D(
-              kCSMOccupiedSapceWeight /
-                  std::sqrt(static_cast<double>(point_cloud.size())),
-              point_cloud, grid),
-          nullptr /* loss function */, ceres_pose_estimate);
-      break;
-      // case GridType::TSDF:
-      //   problem.AddResidualBlock(
-      //       CreateTSDFMatchCostFunction2D(
-      //           options_.occupied_space_weight() /
-      //               std::sqrt(static_cast<double>(point_cloud.size())),
-      //           point_cloud, static_cast<const TSDF2D&>(grid)),
-      //       nullptr /* loss function */, ceres_pose_estimate);
-      //   break;
-  }
+  //   switch (grid.GetGridType()) {
+  //     case GridType::PROBABILITY_GRID:
+  //       problem.AddResidualBlock(
+  //           CreateOccupiedSpaceCostFunction2D(
+  //               kCSMOccupiedSapceWeight /
+  //                   std::sqrt(static_cast<double>(point_cloud.size())),
+  //               point_cloud, grid),
+  //           nullptr /* loss function */, ceres_pose_estimate);
+  //       break;
+  //       // case GridType::TSDF:
+  //       //   problem.AddResidualBlock(
+  //       //       CreateTSDFMatchCostFunction2D(
+  //       //           options_.occupied_space_weight() /
+  //       //               std::sqrt(static_cast<double>(point_cloud.size())),
+  //       //           point_cloud, static_cast<const TSDF2D&>(grid)),
+  //       //       nullptr /* loss function */, ceres_pose_estimate);
+  //       //   break;
+  //   }
+  problem.AddResidualBlock(
+      CreateOccupiedSpaceCostFunction2D(
+          kCSMOccupiedSapceWeight /
+              std::sqrt(static_cast<double>(point_cloud.size())),
+          point_cloud, grid),
+      nullptr /* loss function */, ceres_pose_estimate);
   CHECK_GT(kCSMTranslationWeight, 0.);
   problem.AddResidualBlock(
       TranslationDeltaCostFunctor2D::CreateAutoDiffCostFunction(

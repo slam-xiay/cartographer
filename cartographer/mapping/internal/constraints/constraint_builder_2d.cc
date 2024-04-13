@@ -244,7 +244,7 @@ void ConstraintBuilder2D::ComputeConstraint(
   }
   {
     absl::MutexLock locker(&mutex_);
-    score_histogram_.Add(score);
+    // score_histogram_.Add(score);
   }
 
   // Use the CSM estimate as both the initial and previous pose. This has the
@@ -297,7 +297,7 @@ void ConstraintBuilder2D::RunWhenDoneCallback() {
     if (kLogMatches) {
       LOG(INFO) << constraints_.size() << " computations resulted in "
                 << result.size() << " additional constraints.";
-      LOG(INFO) << "Score histogram:\n" << score_histogram_.ToString(10);
+      // LOG(INFO) << "Score histogram:\n" << score_histogram_.ToString(10);
     }
     constraints_.clear();
     callback = std::move(when_done_);

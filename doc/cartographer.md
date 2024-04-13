@@ -2756,10 +2756,45 @@ rm -rf configuration_files
 
 ## 优化ABSL
 
+cartographer在absl库调用了几个函数
+
+```
+absl::optional
+absl::MutexLock locker(&mutex_)
+absl::flat_hash_map
+absl::Condition
+absl::FromChrono
+absl::make_unique
+absl::Substitute
+GUARDED_BY
+EXCLUSIVE_LOCKS_REQUIRED
+```
+
 ### 删除histogram
 
 ```
 删除 score_histogram_
+```
+
+删除 histogram 类的.h 和 .cc
+
+### 删除DebugString
+
+```
+  //#include "absl/strings/substitute.h"
+  std::string DebugString() const {
+    return std::string();
+    // return absl::Substitute("{ t: [$0, $1], r: [$2] }", translation().x(),
+    //                         translation().y(), rotation().angle());
+  }
+  
+    std::string DebugString() const {
+    return std::string();
+    // return absl::Substitute("{ t: [$0, $1, $2], q: [$3, $4, $5, $6] }",
+    //                         translation().x(), translation().y(),
+    //                         translation().z(), rotation().w(),
+    //                         rotation().x(), rotation().y(), rotation().z());
+  }
 ```
 
 

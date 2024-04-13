@@ -245,10 +245,10 @@ target_link_libraries(${PROJECT_NAME} PUBLIC ${Boost_LIBRARIES})
 #   find_package(glog REQUIRED)
 #   set(GLOG_LIBRARY glog::glog)
 # else()
-  set(GLOG_LIBRARY glog)
+  # set(GLOG_LIBRARY glog)
 # endif()
 
-target_link_libraries(${PROJECT_NAME} PUBLIC ${GLOG_LIBRARY})
+target_link_libraries(${PROJECT_NAME} PUBLIC glog)
 target_link_libraries(${PROJECT_NAME} PUBLIC gflags)
 # if(WIN32)
 #   # Needed to fix conflict with MSVC's error macro.

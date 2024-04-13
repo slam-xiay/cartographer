@@ -168,7 +168,7 @@ class ConstraintBuilder2D {
   scan_matching::CeresScanMatcher2D ceres_scan_matcher_;
 
   // Histogram of scan matcher scores.
-  common::Histogram score_histogram_ GUARDED_BY(mutex_);
+  //   common::Histogram score_histogram_ GUARDED_BY(mutex_);
 };
 
 }  // namespace constraints

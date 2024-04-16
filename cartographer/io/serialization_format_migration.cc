@@ -46,7 +46,7 @@
 //     cartographer::io::ProtoStreamWriterInterface* const output,
 //     bool include_unfinished_submaps) {
 //   auto file_resolver =
-//   ::absl::make_unique<common::ConfigurationFileResolver>(
+//   ::std::make_unique<common::ConfigurationFileResolver>(
 //       std::vector<std::string>{std::string(common::kSourceDirectory) +
 //                                "/configuration_files"});
 //   const std::string kCode = R"text(
@@ -63,7 +63,7 @@
 //   // We always use 3D here. 2D submaps do not have histograms.
 //   mapping::PoseGraph3D pose_graph(
 //       options.pose_graph_options(),
-//       absl::make_unique<mapping::optimization::OptimizationProblem3D>(
+//       std::make_unique<mapping::optimization::OptimizationProblem3D>(
 //           options.pose_graph_options().optimization_problem_options()),
 //       &thread_pool);
 

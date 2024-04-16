@@ -21,8 +21,8 @@
 #include <memory>
 #include <vector>
 
-#include "absl/container/flat_hash_map.h"
-#include "absl/container/flat_hash_set.h"
+// #include "absl/container/flat_hash_map.h"
+// #include "absl/container/flat_hash_set.h"
 // #include "cartographer/sensor/collator_interface.h"
 #include "cartographer/sensor/data.h"
 #include "cartographer/sensor/internal/ordered_multi_queue.h"
@@ -39,10 +39,9 @@ class Collator {
   Collator(const Collator&) = delete;
   Collator& operator=(const Collator&) = delete;
 
-  void AddTrajectory(
-      int trajectory_id,
-      const absl::flat_hash_set<std::string>& expected_sensor_ids,
-      const Callback& callback);
+  void AddTrajectory(int trajectory_id,
+                     const std::set<std::string>& expected_sensor_ids,
+                     const Callback& callback);
 
   void FinishTrajectory(int trajectory_id);
 

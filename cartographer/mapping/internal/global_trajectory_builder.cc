@@ -76,7 +76,7 @@
 //           matching_result->insertion_result->constant_data, trajectory_id_,
 //           matching_result->insertion_result->insertion_submaps);
 //       CHECK_EQ(node_id.trajectory_id, trajectory_id_);
-//       insertion_result = absl::make_unique<InsertionResult>(InsertionResult{
+//       insertion_result = std::make_unique<InsertionResult>(InsertionResult{
 //           node_id, matching_result->insertion_result->constant_data,
 //           std::vector<std::shared_ptr<const Submap>>(
 //               matching_result->insertion_result->insertion_submaps.begin(),
@@ -156,7 +156,7 @@
 //     const TrajectoryBuilderInterface::LocalSlamResultCallback&
 //         local_slam_result_callback,
 //     const absl::optional<MotionFilter>& pose_graph_odometry_motion_filter) {
-//   return absl::make_unique<
+//   return std::make_unique<
 //       GlobalTrajectoryBuilder<LocalTrajectoryBuilder2D,
 //       mapping::PoseGraph2D>>( std::move(local_trajectory_builder),
 //       trajectory_id, pose_graph, local_slam_result_callback,
@@ -171,7 +171,7 @@
 // //         local_slam_result_callback,
 // //     const absl::optional<MotionFilter>& pose_graph_odometry_motion_filter)
 // {
-// //   return absl::make_unique<
+// //   return std::make_unique<
 // //       GlobalTrajectoryBuilder<LocalTrajectoryBuilder3D,
 // //       mapping::PoseGraph3D>>( std::move(local_trajectory_builder),
 // //       trajectory_id, pose_graph, local_slam_result_callback,

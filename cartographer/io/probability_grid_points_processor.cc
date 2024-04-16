@@ -114,7 +114,7 @@ ProbabilityGridPointsProcessor::ProbabilityGridPointsProcessor(
 //       dictionary->HasKey("output_type")
 //           ? OutputTypeFromString(dictionary->GetString("output_type"))
 //           : OutputType::kPng;
-//   return absl::make_unique<ProbabilityGridPointsProcessor>(
+//   return std::make_unique<ProbabilityGridPointsProcessor>(
 //       dictionary->GetDouble("resolution"),
 //       mapping::CreateProbabilityGridRangeDataInserterOptions2D(
 //           dictionary->GetDictionary("range_data_inserter").get()),
@@ -180,8 +180,8 @@ std::unique_ptr<Image> DrawProbabilityGrid(
     LOG(WARNING) << "Not writing output: empty probability grid";
     return nullptr;
   }
-  auto image = absl::make_unique<Image>(cell_limits.num_x_cells,
-                                        cell_limits.num_y_cells);
+  auto image =
+      std::make_unique<Image>(cell_limits.num_x_cells, cell_limits.num_y_cells);
   for (const Eigen::Array2i& xy_index :
        mapping::XYIndexRangeIterator(cell_limits)) {
     const Eigen::Array2i index = xy_index + *offset;

@@ -59,7 +59,7 @@ namespace mapping {
 //       thread_pool), thread_pool_(thread_pool) {
 //   if (options.has_overlapping_submaps_trimmer_2d()) {
 //     const auto& trimmer_options = options.overlapping_submaps_trimmer_2d();
-//     AddTrimmer(absl::make_unique<OverlappingSubmapsTrimmer2D>(
+//     AddTrimmer(std::make_unique<OverlappingSubmapsTrimmer2D>(
 //         trimmer_options.fresh_submaps_count(),
 //         trimmer_options.min_covered_area(),
 //         trimmer_options.min_added_submaps_count()));
@@ -74,7 +74,7 @@ PoseGraph2D::PoseGraph2D(
       thread_pool_(thread_pool) {
   // if (options.has_overlapping_submaps_trimmer_2d()) {
   //   const auto& trimmer_options = options.overlapping_submaps_trimmer_2d();
-  //   AddTrimmer(absl::make_unique<OverlappingSubmapsTrimmer2D>(
+  //   AddTrimmer(std::make_unique<OverlappingSubmapsTrimmer2D>(
   //       trimmer_options.fresh_submaps_count(),
   //       trimmer_options.min_covered_area(),
   //       trimmer_options.min_added_submaps_count()));
@@ -190,8 +190,8 @@ void PoseGraph2D::AddWorkItem(
     const std::function<WorkItem::Result()>& work_item) {
   absl::MutexLock locker(&work_queue_mutex_);
   if (work_queue_ == nullptr) {
-    work_queue_ = absl::make_unique<WorkQueue>();
-    auto task = absl::make_unique<common::Task>();
+    work_queue_ = std::make_unique<WorkQueue>();
+    auto task = std::make_unique<common::Task>();
     task->SetWorkItem([this]() { DrainWorkQueue(); });
     thread_pool_->Schedule(std::move(task));
   }
@@ -216,8 +216,8 @@ void PoseGraph2D::AddTrajectoryIfNeeded(const int trajectory_id) {
   // Make sure we have a sampler for this trajectory.
   if (!global_localization_samplers_[trajectory_id]) {
     global_localization_samplers_[trajectory_id] =
-        absl::make_unique<common::FixedRatioSampler>(kGlobalSamplingRatio);
-    // absl::make_unique<common::FixedRatioSampler>(
+        std::make_unique<common::FixedRatioSampler>(kGlobalSamplingRatio);
+    // std::make_unique<common::FixedRatioSampler>(
     //     options_.global_sampling_ratio());
   }
 }

@@ -39,7 +39,7 @@ float SlowValueToBoundedFloat(const uint16 value, const uint16 unknown_value,
 std::unique_ptr<std::vector<float>> PrecomputeValueToBoundedFloat(
     const uint16 unknown_value, const float unknown_result,
     const float lower_bound, const float upper_bound) {
-  auto result = absl::make_unique<std::vector<float>>();
+  auto result = std::make_unique<std::vector<float>>();
   size_t num_values = std::numeric_limits<uint16>::max() + 1;
   result->reserve(num_values);
   for (size_t value = 0; value != num_values; ++value) {

@@ -121,7 +121,7 @@
 //   after
 //   // it (and being before it in the pipeline) has a valid 'next' to point to.
 //   // The last consumer will just drop all points.
-//   pipeline.emplace_back(absl::make_unique<NullPointsProcessor>());
+//   pipeline.emplace_back(std::make_unique<NullPointsProcessor>());
 
 //   std::vector<std::unique_ptr<common::LuaParameterDictionary>> configurations
 //   =

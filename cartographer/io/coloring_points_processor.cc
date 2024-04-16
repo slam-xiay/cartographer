@@ -33,7 +33,7 @@ namespace io {
 //   const Uint8Color color = {{static_cast<uint8>(color_values[0]),
 //                              static_cast<uint8>(color_values[1]),
 //                              static_cast<uint8>(color_values[2])}};
-//   return absl::make_unique<ColoringPointsProcessor>(ToFloatColor(color),
+//   return std::make_unique<ColoringPointsProcessor>(ToFloatColor(color),
 //                                                     frame_id, next);
 // }
 

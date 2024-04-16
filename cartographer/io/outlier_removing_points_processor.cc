@@ -35,7 +35,7 @@ namespace io {
 //       return dictionary->GetDouble("miss_per_hit_limit");
 //     }
 //   }();
-//   return absl::make_unique<OutlierRemovingPointsProcessor>(
+//   return std::make_unique<OutlierRemovingPointsProcessor>(
 //       dictionary->GetDouble("voxel_size"), miss_per_hit_limit, next);
 // }
 
@@ -116,7 +116,7 @@ void OutlierRemovingPointsProcessor::ProcessInPhaseTwo(
 
 void OutlierRemovingPointsProcessor::ProcessInPhaseThree(
     std::unique_ptr<PointsBatch> batch) {
-  absl::flat_hash_set<int> to_remove;
+  std::set<int> to_remove;
   for (size_t i = 0; i < batch->points.size(); ++i) {
     const VoxelData voxel =
         voxels_.value(voxels_.GetCellIndex(batch->points[i].position));

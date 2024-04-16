@@ -97,12 +97,12 @@ std::vector<std::string> SelectRangeSensorIds(
 //         deprecated. "
 //            "Use 'TrajectoryBuilderOptions::pure_localization_trimmer'
 //            instead.";
-//     pose_graph->AddTrimmer(absl::make_unique<PureLocalizationTrimmer>(
+//     pose_graph->AddTrimmer(std::make_unique<PureLocalizationTrimmer>(
 //         trajectory_id, 3 /* max_submaps_to_keep */));
 //     return;
 //   }
 //   if (trajectory_options.has_pure_localization_trimmer()) {
-//     pose_graph->AddTrimmer(absl::make_unique<PureLocalizationTrimmer>(
+//     pose_graph->AddTrimmer(std::make_unique<PureLocalizationTrimmer>(
 //         trajectory_id,
 //         trajectory_options.pure_localization_trimmer().max_submaps_to_keep()));
 //   }
@@ -116,12 +116,12 @@ std::vector<std::string> SelectRangeSensorIds(
 //         deprecated. "
 //            "Use 'TrajectoryBuilderOptions::pure_localization_trimmer'
 //            instead.";
-//     pose_graph->AddTrimmer(absl::make_unique<PureLocalizationTrimmer>(
+//     pose_graph->AddTrimmer(std::make_unique<PureLocalizationTrimmer>(
 //         trajectory_id, 3 /* max_submaps_to_keep */));
 //     return;
 //   }
 //   if (trajectory_options.has_pure_localization_trimmer()) {
-//     pose_graph->AddTrimmer(absl::make_unique<PureLocalizationTrimmer>(
+//     pose_graph->AddTrimmer(std::make_unique<PureLocalizationTrimmer>(
 //         trajectory_id,
 //         trajectory_options.pure_localization_trimmer().max_submaps_to_keep()));
 //   }
@@ -130,9 +130,9 @@ std::vector<std::string> SelectRangeSensorIds(
 }  // namespace
 
 MapBuilder::MapBuilder() : thread_pool_(kBackgroundThreadsCount) {
-  pose_graph_2d_ = absl::make_unique<PoseGraph2D>(
-      absl::make_unique<optimization::OptimizationProblem2D>(), &thread_pool_);
-  sensor_collator_ = absl::make_unique<sensor::Collator>();
+  pose_graph_2d_ = std::make_unique<PoseGraph2D>(
+      std::make_unique<optimization::OptimizationProblem2D>(), &thread_pool_);
+  sensor_collator_ = std::make_unique<sensor::Collator>();
 }
 
 // MapBuilder::MapBuilder(const proto::MapBuilderOptions& options)
@@ -140,23 +140,23 @@ MapBuilder::MapBuilder() : thread_pool_(kBackgroundThreadsCount) {
 //   // CHECK(options.use_trajectory_builder_2d() ^
 //   //       options.use_trajectory_builder_3d());
 //   if (options.use_trajectory_builder_2d()) {
-//     pose_graph_2d_ = absl::make_unique<PoseGraph2D>(
+//     pose_graph_2d_ = std::make_unique<PoseGraph2D>(
 //         options_.pose_graph_options(),
-//         absl::make_unique<optimization::OptimizationProblem2D>(
+//         std::make_unique<optimization::OptimizationProblem2D>(
 //             options_.pose_graph_options().optimization_problem_options()),
 //         &thread_pool_);
 //   }
 //   // if (options.use_trajectory_builder_3d()) {
-//   //   pose_graph_ = absl::make_unique<PoseGraph3D>(
+//   //   pose_graph_ = std::make_unique<PoseGraph3D>(
 //   //       options_.pose_graph_options(),
-//   //       absl::make_unique<optimization::OptimizationProblem3D>(
+//   //       std::make_unique<optimization::OptimizationProblem3D>(
 //   //           options_.pose_graph_options().optimization_problem_options()),
 //   //       &thread_pool_);
 //   // }
 //   // if (options.collate_by_trajectory()) {
-//   //   sensor_collator_ = absl::make_unique<sensor::TrajectoryCollator>();
+//   //   sensor_collator_ = std::make_unique<sensor::TrajectoryCollator>();
 //   // } else {
-//   sensor_collator_ = absl::make_unique<sensor::Collator>();
+//   sensor_collator_ = std::make_unique<sensor::Collator>();
 //   // }
 // }
 
@@ -176,12 +176,12 @@ int MapBuilder::AddTrajectoryBuilder(
   // if (options_.use_trajectory_builder_3d()) {
   //   std::unique_ptr<LocalTrajectoryBuilder3D> local_trajectory_builder;
   //   if (trajectory_options.has_trajectory_builder_3d_options()) {
-  //     local_trajectory_builder = absl::make_unique<LocalTrajectoryBuilder3D>(
+  //     local_trajectory_builder = std::make_unique<LocalTrajectoryBuilder3D>(
   //         trajectory_options.trajectory_builder_3d_options(),
   //         SelectRangeSensorIds(expected_sensor_ids));
   //   }
   //   DCHECK(dynamic_cast<PoseGraph3D*>(pose_graph_.get()));
-  //   trajectory_builders_.push_back(absl::make_unique<CollatedTrajectoryBuilder>(
+  //   trajectory_builders_.push_back(std::make_unique<CollatedTrajectoryBuilder>(
   //       trajectory_options, sensor_collator_.get(), trajectory_id,
   //       expected_sensor_ids,
   //       CreateGlobalTrajectoryBuilder3D(
@@ -204,7 +204,7 @@ int MapBuilder::AddTrajectoryBuilder(
 
   trajectory_builders_.push_back(std::move(gloabal_trajectory_builder_2d));
 
-  //   return absl::make_unique<
+  //   return std::make_unique<
   //       GlobalTrajectoryBuilder<LocalTrajectoryBuilder2D,
   //       mapping::PoseGraph2D>>( std::move(local_trajectory_builder),
   //       trajectory_id, pose_graph, local_slam_result_callback,
@@ -212,7 +212,7 @@ int MapBuilder::AddTrajectoryBuilder(
 
   // }
   // DCHECK(dynamic_cast<PoseGraph2D*>(pose_graph_.get()));
-  // trajectory_builders_.push_back(absl::make_unique<CollatedTrajectoryBuilder>(
+  // trajectory_builders_.push_back(std::make_unique<CollatedTrajectoryBuilder>(
   //     trajectory_options, sensor_collator_.get(), trajectory_id,
   //     expected_sensor_ids,
   //     CreateGlobalTrajectoryBuilder2D(
@@ -486,7 +486,7 @@ std::map<int, int> MapBuilder::LoadStateFromFile(
 
 // std::unique_ptr<MapBuilder> CreateMapBuilder(
 //     const proto::MapBuilderOptions& options) {
-//   return absl::make_unique<MapBuilder>(options);
+//   return std::make_unique<MapBuilder>(options);
 // }
 
 }  // namespace mapping

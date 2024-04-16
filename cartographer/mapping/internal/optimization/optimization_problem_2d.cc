@@ -58,13 +58,13 @@ using TrajectoryData =
 //   }
 //   if (it == map_by_time.BeginOfTrajectory(trajectory_id)) {
 //     if (it->time == time) {
-//       return absl::make_unique<transform::Rigid3d>(it->pose.value());
+//       return std::make_unique<transform::Rigid3d>(it->pose.value());
 //     }
 //     return nullptr;
 //   }
 //   const auto prev_it = std::prev(it);
 //   if (prev_it->pose.has_value()) {
-//     return absl::make_unique<transform::Rigid3d>(
+//     return std::make_unique<transform::Rigid3d>(
 //         Interpolate(transform::TimestampedTransform{prev_it->time,
 //                                                     prev_it->pose.value()},
 //                     transform::TimestampedTransform{it->time,
@@ -153,7 +153,7 @@ transform::Rigid2d ToPose(const std::array<double, 3>& values) {
 //             landmark_id,
 //             CeresPose(starting_point, nullptr /* translation_parametrization
 //             */,
-//                       absl::make_unique<ceres::QuaternionParameterization>(),
+//                       std::make_unique<ceres::QuaternionParameterization>(),
 //                       problem));
 //         // Set landmark constant if it is frozen.
 //         if (landmark_node.second.frozen) {
@@ -447,12 +447,12 @@ std::unique_ptr<transform::Rigid3d> OptimizationProblem2D::InterpolateOdometry(
   }
   if (it == odometry_data_.BeginOfTrajectory(trajectory_id)) {
     if (it->time == time) {
-      return absl::make_unique<transform::Rigid3d>(it->pose);
+      return std::make_unique<transform::Rigid3d>(it->pose);
     }
     return nullptr;
   }
   const auto prev_it = std::prev(it);
-  return absl::make_unique<transform::Rigid3d>(
+  return std::make_unique<transform::Rigid3d>(
       Interpolate(transform::TimestampedTransform{prev_it->time, prev_it->pose},
                   transform::TimestampedTransform{it->time, it->pose}, time)
           .transform);
@@ -473,7 +473,7 @@ OptimizationProblem2D::CalculateOdometryBetweenNodes(
           first_node_odometry->inverse() * (*second_node_odometry) *
           transform::Rigid3d::Rotation(
               second_node_data.gravity_alignment.inverse());
-      return absl::make_unique<transform::Rigid3d>(relative_odometry);
+      return std::make_unique<transform::Rigid3d>(relative_odometry);
     }
   }
   return nullptr;

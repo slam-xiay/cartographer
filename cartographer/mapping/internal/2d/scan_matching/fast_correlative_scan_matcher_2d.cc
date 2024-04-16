@@ -186,7 +186,7 @@ PrecomputationGridStack2D::PrecomputationGridStack2D(const Grid2D& grid) {
 FastCorrelativeScanMatcher2D::FastCorrelativeScanMatcher2D(const Grid2D& grid)
     : limits_(grid.limits()),
       precomputation_grid_stack_(
-          absl::make_unique<PrecomputationGridStack2D>(grid)) {}
+          std::make_unique<PrecomputationGridStack2D>(grid)) {}
 
 FastCorrelativeScanMatcher2D::~FastCorrelativeScanMatcher2D() {}
 

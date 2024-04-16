@@ -1600,13 +1600,13 @@ class OptimizationProblem2D
 ```
 std::unique_ptr<MapBuilderInterface> CreateMapBuilder(
     const proto::MapBuilderOptions& options) {
-  return absl::make_unique<MapBuilder>(options);
+  return std::make_unique<MapBuilder>(options);
 }
 
 改成
 std::unique_ptr<MapBuilder> CreateMapBuilder(
     const proto::MapBuilderOptions& options) {
-  return absl::make_unique<MapBuilder>(options);
+  return std::make_unique<MapBuilder>(options);
 }
 ```
 
@@ -1711,7 +1711,7 @@ graph TD
 ```
     // }
     // DCHECK(dynamic_cast<PoseGraph2D*>(pose_graph_.get()));
-    // trajectory_builders_.push_back(absl::make_unique<CollatedTrajectoryBuilder>(
+    // trajectory_builders_.push_back(std::make_unique<CollatedTrajectoryBuilder>(
     //     trajectory_options, sensor_collator_.get(), trajectory_id,
     //     expected_sensor_ids,
     //     CreateGlobalTrajectoryBuilder2D(
@@ -2077,7 +2077,7 @@ ProbabilityGridPointsProcessor(
 //       dictionary->HasKey("output_type")
 //           ? OutputTypeFromString(dictionary->GetString("output_type"))
 //           : OutputType::kPng;
-//   return absl::make_unique<ProbabilityGridPointsProcessor>(
+//   return std::make_unique<ProbabilityGridPointsProcessor>(
 //       dictionary->GetDouble("resolution"),
 //       mapping::CreateProbabilityGridRangeDataInserterOptions2D(
 //           dictionary->GetDictionary("range_data_inserter").get()),
@@ -2155,11 +2155,11 @@ submap_2d.cc修改
 //   switch (options_.range_data_inserter_options().range_data_inserter_type())
 //   {
 //     case proto::RangeDataInserterOptions::PROBABILITY_GRID_INSERTER_2D:
-//       return absl::make_unique<ProbabilityGridRangeDataInserter2D>(
+//       return std::make_unique<ProbabilityGridRangeDataInserter2D>(
 //           options_.range_data_inserter_options()
 //               .probability_grid_range_data_inserter_options_2d());
 //     // case proto::RangeDataInserterOptions::TSDF_INSERTER_2D:
-//     //   return absl::make_unique<TSDFRangeDataInserter2D>(
+//     //   return std::make_unique<TSDFRangeDataInserter2D>(
 //     //       options_.range_data_inserter_options()
 //     //           .tsdf_range_data_inserter_options_2d());
 //     default:
@@ -2168,7 +2168,7 @@ submap_2d.cc修改
 // }
 std::unique_ptr<ProbabilityGridRangeDataInserter2D>
 ActiveSubmaps2D::CreateRangeDataInserter() {
-  return absl::make_unique<ProbabilityGridRangeDataInserter2D>();
+  return std::make_unique<ProbabilityGridRangeDataInserter2D>();
 }
 
 // std::unique_ptr<Grid2D> ActiveSubmaps2D::CreateGrid(
@@ -2177,7 +2177,7 @@ ActiveSubmaps2D::CreateRangeDataInserter() {
 //   float resolution = kResolution;
 //   switch (options_.grid_options_2d().grid_type()) {
 //     case proto::GridOptions2D::PROBABILITY_GRID:
-//       return absl::make_unique<ProbabilityGrid>(
+//       return std::make_unique<ProbabilityGrid>(
 //           MapLimits(resolution,
 //                     origin.cast<double>() + 0.5 * kInitialSubmapSize *
 //                                                 resolution *
@@ -2185,7 +2185,7 @@ ActiveSubmaps2D::CreateRangeDataInserter() {
 //                     CellLimits(kInitialSubmapSize, kInitialSubmapSize)),
 //           &conversion_tables_);
 //     // case proto::GridOptions2D::TSDF:
-//     //   return absl::make_unique<TSDF2D>(
+//     //   return std::make_unique<TSDF2D>(
 //     //       MapLimits(resolution,
 //     //                 origin.cast<double>() + 0.5 * kInitialSubmapSize *
 //     //                                             resolution *
@@ -2206,7 +2206,7 @@ ActiveSubmaps2D::CreateRangeDataInserter() {
 std::unique_ptr<Grid2D> ActiveSubmaps2D::CreateGrid(
     const Eigen::Vector2f& origin) {
   constexpr int kInitialSubmapSize = 100;
-  return absl::make_unique<ProbabilityGrid>(
+  return std::make_unique<ProbabilityGrid>(
       MapLimits(kResolution,
                 origin.cast<double>() + 0.5 * kInitialSubmapSize * kResolution *
                                             Eigen::Vector2d::Ones(),
@@ -2429,30 +2429,30 @@ options.max_length() -- kAdaptiveVoxelFilterMaxLength
 //   // CHECK(options.use_trajectory_builder_2d() ^
 //   //       options.use_trajectory_builder_3d());
 //   if (options.use_trajectory_builder_2d()) {
-//     pose_graph_2d_ = absl::make_unique<PoseGraph2D>(
+//     pose_graph_2d_ = std::make_unique<PoseGraph2D>(
 //         options_.pose_graph_options(),
-//         absl::make_unique<optimization::OptimizationProblem2D>(
+//         std::make_unique<optimization::OptimizationProblem2D>(
 //             options_.pose_graph_options().optimization_problem_options()),
 //         &thread_pool_);
 //   }
 //   // if (options.use_trajectory_builder_3d()) {
-//   //   pose_graph_ = absl::make_unique<PoseGraph3D>(
+//   //   pose_graph_ = std::make_unique<PoseGraph3D>(
 //   //       options_.pose_graph_options(),
-//   //       absl::make_unique<optimization::OptimizationProblem3D>(
+//   //       std::make_unique<optimization::OptimizationProblem3D>(
 //   //           options_.pose_graph_options().optimization_problem_options()),
 //   //       &thread_pool_);
 //   // }
 //   // if (options.collate_by_trajectory()) {
-//   //   sensor_collator_ = absl::make_unique<sensor::TrajectoryCollator>();
+//   //   sensor_collator_ = std::make_unique<sensor::TrajectoryCollator>();
 //   // } else {
-//   sensor_collator_ = absl::make_unique<sensor::Collator>();
+//   sensor_collator_ = std::make_unique<sensor::Collator>();
 //   // }
 // }
 
 MapBuilder::MapBuilder() : thread_pool_(kBackgroundThreadsCount) {
-  pose_graph_2d_ = absl::make_unique<PoseGraph2D>(
-      absl::make_unique<optimization::OptimizationProblem2D>(), &thread_pool_);
-  sensor_collator_ = absl::make_unique<sensor::Collator>();
+  pose_graph_2d_ = std::make_unique<PoseGraph2D>(
+      std::make_unique<optimization::OptimizationProblem2D>(), &thread_pool_);
+  sensor_collator_ = std::make_unique<sensor::Collator>();
 }
 ```
 
@@ -2543,14 +2543,14 @@ options_.min_score() kLocalMatchMinScore
   scan_matcher_task->SetWorkItem(
       [&submap_scan_matcher, &scan_matcher_options]() {
         submap_scan_matcher.fast_correlative_scan_matcher =
-            absl::make_unique<scan_matching::FastCorrelativeScanMatcher2D>(
+            std::make_unique<scan_matching::FastCorrelativeScanMatcher2D>(
                 *submap_scan_matcher.grid, scan_matcher_options);
       });
       改为
     scan_matcher_task->SetWorkItem(
       [&submap_scan_matcher]() {
         submap_scan_matcher.fast_correlative_scan_matcher =
-            absl::make_unique<scan_matching::FastCorrelativeScanMatcher2D>(
+            std::make_unique<scan_matching::FastCorrelativeScanMatcher2D>(
                 *submap_scan_matcher.grid, scan_matcher_options);
       });    
       
@@ -2558,14 +2558,14 @@ options_.min_score() kLocalMatchMinScore
         scan_matcher_task->SetWorkItem(
       [&submap_scan_matcher]() {
         submap_scan_matcher.fast_correlative_scan_matcher =
-            absl::make_unique<scan_matching::FastCorrelativeScanMatcher2D>(
+            std::make_unique<scan_matching::FastCorrelativeScanMatcher2D>(
                 *submap_scan_matcher.grid, scan_matcher_options);
       });
       
       改为 
         scan_matcher_task->SetWorkItem([&submap_scan_matcher]() {
     submap_scan_matcher.fast_correlative_scan_matcher =
-        absl::make_unique<scan_matching::FastCorrelativeScanMatcher2D>(
+        std::make_unique<scan_matching::FastCorrelativeScanMatcher2D>(
             *submap_scan_matcher.grid);
   });
       
@@ -2764,7 +2764,7 @@ absl::MutexLock locker(&mutex_)
 absl::flat_hash_map
 absl::Condition
 absl::FromChrono
-absl::make_unique
+std::make_unique
 absl::Substitute
 GUARDED_BY
 EXCLUSIVE_LOCKS_REQUIRED

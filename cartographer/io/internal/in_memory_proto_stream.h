@@ -61,7 +61,7 @@ class InMemoryProtoStreamReader {
 
   template <typename MessageType>
   void AddProto(const MessageType& proto) {
-    state_chunks_.push(absl::make_unique<MessageType>(proto));
+    state_chunks_.push(std::make_unique<MessageType>(proto));
   }
 
   bool ReadProto(google::protobuf::Message* proto);

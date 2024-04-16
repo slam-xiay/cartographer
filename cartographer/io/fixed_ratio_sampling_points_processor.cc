@@ -30,7 +30,7 @@ namespace io {
 //   const double sampling_ratio(dictionary->GetDouble("sampling_ratio"));
 //   CHECK_LT(0., sampling_ratio) << "Sampling ratio <= 0 makes no sense.";
 //   CHECK_LT(sampling_ratio, 1.) << "Sampling ratio >= 1 makes no sense.";
-//   return absl::make_unique<FixedRatioSamplingPointsProcessor>(sampling_ratio,
+//   return std::make_unique<FixedRatioSamplingPointsProcessor>(sampling_ratio,
 //                                                               next);
 // }
 
@@ -42,7 +42,7 @@ FixedRatioSamplingPointsProcessor::FixedRatioSamplingPointsProcessor(
 
 void FixedRatioSamplingPointsProcessor::Process(
     std::unique_ptr<PointsBatch> batch) {
-  absl::flat_hash_set<int> to_remove;
+  std::set<int> to_remove;
   for (size_t i = 0; i < batch->points.size(); ++i) {
     if (!sampler_->Pulse()) {
       to_remove.insert(i);
@@ -58,7 +58,7 @@ PointsProcessor::FlushResult FixedRatioSamplingPointsProcessor::Flush() {
       return PointsProcessor::FlushResult::kFinished;
 
     case PointsProcessor::FlushResult::kRestartStream:
-      sampler_ = absl::make_unique<common::FixedRatioSampler>(sampling_ratio_);
+      sampler_ = std::make_unique<common::FixedRatioSampler>(sampling_ratio_);
       return PointsProcessor::FlushResult::kRestartStream;
   }
   LOG(FATAL);

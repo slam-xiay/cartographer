@@ -24,7 +24,7 @@
 // void LocalSlamResult2D::AddToTrajectoryBuilder(
 //     TrajectoryBuilderInterface* const trajectory_builder) {
 //   trajectory_builder->AddLocalSlamResultData(
-//       absl::make_unique<LocalSlamResult2D>(*this));
+//       std::make_unique<LocalSlamResult2D>(*this));
 // }
 
 // void LocalSlamResult2D::AddToPoseGraph(int trajectory_id,

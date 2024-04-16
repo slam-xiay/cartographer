@@ -31,7 +31,7 @@
 //     const FileWriterFactory& file_writer_factory,
 //     common::LuaParameterDictionary* const dictionary,
 //     PointsProcessor* const next) {
-//   return absl::make_unique<HybridGridPointsProcessor>(
+//   return std::make_unique<HybridGridPointsProcessor>(
 //       dictionary->GetDouble("voxel_size"),
 //       mapping::CreateRangeDataInserterOptions3D(
 //           dictionary->GetDictionary("range_data_inserter").get()),

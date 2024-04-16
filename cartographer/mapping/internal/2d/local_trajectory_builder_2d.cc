@@ -69,7 +69,7 @@ std::unique_ptr<transform::Rigid2d> LocalTrajectoryBuilder2D::ScanMatch(
     const common::Time time, const transform::Rigid2d& pose_prediction,
     const sensor::PointCloud& filtered_gravity_aligned_point_cloud) {
   if (active_submaps_.submaps().empty()) {
-    return absl::make_unique<transform::Rigid2d>(pose_prediction);
+    return std::make_unique<transform::Rigid2d>(pose_prediction);
   }
   std::shared_ptr<const Submap2D> matching_submap =
       active_submaps_.submaps().front();
@@ -85,7 +85,7 @@ std::unique_ptr<transform::Rigid2d> LocalTrajectoryBuilder2D::ScanMatch(
     // kRealTimeCorrelativeScanMatcherScoreMetric->Observe(score);
   }
 
-  auto pose_observation = absl::make_unique<transform::Rigid2d>();
+  auto pose_observation = std::make_unique<transform::Rigid2d>();
   ceres::Solver::Summary summary;
   ceres_scan_matcher_.Match(pose_prediction.translation(), initial_ceres_pose,
                             filtered_gravity_aligned_point_cloud,
@@ -288,7 +288,7 @@ LocalTrajectoryBuilder2D::AddAccumulatedRangeData(
   // }
   // last_wall_time_ = wall_time;
   // last_thread_cpu_time_seconds_ = thread_cpu_time_seconds;
-  return absl::make_unique<MatchingResult>(
+  return std::make_unique<MatchingResult>(
       MatchingResult{time, pose_estimate, std::move(range_data_in_local),
                      std::move(insertion_result)});
 }
@@ -304,11 +304,9 @@ LocalTrajectoryBuilder2D::InsertIntoSubmap(
   }
   std::vector<std::shared_ptr<const Submap2D>> insertion_submaps =
       active_submaps_.InsertRangeData(range_data_in_local);
-  return absl::make_unique<InsertionResult>(InsertionResult{
+  return std::make_unique<InsertionResult>(InsertionResult{
       std::make_shared<const TrajectoryNode::Data>(TrajectoryNode::Data{
-          time,
-          gravity_alignment,
-          filtered_gravity_aligned_point_cloud,
+          time, gravity_alignment, filtered_gravity_aligned_point_cloud,
           // {},  // 'high_resolution_point_cloud' is only used in 3D.
           // {},  // 'low_resolution_point_cloud' is only used in 3D.
           // {},  // 'rotational_scan_matcher_histogram' is only used in 3D.
@@ -339,7 +337,7 @@ void LocalTrajectoryBuilder2D::InitializeExtrapolator(const common::Time time) {
   }
   // CHECK(!options_.pose_extrapolator_options().use_imu_based());
   // TODO(gaschler): Consider using InitializeWithImu as 3D does.
-  extrapolator_ = absl::make_unique<PoseExtrapolator>(
+  extrapolator_ = std::make_unique<PoseExtrapolator>(
       ::cartographer::common::FromSeconds(kPoseExtrapolatorDuration),
       kImuGravityTimeConstant);
   extrapolator_->AddPose(time, transform::Rigid3d::Identity());

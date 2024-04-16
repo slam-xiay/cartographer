@@ -19,7 +19,7 @@
 
 #include <map>
 
-#include "absl/container/flat_hash_map.h"
+// #include "absl/container/flat_hash_map.h"
 #include "absl/synchronization/mutex.h"
 #include "cartographer/mapping/proto/connected_components.pb.h"
 #include "cartographer/mapping/submaps.h"

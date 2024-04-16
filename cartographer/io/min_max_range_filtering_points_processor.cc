@@ -27,7 +27,7 @@
 // MinMaxRangeFilteringPointsProcessor::FromDictionary(
 //     common::LuaParameterDictionary* const dictionary,
 //     PointsProcessor* const next) {
-//   return absl::make_unique<MinMaxRangeFilteringPointsProcessor>(
+//   return std::make_unique<MinMaxRangeFilteringPointsProcessor>(
 //       dictionary->GetDouble("min_range"), dictionary->GetDouble("max_range"),
 //       next);
 // }
@@ -40,7 +40,7 @@
 
 // void MinMaxRangeFilteringPointsProcessor::Process(
 //     std::unique_ptr<PointsBatch> batch) {
-//   absl::flat_hash_set<int> to_remove;
+//   std::set<int> to_remove;
 //   for (size_t i = 0; i < batch->points.size(); ++i) {
 //     const float range_squared =
 //         (batch->points[i].position - batch->origin).squaredNorm();

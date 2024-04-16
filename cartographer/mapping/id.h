@@ -181,7 +181,7 @@ class MapById {
     }
 
     std::unique_ptr<const IdDataReference> operator->() const {
-      return absl::make_unique<const IdDataReference>(this->operator*());
+      return std::make_unique<const IdDataReference>(this->operator*());
     }
 
     ConstIterator& operator++() {

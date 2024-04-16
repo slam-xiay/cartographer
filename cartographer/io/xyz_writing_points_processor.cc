@@ -30,7 +30,7 @@ XyzWriterPointsProcessor::XyzWriterPointsProcessor(
 //     const FileWriterFactory& file_writer_factory,
 //     common::LuaParameterDictionary* const dictionary,
 //     PointsProcessor* const next) {
-//   return absl::make_unique<XyzWriterPointsProcessor>(
+//   return std::make_unique<XyzWriterPointsProcessor>(
 //       file_writer_factory(dictionary->GetString("filename")), next);
 // }
 

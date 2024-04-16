@@ -22,7 +22,7 @@
 #include <vector>
 
 #include "Eigen/Core"
-#include "absl/container/flat_hash_set.h"
+// #include "absl/container/flat_hash_set.h"
 #include "cartographer/common/time.h"
 #include "cartographer/io/color.h"
 #include "cartographer/sensor/rangefinder_point.h"
@@ -67,7 +67,7 @@ struct PointsBatch {
 };
 
 // Removes the indices in 'to_remove' from 'batch'.
-void RemovePoints(absl::flat_hash_set<int> to_remove, PointsBatch* batch);
+void RemovePoints(std::set<int> to_remove, PointsBatch* batch);
 
 }  // namespace io
 }  // namespace cartographer

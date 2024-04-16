@@ -61,8 +61,8 @@ transform::Rigid2d ComputeSubmapPose(const Submap2D& submap) {
 ConstraintBuilder2D::ConstraintBuilder2D(
     common::ThreadPoolInterface* const thread_pool)
     : thread_pool_(thread_pool),
-      finish_node_task_(absl::make_unique<common::Task>()),
-      when_done_task_(absl::make_unique<common::Task>()),
+      finish_node_task_(std::make_unique<common::Task>()),
+      when_done_task_(std::make_unique<common::Task>()),
       ceres_scan_matcher_() {}
 
 // ConstraintBuilder2D::ConstraintBuilder2D(
@@ -70,8 +70,8 @@ ConstraintBuilder2D::ConstraintBuilder2D(
 //     common::ThreadPoolInterface* const thread_pool)
 //     : options_(options),
 //       thread_pool_(thread_pool),
-//       finish_node_task_(absl::make_unique<common::Task>()),
-//       when_done_task_(absl::make_unique<common::Task>()),
+//       finish_node_task_(std::make_unique<common::Task>()),
+//       when_done_task_(std::make_unique<common::Task>()),
 //       ceres_scan_matcher_(options.ceres_scan_matcher_options()) {}
 
 ConstraintBuilder2D::~ConstraintBuilder2D() {
@@ -107,7 +107,7 @@ void ConstraintBuilder2D::MaybeAddConstraint(
   auto* const constraint = &constraints_.back();
   const auto* scan_matcher =
       DispatchScanMatcherConstruction(submap_id, submap->grid());
-  auto constraint_task = absl::make_unique<common::Task>();
+  auto constraint_task = std::make_unique<common::Task>();
   constraint_task->SetWorkItem([=]() LOCKS_EXCLUDED(mutex_) {
     ComputeConstraint(submap_id, submap, node_id, false, /* match_full_submap */
                       constant_data, initial_relative_pose, *scan_matcher,
@@ -132,7 +132,7 @@ void ConstraintBuilder2D::MaybeAddGlobalConstraint(
   auto* const constraint = &constraints_.back();
   const auto* scan_matcher =
       DispatchScanMatcherConstruction(submap_id, submap->grid());
-  auto constraint_task = absl::make_unique<common::Task>();
+  auto constraint_task = std::make_unique<common::Task>();
   constraint_task->SetWorkItem([=]() LOCKS_EXCLUDED(mutex_) {
     ComputeConstraint(submap_id, submap, node_id, true, /* match_full_submap */
                       constant_data, transform::Rigid2d::Identity(),
@@ -153,7 +153,7 @@ void ConstraintBuilder2D::NotifyEndOfNode() {
   });
   auto finish_node_task_handle =
       thread_pool_->Schedule(std::move(finish_node_task_));
-  finish_node_task_ = absl::make_unique<common::Task>();
+  finish_node_task_ = std::make_unique<common::Task>();
   when_done_task_->AddDependency(finish_node_task_handle);
   ++num_started_nodes_;
 }
@@ -163,11 +163,11 @@ void ConstraintBuilder2D::WhenDone(
   absl::MutexLock locker(&mutex_);
   CHECK(when_done_ == nullptr);
   // TODO(gaschler): Consider using just std::function, it can also be empty.
-  when_done_ = absl::make_unique<std::function<void(const Result&)>>(callback);
+  when_done_ = std::make_unique<std::function<void(const Result&)>>(callback);
   CHECK(when_done_task_ != nullptr);
   when_done_task_->SetWorkItem([this] { RunWhenDoneCallback(); });
   thread_pool_->Schedule(std::move(when_done_task_));
-  when_done_task_ = absl::make_unique<common::Task>();
+  when_done_task_ = std::make_unique<common::Task>();
 }
 
 const ConstraintBuilder2D::SubmapScanMatcher*
@@ -182,10 +182,10 @@ ConstraintBuilder2D::DispatchScanMatcherConstruction(const SubmapId& submap_id,
   submap_scan_matcher.grid = grid;
   // auto& scan_matcher_options =
   // options_.fast_correlative_scan_matcher_options();
-  auto scan_matcher_task = absl::make_unique<common::Task>();
+  auto scan_matcher_task = std::make_unique<common::Task>();
   scan_matcher_task->SetWorkItem([&submap_scan_matcher]() {
     submap_scan_matcher.fast_correlative_scan_matcher =
-        absl::make_unique<scan_matching::FastCorrelativeScanMatcher2D>(
+        std::make_unique<scan_matching::FastCorrelativeScanMatcher2D>(
             *submap_scan_matcher.grid);
   });
   submap_scan_matcher.creation_task_handle =

@@ -159,7 +159,7 @@ XRayPointsProcessor::XRayPointsProcessor(
 //     floors = mapping::DetectFloors(trajectories.at(0));
 //   }
 
-//   return absl::make_unique<XRayPointsProcessor>(
+//   return std::make_unique<XRayPointsProcessor>(
 //       dictionary->GetDouble("voxel_size"), saturation_factor,
 //       transform::FromDictionary(dictionary->GetDictionary("transform").get())
 //           .cast<float>(),

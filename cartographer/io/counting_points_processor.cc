@@ -29,7 +29,7 @@ CountingPointsProcessor::CountingPointsProcessor(PointsProcessor* next)
 // CountingPointsProcessor::FromDictionary(
 //     common::LuaParameterDictionary* const dictionary,
 //     PointsProcessor* const next) {
-//   return absl::make_unique<CountingPointsProcessor>(next);
+//   return std::make_unique<CountingPointsProcessor>(next);
 // }
 
 void CountingPointsProcessor::Process(std::unique_ptr<PointsBatch> batch) {

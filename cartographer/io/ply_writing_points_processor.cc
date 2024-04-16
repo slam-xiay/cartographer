@@ -89,7 +89,7 @@ void WriteBinaryPlyPointColor(const Uint8Color& color,
 //     const FileWriterFactory& file_writer_factory,
 //     common::LuaParameterDictionary* const dictionary,
 //     PointsProcessor* const next) {
-//   return absl::make_unique<PlyWritingPointsProcessor>(
+//   return std::make_unique<PlyWritingPointsProcessor>(
 //       file_writer_factory(dictionary->GetString("filename")),
 //       std::vector<std::string>(), next);
 // }

@@ -33,7 +33,7 @@ namespace io {
 //       "";
 //   const float min_intensity = dictionary->GetDouble("min_intensity");
 //   const float max_intensity = dictionary->GetDouble("max_intensity");
-//   return absl::make_unique<IntensityToColorPointsProcessor>(
+//   return std::make_unique<IntensityToColorPointsProcessor>(
 //       min_intensity, max_intensity, frame_id, next);
 // }
 

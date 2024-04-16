@@ -204,7 +204,8 @@ LocalTrajectoryBuilder2D::AddRangeData(
 
   if (num_accumulated_ >= kAccumulatedRangeCount) {
     const common::Time current_sensor_time = synchronized_data.time;
-    absl::optional<common::Duration> sensor_duration;
+    // absl::optional<common::Duration> sensor_duration;
+    std::optional<common::Duration> sensor_duration;
     if (last_sensor_time_.has_value()) {
       sensor_duration = current_sensor_time - last_sensor_time_.value();
     }

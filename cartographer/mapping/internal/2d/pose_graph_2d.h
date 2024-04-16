@@ -252,9 +252,11 @@ class PoseGraph2D : public PoseGraph {
   std::unique_ptr<WorkQueue> work_queue_ GUARDED_BY(work_queue_mutex_);
 
   // We globally localize a fraction of the nodes from each trajectory.
-  absl::flat_hash_map<int, std::unique_ptr<common::FixedRatioSampler>>
-      global_localization_samplers_ GUARDED_BY(mutex_);
+//   absl::flat_hash_map<int, std::unique_ptr<common::FixedRatioSampler>>
+//       global_localization_samplers_ GUARDED_BY(mutex_);
 
+  std::unordered_map<int, std::unique_ptr<common::FixedRatioSampler>>
+      global_localization_samplers_ GUARDED_BY(mutex_);
   // Number of nodes added since last loop closure.
   size_t num_nodes_since_last_loop_closure_ GUARDED_BY(mutex_) = 0;
 

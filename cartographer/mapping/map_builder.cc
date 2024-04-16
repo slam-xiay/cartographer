@@ -165,7 +165,8 @@ int MapBuilder::AddTrajectoryBuilder(
     // const proto::TrajectoryBuilderOptions& trajectory_options,
     LocalSlamResultCallback local_slam_result_callback) {
   const int trajectory_id = trajectory_builders_.size();
-  absl::optional<MotionFilter> pose_graph_odometry_motion_filter;
+  // absl::optional<MotionFilter> pose_graph_odometry_motion_filter;
+  std::optional<MotionFilter> pose_graph_odometry_motion_filter;
   // if (trajectory_options.has_pose_graph_odometry_motion_filter()) {
   //   LOG(INFO) << "Using a motion filter for adding odometry to the pose
   //   graph."; pose_graph_odometry_motion_filter.emplace(
@@ -378,11 +379,11 @@ std::map<int, int> MapBuilder::LoadState(io::ProtoStreamReader* const reader,
         LOG(ERROR) << "Found multiple serialized `PoseGraph`. Serialized "
                       "stream likely corrupt!.";
         break;
-      case SerializedData::kAllTrajectoryBuilderOptions:
-        LOG(ERROR) << "Found multiple serialized "
-                      "`AllTrajectoryBuilderOptions`. Serialized stream likely "
-                      "corrupt!.";
-        break;
+      // case SerializedData::kAllTrajectoryBuilderOptions:
+      //   LOG(ERROR) << "Found multiple serialized "
+      //                 "`AllTrajectoryBuilderOptions`. Serialized stream likely "
+      //                 "corrupt!.";
+      //   break;
       case SerializedData::kSubmap: {
         proto.mutable_submap()->mutable_submap_id()->set_trajectory_id(
             trajectory_remapping.at(

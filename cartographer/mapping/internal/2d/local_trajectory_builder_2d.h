@@ -76,7 +76,8 @@ class LocalTrajectoryBuilder2D {
   std::unique_ptr<MatchingResult> AddAccumulatedRangeData(
       common::Time time, const sensor::RangeData& gravity_aligned_range_data,
       const transform::Rigid3d& gravity_alignment,
-      const absl::optional<common::Duration>& sensor_duration);
+      //   const absl::optional<common::Duration>& sensor_duration);
+      const std::optional<common::Duration>& sensor_duration);
   sensor::RangeData TransformToGravityAlignedFrameAndFilter(
       const transform::Rigid3f& transform_to_gravity_aligned_frame,
       const sensor::RangeData& range_data) const;
@@ -108,9 +109,12 @@ class LocalTrajectoryBuilder2D {
   size_t num_accumulated_ = 0;
   sensor::RangeData accumulated_range_data_;
 
-  absl::optional<std::chrono::steady_clock::time_point> last_wall_time_;
-  absl::optional<double> last_thread_cpu_time_seconds_;
-  absl::optional<common::Time> last_sensor_time_;
+  //   absl::optional<std::chrono::steady_clock::time_point> last_wall_time_;
+  //   absl::optional<double> last_thread_cpu_time_seconds_;
+  //   absl::optional<common::Time> last_sensor_time_;
+  std::optional<std::chrono::steady_clock::time_point> last_wall_time_;
+  std::optional<double> last_thread_cpu_time_seconds_;
+  std::optional<common::Time> last_sensor_time_;
 
   RangeDataCollator range_data_collator_;
 };

@@ -73,7 +73,8 @@ class GlobalTrajectoryBuilder2D {
       std::shared_ptr<LocalTrajectoryBuilder2D> local_trajectory_builder_2d,
       const int trajectory_id, PoseGraph2D* const pose_graph_2d,
       const LocalSlamResultCallback& local_slam_result_callback,
-      const absl::optional<MotionFilter>& pose_graph_odometry_motion_filter)
+      // const absl::optional<MotionFilter>& pose_graph_odometry_motion_filter)
+      const std::optional<MotionFilter>& pose_graph_odometry_motion_filter)
       : trajectory_id_(trajectory_id),
         pose_graph_2d_(pose_graph_2d),
         local_trajectory_builder_2d_(std::move(local_trajectory_builder_2d)),
@@ -102,7 +103,8 @@ class GlobalTrajectoryBuilder2D {
   PoseGraph2D* const pose_graph_2d_;
   std::shared_ptr<LocalTrajectoryBuilder2D> local_trajectory_builder_2d_;
   LocalSlamResultCallback local_slam_result_callback_;
-  absl::optional<MotionFilter> pose_graph_odometry_motion_filter_;
+  // absl::optional<MotionFilter> pose_graph_odometry_motion_filter_;
+  std::optional<MotionFilter> pose_graph_odometry_motion_filter_;
 };
 proto::SensorId ToProto(const SensorId& sensor_id);
 SensorId FromProto(const proto::SensorId& sensor_id_proto);

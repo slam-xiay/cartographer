@@ -15,15 +15,17 @@
 cmake_minimum_required(VERSION 3.2)
 
 project(cartographer)
-
-set(CARTOGRAPHER_MAJOR_VERSION 1)
-set(CARTOGRAPHER_MINOR_VERSION 0)
-set(CARTOGRAPHER_PATCH_VERSION 0)
-set(CARTOGRAPHER_VERSION ${CARTOGRAPHER_MAJOR_VERSION}.${CARTOGRAPHER_MINOR_VERSION}.${CARTOGRAPHER_PATCH_VERSION})
-set(CARTOGRAPHER_SOVERSION ${CARTOGRAPHER_MAJOR_VERSION}.${CARTOGRAPHER_MINOR_VERSION})
+set(CMAKE_CXX_STANDARD 17)
+# set(FORCE_DEBUG_BUILD true)
+# set(CMAKE_BUILD_TYPE Debug)
+# set(CARTOGRAPHER_MAJOR_VERSION 1)
+# set(CARTOGRAPHER_MINOR_VERSION 0)
+# set(CARTOGRAPHER_PATCH_VERSION 0)
+# set(CARTOGRAPHER_VERSION ${CARTOGRAPHER_MAJOR_VERSION}.${CARTOGRAPHER_MINOR_VERSION}.${CARTOGRAPHER_PATCH_VERSION})
+# set(CARTOGRAPHER_SOVERSION ${CARTOGRAPHER_MAJOR_VERSION}.${CARTOGRAPHER_MINOR_VERSION})
 # option(BUILD_GRPC "build Cartographer gRPC support" false)
 # set(CARTOGRAPHER_HAS_GRPC ${BUILD_GRPC})
-option(BUILD_PROMETHEUS "build Prometheus monitoring support" false)
+# option(BUILD_PROMETHEUS "build Prometheus monitoring support" false)
 
 include("${PROJECT_SOURCE_DIR}/cmake/functions.cmake")
 google_initialize_cartographer_project()
@@ -74,7 +76,7 @@ install(FILES package.xml DESTINATION share/cartographer)
 # set(CARTOGRAPHER_CONFIGURATION_FILES_DIRECTORY ${CMAKE_INSTALL_PREFIX}/share/cartographer/configuration_files
 #   CACHE PATH ".lua configuration files directory")
 
-install(DIRECTORY configuration_files DESTINATION share/cartographer/)
+# install(DIRECTORY configuration_files DESTINATION share/cartographer/)
 
 install(DIRECTORY cmake DESTINATION share/cartographer/)
 
@@ -273,7 +275,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC ${PROTOBUF_LIBRARY}
   absl::algorithm
   absl::base
   absl::debugging
-  absl::flat_hash_map
+  # absl::flat_hash_map
   absl::memory
   absl::meta
   absl::numeric

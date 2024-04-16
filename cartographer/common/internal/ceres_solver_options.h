@@ -21,7 +21,7 @@
 // #include "cartographer/common/proto/ceres_solver_options.pb.h"
 
 #include "ceres/ceres.h"
-
+#include "cartographer/common/config.h"
 namespace cartographer {
 namespace common {
 

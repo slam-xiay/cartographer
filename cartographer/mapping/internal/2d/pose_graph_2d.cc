@@ -963,7 +963,8 @@ MapById<NodeId, TrajectoryNodePose> PoseGraph2D::GetTrajectoryNodePoses()
   MapById<NodeId, TrajectoryNodePose> node_poses;
   absl::MutexLock locker(&mutex_);
   for (const auto& node_id_data : data_.trajectory_nodes) {
-    absl::optional<TrajectoryNodePose::ConstantPoseData> constant_pose_data;
+    // absl::optional<TrajectoryNodePose::ConstantPoseData> constant_pose_data;
+    std::optional<TrajectoryNodePose::ConstantPoseData> constant_pose_data;
     if (node_id_data.data.constant_data != nullptr) {
       constant_pose_data = TrajectoryNodePose::ConstantPoseData{
           node_id_data.data.constant_data->time,

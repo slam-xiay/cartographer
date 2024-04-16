@@ -38,7 +38,8 @@ struct TrajectoryNodePose {
   // The node pose in the global SLAM frame.
   transform::Rigid3d global_pose;
 
-  absl::optional<ConstantPoseData> constant_pose_data;
+  // absl::optional<ConstantPoseData> constant_pose_data;
+  std::optional<ConstantPoseData> constant_pose_data;
 };
 
 struct TrajectoryNode {

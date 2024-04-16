@@ -50,14 +50,15 @@ class Collator {
 
   void Flush();
 
-  absl::optional<int> GetBlockingTrajectoryId() const;
+  //   absl::optional<int> GetBlockingTrajectoryId() const;
 
  private:
   // Queue keys are a pair of trajectory ID and sensor identifier.
   OrderedMultiQueue queue_;
 
   // Map of trajectory ID to all associated QueueKeys.
-  absl::flat_hash_map<int, std::vector<QueueKey>> queue_keys_;
+//   absl::flat_hash_map<int, std::vector<QueueKey>> queue_keys_;
+    std::unordered_map<int, std::vector<QueueKey>> queue_keys_;
 };
 
 }  // namespace sensor

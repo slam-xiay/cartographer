@@ -78,7 +78,8 @@ class PoseGraphInterface {
   struct TrajectoryData {
     double gravity_constant = 9.8;
     std::array<double, 4> imu_calibration{{1., 0., 0., 0.}};
-    absl::optional<transform::Rigid3d> fixed_frame_origin_in_map;
+    // absl::optional<transform::Rigid3d> fixed_frame_origin_in_map;
+    std::optional<transform::Rigid3d> fixed_frame_origin_in_map;
   };
 
   enum class TrajectoryState { ACTIVE, FINISHED, FROZEN, DELETED };

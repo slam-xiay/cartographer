@@ -90,7 +90,9 @@ std::vector<bool> RandomizedVoxelFilterIndices(
     PointFunction&& point_function) {
   // According to https://en.wikipedia.org/wiki/Reservoir_sampling
   std::minstd_rand0 generator;
-  absl::flat_hash_map<VoxelKeyType, std::pair<int, int>>
+  // absl::flat_hash_map<VoxelKeyType, std::pair<int, int>>
+  //     voxel_count_and_point_index;
+  std::unordered_map<VoxelKeyType, std::pair<int, int>>
       voxel_count_and_point_index;
   for (size_t i = 0; i < point_cloud.size(); i++) {
     auto& voxel = voxel_count_and_point_index[GetVoxelCellIndex(

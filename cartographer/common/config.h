@@ -1,6 +1,19 @@
 #ifndef CARTOGRAPHER_COMMON_CONFIG_H_
 #define CARTOGRAPHER_COMMON_CONFIG_H_
 #include "math.h"
+
+// #ifndef ABSL_BASE_INTERNAL_THREAD_ANNOTATIONS_H_
+// #define THREAD_ANNOTATION_ATTRIBUTE__(x) __attribute__((x))
+
+// #define GUARDED_BY(x) THREAD_ANNOTATION_ATTRIBUTE__(guarded_by(x))
+
+// #define SHARED_LOCKS_REQUIRED(...)
+//   THREAD_ANNOTATION_ATTRIBUTE__(shared_locks_required(__VA_ARGS__))
+
+// #define EXCLUSIVE_LOCKS_REQUIRED(...)
+//   THREAD_ANNOTATION_ATTRIBUTE__(exclusive_locks_required(__VA_ARGS__))
+// #endif
+
 namespace cartographer {
 
 constexpr size_t kBackgroundThreadsCount = 4;  // num_background_threads

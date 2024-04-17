@@ -75,7 +75,7 @@ ConstraintBuilder2D::ConstraintBuilder2D(
 //       ceres_scan_matcher_(options.ceres_scan_matcher_options()) {}
 
 ConstraintBuilder2D::~ConstraintBuilder2D() {
-  absl::MutexLock locker(&mutex_);
+  std::unique_lock<std::mutex> lock(mutex_);
   CHECK_EQ(finish_node_task_->GetState(), common::Task::NEW);
   CHECK_EQ(when_done_task_->GetState(), common::Task::NEW);
   CHECK_EQ(constraints_.size(), 0) << "WhenDone() was not called";
@@ -97,7 +97,7 @@ void ConstraintBuilder2D::MaybeAddConstraint(
     return;
   }
 
-  absl::MutexLock locker(&mutex_);
+  std::unique_lock<std::mutex> lock(mutex_);
   if (when_done_) {
     LOG(WARNING)
         << "MaybeAddConstraint was called while WhenDone was scheduled.";
@@ -108,7 +108,7 @@ void ConstraintBuilder2D::MaybeAddConstraint(
   const auto* scan_matcher =
       DispatchScanMatcherConstruction(submap_id, submap->grid());
   auto constraint_task = std::make_unique<common::Task>();
-  constraint_task->SetWorkItem([=]() LOCKS_EXCLUDED(mutex_) {
+  constraint_task->SetWorkItem([=]() {
     ComputeConstraint(submap_id, submap, node_id, false, /* match_full_submap */
                       constant_data, initial_relative_pose, *scan_matcher,
                       constraint);
@@ -122,7 +122,7 @@ void ConstraintBuilder2D::MaybeAddConstraint(
 void ConstraintBuilder2D::MaybeAddGlobalConstraint(
     const SubmapId& submap_id, const Submap2D* const submap,
     const NodeId& node_id, const TrajectoryNode::Data* const constant_data) {
-  absl::MutexLock locker(&mutex_);
+  std::unique_lock<std::mutex> lock(mutex_);
   if (when_done_) {
     LOG(WARNING)
         << "MaybeAddGlobalConstraint was called while WhenDone was scheduled.";
@@ -133,7 +133,7 @@ void ConstraintBuilder2D::MaybeAddGlobalConstraint(
   const auto* scan_matcher =
       DispatchScanMatcherConstruction(submap_id, submap->grid());
   auto constraint_task = std::make_unique<common::Task>();
-  constraint_task->SetWorkItem([=]() LOCKS_EXCLUDED(mutex_) {
+  constraint_task->SetWorkItem([=]() {
     ComputeConstraint(submap_id, submap, node_id, true, /* match_full_submap */
                       constant_data, transform::Rigid2d::Identity(),
                       *scan_matcher, constraint);
@@ -145,10 +145,10 @@ void ConstraintBuilder2D::MaybeAddGlobalConstraint(
 }
 
 void ConstraintBuilder2D::NotifyEndOfNode() {
-  absl::MutexLock locker(&mutex_);
+  std::unique_lock<std::mutex> lock(mutex_);
   CHECK(finish_node_task_ != nullptr);
   finish_node_task_->SetWorkItem([this] {
-    absl::MutexLock locker(&mutex_);
+    std::unique_lock<std::mutex> lock(mutex_);
     ++num_finished_nodes_;
   });
   auto finish_node_task_handle =
@@ -160,7 +160,7 @@ void ConstraintBuilder2D::NotifyEndOfNode() {
 
 void ConstraintBuilder2D::WhenDone(
     const std::function<void(const ConstraintBuilder2D::Result&)>& callback) {
-  absl::MutexLock locker(&mutex_);
+  std::unique_lock<std::mutex> lock(mutex_);
   CHECK(when_done_ == nullptr);
   // TODO(gaschler): Consider using just std::function, it can also be empty.
   when_done_ = std::make_unique<std::function<void(const Result&)>>(callback);
@@ -243,7 +243,7 @@ void ConstraintBuilder2D::ComputeConstraint(
     }
   }
   {
-    absl::MutexLock locker(&mutex_);
+    std::unique_lock<std::mutex> lock(mutex_);
     // score_histogram_.Add(score);
   }
 
@@ -288,7 +288,7 @@ void ConstraintBuilder2D::RunWhenDoneCallback() {
   Result result;
   std::unique_ptr<std::function<void(const Result&)>> callback;
   {
-    absl::MutexLock locker(&mutex_);
+    std::unique_lock<std::mutex> lock(mutex_);
     CHECK(when_done_ != nullptr);
     for (const std::unique_ptr<Constraint>& constraint : constraints_) {
       if (constraint == nullptr) continue;
@@ -308,12 +308,12 @@ void ConstraintBuilder2D::RunWhenDoneCallback() {
 }
 
 int ConstraintBuilder2D::GetNumFinishedNodes() {
-  absl::MutexLock locker(&mutex_);
+  std::unique_lock<std::mutex> lock(mutex_);
   return num_finished_nodes_;
 }
 
 void ConstraintBuilder2D::DeleteScanMatcher(const SubmapId& submap_id) {
-  absl::MutexLock locker(&mutex_);
+  std::unique_lock<std::mutex> lock(mutex_);
   if (when_done_) {
     LOG(WARNING)
         << "DeleteScanMatcher was called while WhenDone was scheduled.";

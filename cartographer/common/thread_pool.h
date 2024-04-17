@@ -17,6 +17,7 @@
 #ifndef CARTOGRAPHER_COMMON_THREAD_POOL_H_
 #define CARTOGRAPHER_COMMON_THREAD_POOL_H_
 
+#include <condition_variable>
 #include <deque>
 #include <functional>
 #include <memory>
@@ -24,7 +25,9 @@
 #include <vector>
 
 // #include "absl/container/flat_hash_map.h"
-#include "absl/synchronization/mutex.h"
+#include <mutex>
+#include <unordered_map>
+// #include "absl/synchronization/mutex.h"
 #include "cartographer/common/task.h"
 
 namespace cartographer {
@@ -44,7 +47,6 @@ class ThreadPoolInterface {
 
  private:
   friend class Task;
-
   virtual void NotifyDependenciesCompleted(Task* task) = 0;
 };
 
@@ -64,23 +66,19 @@ class ThreadPool : public ThreadPoolInterface {
 
   // When the returned weak pointer is expired, 'task' has certainly completed,
   // so dependants no longer need to add it as a dependency.
-  std::weak_ptr<Task> Schedule(std::unique_ptr<Task> task)
-      LOCKS_EXCLUDED(mutex_) override;
+  std::weak_ptr<Task> Schedule(std::unique_ptr<Task> task) override;
 
  private:
+  std::condition_variable cv_;
   void DoWork();
-
-  void NotifyDependenciesCompleted(Task* task) LOCKS_EXCLUDED(mutex_) override;
-
-  absl::Mutex mutex_;
-  bool running_ GUARDED_BY(mutex_) = true;
-  std::vector<std::thread> pool_ GUARDED_BY(mutex_);
-  std::deque<std::shared_ptr<Task>> task_queue_ GUARDED_BY(mutex_);
-  // absl::flat_hash_map<Task*, std::shared_ptr<Task>> tasks_not_ready_
-  //     GUARDED_BY(mutex_);
-
-  std::unordered_map<Task*, std::shared_ptr<Task>> tasks_not_ready_
-      GUARDED_BY(mutex_);
+  void NotifyDependenciesCompleted(Task* task) override;
+  // absl::Mutex mutex_;
+  std::mutex mutex_;
+  bool running_ = true;
+  std::vector<std::thread> pool_;
+  std::deque<std::shared_ptr<Task>> task_queue_;
+  // absl::flat_hash_map<Task*, std::shared_ptr<Task>> tasks_not_ready_;
+  std::unordered_map<Task*, std::shared_ptr<Task>> tasks_not_ready_;
 };
 
 }  // namespace common

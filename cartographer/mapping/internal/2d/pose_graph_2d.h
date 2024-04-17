@@ -28,7 +28,9 @@
 #include "Eigen/Core"
 #include "Eigen/Geometry"
 // #include "absl/container/flat_hash_map.h"
-#include "absl/synchronization/mutex.h"
+// #include "absl/synchronization/mutex.h"
+#include <mutex>
+
 #include "cartographer/common/fixed_ratio_sampler.h"
 #include "cartographer/common/thread_pool.h"
 #include "cartographer/common/time.h"
@@ -72,10 +74,8 @@ class PoseGraph2D {
       std::unique_ptr<optimization::OptimizationProblem2D> optimization_problem,
       common::ThreadPool* thread_pool);
   ~PoseGraph2D();
-
   PoseGraph2D(const PoseGraph2D&) = delete;
   PoseGraph2D& operator=(const PoseGraph2D&) = delete;
-
   // Adds a new node with 'constant_data'. Its 'constant_data->local_pose' was
   // determined by scan matching against 'insertion_submaps.front()' and the
   // node data was inserted into the 'insertion_submaps'. If
@@ -84,29 +84,23 @@ class PoseGraph2D {
   NodeId AddNode(
       std::shared_ptr<const TrajectoryNode::Data> constant_data,
       int trajectory_id,
-      const std::vector<std::shared_ptr<const Submap2D>>& insertion_submaps)
-      LOCKS_EXCLUDED(mutex_);
-
-  void AddImuData(int trajectory_id, const sensor::ImuData& imu_data)
-      LOCKS_EXCLUDED(mutex_);
+      const std::vector<std::shared_ptr<const Submap2D>>& insertion_submaps);
+  void AddImuData(int trajectory_id, const sensor::ImuData& imu_data);
   void AddOdometryData(int trajectory_id,
-                       const sensor::OdometryData& odometry_data)
-      LOCKS_EXCLUDED(mutex_);
+                       const sensor::OdometryData& odometry_data);
   //   void AddFixedFramePoseData(
   //       int trajectory_id,
   //       const sensor::FixedFramePoseData& fixed_frame_pose_data)
-  //       LOCKS_EXCLUDED(mutex_);
+  //       ;
   //   void AddLandmarkData(int trajectory_id,
   //                        const sensor::LandmarkData& landmark_data)
-  //       LOCKS_EXCLUDED(mutex_);
+  //       ;
 
   void DeleteTrajectory(int trajectory_id);
   void FinishTrajectory(int trajectory_id);
-  bool IsTrajectoryFinished(int trajectory_id) const
-      EXCLUSIVE_LOCKS_REQUIRED(mutex_);
+  bool IsTrajectoryFinished(int trajectory_id) const;
   void FreezeTrajectory(int trajectory_id);
-  bool IsTrajectoryFrozen(int trajectory_id) const
-      EXCLUSIVE_LOCKS_REQUIRED(mutex_);
+  bool IsTrajectoryFrozen(int trajectory_id) const;
   void AddSubmapFromProto(const transform::Rigid3d& global_submap_pose,
                           const proto::Submap& submap);
   void AddNodeFromProto(const transform::Rigid3d& global_pose,
@@ -116,64 +110,54 @@ class PoseGraph2D {
   void AddSerializedConstraints(const std::vector<Constraint>& constraints);
   void AddTrimmer(std::unique_ptr<PoseGraphTrimmer> trimmer);
   void RunFinalOptimization();
-  std::vector<std::vector<int>> GetConnectedTrajectories() const
-      LOCKS_EXCLUDED(mutex_);
+  std::vector<std::vector<int>> GetConnectedTrajectories() const;
   ::cartographer::mapping::SubmapData GetSubmapData(
-      const SubmapId& submap_id) const LOCKS_EXCLUDED(mutex_);
+      const SubmapId& submap_id) const;
   MapById<SubmapId, ::cartographer::mapping::SubmapData> GetAllSubmapData()
-      const LOCKS_EXCLUDED(mutex_);
-  MapById<SubmapId, SubmapPose> GetAllSubmapPoses() const
-      LOCKS_EXCLUDED(mutex_);
-  transform::Rigid3d GetLocalToGlobalTransform(int trajectory_id) const
-      LOCKS_EXCLUDED(mutex_);
-  MapById<NodeId, TrajectoryNode> GetTrajectoryNodes() const
-      LOCKS_EXCLUDED(mutex_);
-  MapById<NodeId, TrajectoryNodePose> GetTrajectoryNodePoses() const
-      LOCKS_EXCLUDED(mutex_);
-  std::map<int, TrajectoryState> GetTrajectoryStates() const
-      LOCKS_EXCLUDED(mutex_);
+      const;
+  MapById<SubmapId, SubmapPose> GetAllSubmapPoses() const;
+  transform::Rigid3d GetLocalToGlobalTransform(int trajectory_id) const;
+  MapById<NodeId, TrajectoryNode> GetTrajectoryNodes() const;
+  MapById<NodeId, TrajectoryNodePose> GetTrajectoryNodePoses() const;
+  std::map<int, TrajectoryState> GetTrajectoryStates() const;
   //   std::map<std::string, transform::Rigid3d> GetLandmarkPoses() const
   //
-  //       LOCKS_EXCLUDED(mutex_);
+  //       ;
   //   void SetLandmarkPose(const std::string& landmark_id,
   //                        const transform::Rigid3d& global_pose,
   //                        const bool frozen = false)
-  //       LOCKS_EXCLUDED(mutex_);
-  sensor::MapByTime<sensor::ImuData> GetImuData() const LOCKS_EXCLUDED(mutex_);
-  sensor::MapByTime<sensor::OdometryData> GetOdometryData() const
-      LOCKS_EXCLUDED(mutex_);
+  //       ;
+  sensor::MapByTime<sensor::ImuData> GetImuData() const;
+  sensor::MapByTime<sensor::OdometryData> GetOdometryData() const;
   //   sensor::MapByTime<sensor::FixedFramePoseData> GetFixedFramePoseData()
-  //       const  LOCKS_EXCLUDED(mutex_);
+  //       const  ;
   //   std::map<std::string /* landmark ID */, PoseGraph::LandmarkNode>
-  //   GetLandmarkNodes() const  LOCKS_EXCLUDED(mutex_);
-  std::map<int, TrajectoryData> GetTrajectoryData() const
-      LOCKS_EXCLUDED(mutex_);
-  std::vector<Constraint> constraints() const LOCKS_EXCLUDED(mutex_);
+  //   GetLandmarkNodes() const  ;
+  std::map<int, TrajectoryData> GetTrajectoryData() const;
+  std::vector<Constraint> constraints() const;
   void SetInitialTrajectoryPose(int from_trajectory_id, int to_trajectory_id,
                                 const transform::Rigid3d& pose,
-                                const common::Time time) LOCKS_EXCLUDED(mutex_);
+                                const common::Time time);
   void SetGlobalSlamOptimizationCallback(
       std::function<void(const std::map<int, SubmapId>&,
                          const std::map<int, NodeId>&)>
           callback);
   transform::Rigid3d GetInterpolatedGlobalTrajectoryPose(
-      int trajectory_id, const common::Time time) const
-      EXCLUSIVE_LOCKS_REQUIRED(mutex_);
+      int trajectory_id, const common::Time time) const;
 
   //   static void RegisterMetrics(metrics::FamilyFactory* family_factory);
   proto::PoseGraph ToProto(bool include_unfinished_submaps) const;
 
  private:
+  std::condition_variable cv_;
   MapById<SubmapId, ::cartographer::mapping::SubmapData>
-  GetSubmapDataUnderLock() const EXCLUSIVE_LOCKS_REQUIRED(mutex_);
+  GetSubmapDataUnderLock() const;
 
   // Handles a new work item.
-  void AddWorkItem(const std::function<WorkItem::Result()>& work_item)
-      LOCKS_EXCLUDED(mutex_) LOCKS_EXCLUDED(work_queue_mutex_);
+  void AddWorkItem(const std::function<WorkItem::Result()>& work_item);
 
   // Adds connectivity and sampler for a trajectory if it does not exist.
-  void AddTrajectoryIfNeeded(int trajectory_id)
-      EXCLUSIVE_LOCKS_REQUIRED(mutex_);
+  void AddTrajectoryIfNeeded(int trajectory_id);
 
   // Appends the new node and submap (if needed) to the internal data
   // structures.
@@ -181,86 +165,79 @@ class PoseGraph2D {
       std::shared_ptr<const TrajectoryNode::Data> constant_data,
       int trajectory_id,
       const std::vector<std::shared_ptr<const Submap2D>>& insertion_submaps,
-      const transform::Rigid3d& optimized_pose) LOCKS_EXCLUDED(mutex_);
+      const transform::Rigid3d& optimized_pose);
 
   // Grows the optimization problem to have an entry for every element of
   // 'insertion_submaps'. Returns the IDs for the 'insertion_submaps'.
   std::vector<SubmapId> InitializeGlobalSubmapPoses(
       int trajectory_id, const common::Time time,
-      const std::vector<std::shared_ptr<const Submap2D>>& insertion_submaps)
-      EXCLUSIVE_LOCKS_REQUIRED(mutex_);
+      const std::vector<std::shared_ptr<const Submap2D>>& insertion_submaps);
 
   // Adds constraints for a node, and starts scan matching in the background.
   WorkItem::Result ComputeConstraintsForNode(
       const NodeId& node_id,
       std::vector<std::shared_ptr<const Submap2D>> insertion_submaps,
-      bool newly_finished_submap) LOCKS_EXCLUDED(mutex_);
+      bool newly_finished_submap);
 
   // Computes constraints for a node and submap pair.
-  void ComputeConstraint(const NodeId& node_id, const SubmapId& submap_id)
-      LOCKS_EXCLUDED(mutex_);
+  void ComputeConstraint(const NodeId& node_id, const SubmapId& submap_id);
 
   // Deletes trajectories waiting for deletion. Must not be called during
   // constraint search.
-  void DeleteTrajectoriesIfNeeded() EXCLUSIVE_LOCKS_REQUIRED(mutex_);
+  void DeleteTrajectoriesIfNeeded();
 
   // Runs the optimization, executes the trimmers and processes the work queue.
-  void HandleWorkQueue(const constraints::ConstraintBuilder2D::Result& result)
-      LOCKS_EXCLUDED(mutex_) LOCKS_EXCLUDED(work_queue_mutex_);
+  void HandleWorkQueue(const constraints::ConstraintBuilder2D::Result& result);
 
   // Process pending tasks in the work queue on the calling thread, until the
   // queue is either empty or an optimization is required.
-  void DrainWorkQueue() LOCKS_EXCLUDED(mutex_)
-      LOCKS_EXCLUDED(work_queue_mutex_);
+  void DrainWorkQueue();
 
   // Waits until we caught up (i.e. nothing is waiting to be scheduled), and
   // all computations have finished.
-  void WaitForAllComputations() LOCKS_EXCLUDED(mutex_)
-      LOCKS_EXCLUDED(work_queue_mutex_);
+  void WaitForAllComputations();
 
   // Runs the optimization. Callers have to make sure, that there is only one
   // optimization being run at a time.
-  void RunOptimization() LOCKS_EXCLUDED(mutex_);
+  void RunOptimization();
 
-  bool CanAddWorkItemModifying(int trajectory_id)
-      EXCLUSIVE_LOCKS_REQUIRED(mutex_);
+  bool CanAddWorkItemModifying(int trajectory_id);
 
   // Computes the local to global map frame transform based on the given
   // 'global_submap_poses'.
   transform::Rigid3d ComputeLocalToGlobalTransform(
       const MapById<SubmapId, optimization::SubmapSpec2D>& global_submap_poses,
-      int trajectory_id) const EXCLUSIVE_LOCKS_REQUIRED(mutex_);
+      int trajectory_id) const;
 
-  SubmapData GetSubmapDataUnderLock(const SubmapId& submap_id) const
-      EXCLUSIVE_LOCKS_REQUIRED(mutex_);
+  SubmapData GetSubmapDataUnderLock(const SubmapId& submap_id) const;
 
   common::Time GetLatestNodeTime(const NodeId& node_id,
-                                 const SubmapId& submap_id) const
-      EXCLUSIVE_LOCKS_REQUIRED(mutex_);
+                                 const SubmapId& submap_id) const;
 
   // Updates the trajectory connectivity structure with a new constraint.
-  void UpdateTrajectoryConnectivity(const Constraint& constraint)
-      EXCLUSIVE_LOCKS_REQUIRED(mutex_);
+  void UpdateTrajectoryConnectivity(const Constraint& constraint);
 
   //   const proto::PoseGraphOptions options_;
   std::function<void(const std::map<int, SubmapId>&,
                      const std::map<int, NodeId>&)>
       global_slam_optimization_callback_;
-  mutable absl::Mutex mutex_;
-  absl::Mutex work_queue_mutex_;
+  //   mutable absl::Mutex mutex_;
+  //   absl::Mutex work_queue_mutex_;
+  mutable std::mutex mutex_;
+  std::mutex work_queue_mutex_;
 
   // If it exists, further work items must be added to this queue, and will be
   // considered later.
-  std::unique_ptr<WorkQueue> work_queue_ GUARDED_BY(work_queue_mutex_);
+  std::unique_ptr<WorkQueue> work_queue_;
 
   // We globally localize a fraction of the nodes from each trajectory.
-//   absl::flat_hash_map<int, std::unique_ptr<common::FixedRatioSampler>>
-//       global_localization_samplers_ GUARDED_BY(mutex_);
+  //   absl::flat_hash_map<int, std::unique_ptr<common::FixedRatioSampler>>
+  //       global_localization_samplers_ ;
 
   std::unordered_map<int, std::unique_ptr<common::FixedRatioSampler>>
-      global_localization_samplers_ GUARDED_BY(mutex_);
+      global_localization_samplers_;
   // Number of nodes added since last loop closure.
-  size_t num_nodes_since_last_loop_closure_ GUARDED_BY(mutex_) = 0;
+  size_t num_nodes_since_last_loop_closure_ = 0;
 
   // Current optimization problem.
   std::unique_ptr<optimization::OptimizationProblem2D> optimization_problem_;
@@ -270,9 +247,9 @@ class PoseGraph2D {
   common::ThreadPool* const thread_pool_;
 
   // List of all trimmers to consult when optimizations finish.
-  std::vector<std::unique_ptr<PoseGraphTrimmer>> trimmers_ GUARDED_BY(mutex_);
+  std::vector<std::unique_ptr<PoseGraphTrimmer>> trimmers_;
 
-  PoseGraphData data_ GUARDED_BY(mutex_);
+  PoseGraphData data_;
 
   ValueConversionTables conversion_tables_;
 
@@ -285,18 +262,12 @@ class PoseGraph2D {
 
     int num_submaps(int trajectory_id) const;
     std::vector<SubmapId> GetSubmapIds(int trajectory_id) const;
-    MapById<SubmapId, SubmapData> GetOptimizedSubmapData() const
-        EXCLUSIVE_LOCKS_REQUIRED(parent_->mutex_);
-    const MapById<NodeId, TrajectoryNode>& GetTrajectoryNodes() const
-        EXCLUSIVE_LOCKS_REQUIRED(parent_->mutex_);
-    const std::vector<Constraint>& GetConstraints() const
-        EXCLUSIVE_LOCKS_REQUIRED(parent_->mutex_);
-    void TrimSubmap(const SubmapId& submap_id)
-        EXCLUSIVE_LOCKS_REQUIRED(parent_->mutex_);
-    bool IsFinished(int trajectory_id) const
-        EXCLUSIVE_LOCKS_REQUIRED(parent_->mutex_);
-    void SetTrajectoryState(int trajectory_id, TrajectoryState state)
-        EXCLUSIVE_LOCKS_REQUIRED(parent_->mutex_);
+    MapById<SubmapId, SubmapData> GetOptimizedSubmapData() const;
+    const MapById<NodeId, TrajectoryNode>& GetTrajectoryNodes() const;
+    const std::vector<Constraint>& GetConstraints() const;
+    void TrimSubmap(const SubmapId& submap_id);
+    bool IsFinished(int trajectory_id) const;
+    void SetTrajectoryState(int trajectory_id, TrajectoryState state);
 
    private:
     PoseGraph2D* const parent_;

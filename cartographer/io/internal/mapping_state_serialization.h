@@ -19,7 +19,9 @@
 
 // #include "cartographer/io/proto_stream_interface.h"
 #include "cartographer/io/proto_stream.h"
-#include "cartographer/mapping/pose_graph.h"
+#include "cartographer/mapping/internal/2d/pose_graph_2d.h"
+#include "cartographer/mapping/internal/pose_graph_data.h"
+// #include "cartographer/mapping/pose_graph.h"
 // #include "cartographer/mapping/proto/trajectory_builder_options.pb.h"
 
 namespace cartographer {
@@ -37,7 +39,7 @@ static constexpr int kFormatVersionWithoutSubmapHistograms = 1;
 //     ProtoStreamWriter* const writer, bool include_unfinished_submaps);
 
 void WritePbStream(
-    const mapping::PoseGraph& pose_graph,
+    const mapping::PoseGraph2D& pose_graph,
     // const std::vector<mapping::proto::TrajectoryBuilderOptionsWithSensorIds>&
     //     builder_options,
     ProtoStreamWriter* const writer, bool include_unfinished_submaps);

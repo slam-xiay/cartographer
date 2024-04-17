@@ -24,14 +24,63 @@
 #include "cartographer/mapping/internal/optimization/optimization_problem_2d.h"
 // #include
 // "cartographer/mapping/internal/optimization/optimization_problem_3d.h"
+#include "cartographer/mapping/id.h"
 #include "cartographer/mapping/internal/trajectory_connectivity_state.h"
-#include "cartographer/mapping/pose_graph.h"
-#include "cartographer/mapping/pose_graph_interface.h"
+// #include "cartographer/mapping/pose_graph.h"
+// #include "cartographer/mapping/pose_graph_interface.h"
 #include "cartographer/mapping/submaps.h"
+#include "cartographer/transform/rigid_transform.h"
 
 namespace cartographer {
 namespace mapping {
+// from 3d
+struct InitialTrajectoryPose {
+  int to_trajectory_id;
+  transform::Rigid3d relative_pose;
+  common::Time time;
+};
 
+// frome pose_graph_interface.h
+struct Constraint {
+  struct Pose {
+    transform::Rigid3d zbar_ij;
+    double translation_weight;
+    double rotation_weight;
+  };
+
+  SubmapId submap_id;  // 'i' in the paper.
+  NodeId node_id;      // 'j' in the paper.
+
+  // Pose of the node 'j' relative to submap 'i'.
+  Pose pose;
+
+  // Differentiates between intra-submap (where node 'j' was inserted into
+  // submap 'i') and inter-submap constraints (where node 'j' was not inserted
+  // into submap 'i').
+  enum Tag { INTRA_SUBMAP, INTER_SUBMAP } tag;
+};
+
+struct SubmapPose {
+  int version;
+  transform::Rigid3d pose;
+};
+
+struct SubmapData {
+  std::shared_ptr<const Submap> submap;
+  transform::Rigid3d pose;
+};
+
+struct TrajectoryData {
+  double gravity_constant = 9.8;
+  std::array<double, 4> imu_calibration{{1., 0., 0., 0.}};
+  // absl::optional<transform::Rigid3d> fixed_frame_origin_in_map;
+  std::optional<transform::Rigid3d> fixed_frame_origin_in_map;
+};
+
+// using GlobalSlamOptimizationCallback = std::function<void(
+//     const std::map<int, SubmapId>&, const std::map<int, NodeId>&)>;
+
+enum class TrajectoryState { ACTIVE, FINISHED, FROZEN, DELETED };
 // The current state of the submap in the background threads. After this
 // transitions to 'kFinished', all nodes are tried to match
 // against this submap. Likewise, all new nodes are matched against submaps in
@@ -45,8 +94,8 @@ struct InternalTrajectoryState {
     WAIT_FOR_DELETION
   };
 
-  PoseGraphInterface::TrajectoryState state =
-      PoseGraphInterface::TrajectoryState::ACTIVE;
+  ::cartographer::mapping::TrajectoryState state =
+      ::cartographer::mapping::TrajectoryState::ACTIVE;
   DeletionState deletion_state = DeletionState::NORMAL;
 };
 
@@ -59,6 +108,11 @@ struct InternalSubmapData {
   // becomes 'kFinished'.
   std::set<NodeId> node_ids;
 };
+
+namespace optimization {
+struct NodeSpec2D;
+struct SubmapSpec2D;
+}  // namespace optimization
 
 struct PoseGraphData {
   // Submaps get assigned an ID and state as soon as they are seen, even
@@ -82,9 +136,9 @@ struct PoseGraphData {
   std::map<int, InternalTrajectoryState> trajectories_state;
 
   // Set of all initial trajectory poses.
-  std::map<int, PoseGraph::InitialTrajectoryPose> initial_trajectory_poses;
+  std::map<int, InitialTrajectoryPose> initial_trajectory_poses;
 
-  std::vector<PoseGraphInterface::Constraint> constraints;
+  std::vector<Constraint> constraints;
 };
 
 }  // namespace mapping

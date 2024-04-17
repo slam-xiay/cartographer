@@ -41,11 +41,10 @@ namespace mapping {
 namespace optimization {
 namespace {
 
-using ::cartographer::mapping::optimization::CeresPose;
+// using ::cartographer::mapping::optimization::CeresPose;
 // using LandmarkNode =
 // ::cartographer::mapping::PoseGraphInterface::LandmarkNode;
-using TrajectoryData =
-    ::cartographer::mapping::PoseGraphInterface::TrajectoryData;
+using TrajectoryData = ::cartographer::mapping::TrajectoryData;
 
 // For fixed frame pose.
 // std::unique_ptr<transform::Rigid3d> Interpolate(
@@ -248,12 +247,12 @@ void OptimizationProblem2D::TrimSubmap(const SubmapId& submap_id) {
 
 // void OptimizationProblem2D::Solve(
 //     const std::vector<Constraint>& constraints,
-//     const std::map<int, PoseGraphInterface::TrajectoryState>&
+//     const std::map<int, ::cartographer::mapping::TrajectoryState>&
 //         trajectories_state,
 //     const std::map<std::string, LandmarkNode>& landmark_nodes) {
 void OptimizationProblem2D::Solve(
     const std::vector<Constraint>& constraints,
-    const std::map<int, PoseGraphInterface::TrajectoryState>&
+    const std::map<int, ::cartographer::mapping::TrajectoryState>&
         trajectories_state) {
   if (node_data_.empty()) {
     // Nothing to optimize.
@@ -262,7 +261,7 @@ void OptimizationProblem2D::Solve(
 
   std::set<int> frozen_trajectories;
   for (const auto& it : trajectories_state) {
-    if (it.second == PoseGraphInterface::TrajectoryState::FROZEN) {
+    if (it.second == ::cartographer::mapping::TrajectoryState::FROZEN) {
       frozen_trajectories.insert(it.first);
     }
   }

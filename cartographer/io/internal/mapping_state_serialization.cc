@@ -24,7 +24,7 @@ namespace io {
 namespace {
 using mapping::MapById;
 using mapping::NodeId;
-using mapping::PoseGraphInterface;
+// using mapping::PoseGraphInterface;
 using mapping::SubmapId;
 using mapping::TrajectoryNode;
 using mapping::proto::SerializedData;
@@ -44,11 +44,11 @@ using mapping::proto::SerializedData;
 
 // Will return all trajectory ids, that have `state != DELETED`.
 // std::vector<int> GetValidTrajectoryIds(
-//     const std::map<int, PoseGraphInterface::TrajectoryState>&
+//     const std::map<int, ::cartographer::mapping::TrajectoryState>&
 //         trajectory_states) {
 //   std::vector<int> valid_trajectories;
 //   for (const auto& t : trajectory_states) {
-//     if (t.second != PoseGraphInterface::TrajectoryState::DELETED) {
+//     if (t.second != ::cartographer::mapping::TrajectoryState::DELETED) {
 //       valid_trajectories.push_back(t.first);
 //     }
 //   }
@@ -61,7 +61,7 @@ mapping::proto::SerializationHeader CreateHeader() {
   return header;
 }
 
-SerializedData SerializePoseGraph(const mapping::PoseGraph& pose_graph,
+SerializedData SerializePoseGraph(const mapping::PoseGraph2D& pose_graph,
                                   bool include_unfinished_submaps) {
   SerializedData proto;
   *proto.mutable_pose_graph() = pose_graph.ToProto(include_unfinished_submaps);
@@ -80,7 +80,7 @@ SerializedData SerializePoseGraph(const mapping::PoseGraph& pose_graph,
 // }
 
 void SerializeSubmaps(
-    const MapById<SubmapId, PoseGraphInterface::SubmapData>& submap_data,
+    const MapById<SubmapId, ::cartographer::mapping::SubmapData>& submap_data,
     bool include_unfinished_submaps, ProtoStreamWriter* const writer) {
   // Next serialize all submaps.
   for (const auto& submap_id_data : submap_data) {
@@ -116,7 +116,7 @@ void SerializeTrajectoryNodes(
 }
 
 void SerializeTrajectoryData(
-    const std::map<int, PoseGraphInterface::TrajectoryData>&
+    const std::map<int, ::cartographer::mapping::TrajectoryData>&
         all_trajectory_data,
     ProtoStreamWriter* const writer) {
   for (const auto& trajectory_data : all_trajectory_data) {
@@ -213,7 +213,7 @@ void SerializeOdometryData(
 }  // namespace
 
 void WritePbStream(
-    const mapping::PoseGraph& pose_graph,
+    const mapping::PoseGraph2D& pose_graph,
     // const std::vector<mapping::proto::TrajectoryBuilderOptionsWithSensorIds>&
     //     trajectory_builder_options,
     ProtoStreamWriter* const writer, bool include_unfinished_submaps) {

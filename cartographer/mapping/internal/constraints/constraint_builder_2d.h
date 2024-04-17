@@ -35,7 +35,8 @@
 #include "cartographer/mapping/2d/submap_2d.h"
 #include "cartographer/mapping/internal/2d/scan_matching/ceres_scan_matcher_2d.h"
 #include "cartographer/mapping/internal/2d/scan_matching/fast_correlative_scan_matcher_2d.h"
-#include "cartographer/mapping/pose_graph_interface.h"
+// #include "cartographer/mapping/pose_graph_interface.h"
+#include "cartographer/mapping/internal/pose_graph_data.h"
 // #include "cartographer/mapping/proto/pose_graph/constraint_builder_options.pb.h"
 // #include "cartographer/metrics/family_factory.h"
 #include "cartographer/common/config.h"
@@ -60,7 +61,7 @@ transform::Rigid2d ComputeSubmapPose(const Submap2D& submap);
 // This class is thread-safe.
 class ConstraintBuilder2D {
  public:
-  using Constraint = PoseGraphInterface::Constraint;
+  using Constraint = ::cartographer::mapping::Constraint;
   using Result = std::vector<Constraint>;
 
   //   ConstraintBuilder2D(const proto::ConstraintBuilderOptions& options,

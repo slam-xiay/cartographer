@@ -54,7 +54,7 @@ class SubmapCoverageGrid2D {
 // recent range data insertion into the global grid.
 std::set<SubmapId> AddSubmapsToSubmapCoverageGrid2D(
     const std::map<SubmapId, common::Time>& submap_freshness,
-    const MapById<SubmapId, PoseGraphInterface::SubmapData>& submap_data,
+    const MapById<SubmapId, ::cartographer::mapping::SubmapData>& submap_data,
     SubmapCoverageGrid2D* coverage_grid) {
   std::set<SubmapId> all_submap_ids;
 
@@ -103,15 +103,15 @@ std::set<SubmapId> AddSubmapsToSubmapCoverageGrid2D(
 // Uses intra-submap constraints and trajectory node timestamps to identify time
 // of the last range data insertion to the submap.
 std::map<SubmapId, common::Time> ComputeSubmapFreshness(
-    const MapById<SubmapId, PoseGraphInterface::SubmapData>& submap_data,
+    const MapById<SubmapId, ::cartographer::mapping::SubmapData>& submap_data,
     const MapById<NodeId, TrajectoryNode>& trajectory_nodes,
-    const std::vector<PoseGraphInterface::Constraint>& constraints) {
+    const std::vector<Constraint>& constraints) {
   std::map<SubmapId, common::Time> submap_freshness;
 
   // Find the node with the largest NodeId per SubmapId.
   std::map<SubmapId, NodeId> submap_to_latest_node;
-  for (const PoseGraphInterface::Constraint& constraint : constraints) {
-    if (constraint.tag != PoseGraphInterface::Constraint::INTRA_SUBMAP) {
+  for (const Constraint& constraint : constraints) {
+    if (constraint.tag != Constraint::INTRA_SUBMAP) {
       continue;
     }
     auto submap_to_node = submap_to_latest_node.find(constraint.submap_id);

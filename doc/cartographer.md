@@ -1802,8 +1802,8 @@ struct InternalTrajectoryState {
     WAIT_FOR_DELETION
   };
 
-  PoseGraphInterface::TrajectoryState state =
-      PoseGraphInterface::TrajectoryState::ACTIVE;
+  ::cartographer::mapping::TrajectoryState state =
+      ::cartographer::mapping::TrajectoryState::ACTIVE;
   DeletionState deletion_state = DeletionState::NORMAL;
 };
 

@@ -513,8 +513,7 @@ void PoseGraph2D::HandleWorkQueue(
     double inter_constraints_same_trajectory = 0;
     double inter_constraints_different_trajectory = 0;
     for (const auto& constraint : data_.constraints) {
-      if (constraint.tag ==
-          cartographer::mapping::PoseGraph::Constraint::INTRA_SUBMAP) {
+      if (constraint.tag == ::cartographer::mapping::Constraint::INTRA_SUBMAP) {
         continue;
       }
       if (constraint.node_id.trajectory_id ==
@@ -977,9 +976,9 @@ MapById<NodeId, TrajectoryNodePose> PoseGraph2D::GetTrajectoryNodePoses()
   return node_poses;
 }
 
-std::map<int, PoseGraphInterface::TrajectoryState>
+std::map<int, ::cartographer::mapping::TrajectoryState>
 PoseGraph2D::GetTrajectoryStates() const {
-  std::map<int, PoseGraphInterface::TrajectoryState> trajectories_state;
+  std::map<int, ::cartographer::mapping::TrajectoryState> trajectories_state;
   absl::MutexLock locker(&mutex_);
   for (const auto& it : data_.trajectories_state) {
     trajectories_state[it.first] = it.second.state;
@@ -1027,7 +1026,7 @@ sensor::MapByTime<sensor::OdometryData> PoseGraph2D::GetOdometryData() const {
 //   return data_.landmark_nodes;
 // }
 
-std::map<int, PoseGraphInterface::TrajectoryData>
+std::map<int, ::cartographer::mapping::TrajectoryData>
 PoseGraph2D::GetTrajectoryData() const {
   absl::MutexLock locker(&mutex_);
   return optimization_problem_->trajectory_data();
@@ -1039,8 +1038,8 @@ PoseGraph2D::GetTrajectoryData() const {
 //   return optimization_problem_->fixed_frame_pose_data();
 // }
 
-std::vector<PoseGraphInterface::Constraint> PoseGraph2D::constraints() const {
-  std::vector<PoseGraphInterface::Constraint> result;
+std::vector<Constraint> PoseGraph2D::constraints() const {
+  std::vector<Constraint> result;
   absl::MutexLock locker(&mutex_);
   for (const Constraint& constraint : data_.constraints) {
     result.push_back(Constraint{
@@ -1098,19 +1097,19 @@ std::vector<std::vector<int>> PoseGraph2D::GetConnectedTrajectories() const {
   return data_.trajectory_connectivity_state.Components();
 }
 
-PoseGraphInterface::SubmapData PoseGraph2D::GetSubmapData(
+::cartographer::mapping::SubmapData PoseGraph2D::GetSubmapData(
     const SubmapId& submap_id) const {
   absl::MutexLock locker(&mutex_);
   return GetSubmapDataUnderLock(submap_id);
 }
 
-MapById<SubmapId, PoseGraphInterface::SubmapData>
+MapById<SubmapId, ::cartographer::mapping::SubmapData>
 PoseGraph2D::GetAllSubmapData() const {
   absl::MutexLock locker(&mutex_);
   return GetSubmapDataUnderLock();
 }
 
-MapById<SubmapId, PoseGraphInterface::SubmapPose>
+MapById<SubmapId, ::cartographer::mapping::SubmapPose>
 PoseGraph2D::GetAllSubmapPoses() const {
   absl::MutexLock locker(&mutex_);
   MapById<SubmapId, SubmapPose> submap_poses;
@@ -1118,8 +1117,7 @@ PoseGraph2D::GetAllSubmapPoses() const {
     auto submap_data = GetSubmapDataUnderLock(submap_id_data.id);
     submap_poses.Insert(
         submap_id_data.id,
-        PoseGraph::SubmapPose{submap_data.submap->num_range_data(),
-                              submap_data.pose});
+        SubmapPose{submap_data.submap->num_range_data(), submap_data.pose});
   }
   return submap_poses;
 }
@@ -1148,7 +1146,7 @@ transform::Rigid3d PoseGraph2D::ComputeLocalToGlobalTransform(
              .inverse();
 }
 
-PoseGraphInterface::SubmapData PoseGraph2D::GetSubmapDataUnderLock(
+::cartographer::mapping::SubmapData PoseGraph2D::GetSubmapDataUnderLock(
     const SubmapId& submap_id) const {
   const auto it = data_.submap_data.find(submap_id);
   if (it == data_.submap_data.end()) {
@@ -1175,9 +1173,9 @@ int PoseGraph2D::TrimmingHandle::num_submaps(const int trajectory_id) const {
   return submap_data.SizeOfTrajectoryOrZero(trajectory_id);
 }
 
-MapById<SubmapId, PoseGraphInterface::SubmapData>
+MapById<SubmapId, ::cartographer::mapping::SubmapData>
 PoseGraph2D::TrimmingHandle::GetOptimizedSubmapData() const {
-  MapById<SubmapId, PoseGraphInterface::SubmapData> submaps;
+  MapById<SubmapId, ::cartographer::mapping::SubmapData> submaps;
   for (const auto& submap_id_data : parent_->data_.submap_data) {
     if (submap_id_data.data.state != SubmapState::kFinished ||
         !parent_->data_.global_submap_poses_2d.Contains(submap_id_data.id)) {
@@ -1208,8 +1206,8 @@ PoseGraph2D::TrimmingHandle::GetTrajectoryNodes() const {
   return parent_->data_.trajectory_nodes;
 }
 
-const std::vector<PoseGraphInterface::Constraint>&
-PoseGraph2D::TrimmingHandle::GetConstraints() const {
+const std::vector<Constraint>& PoseGraph2D::TrimmingHandle::GetConstraints()
+    const {
   return parent_->data_.constraints;
 }
 
@@ -1316,9 +1314,9 @@ void PoseGraph2D::TrimmingHandle::TrimSubmap(const SubmapId& submap_id) {
   }
 }
 
-MapById<SubmapId, PoseGraphInterface::SubmapData>
+MapById<SubmapId, ::cartographer::mapping::SubmapData>
 PoseGraph2D::GetSubmapDataUnderLock() const {
-  MapById<SubmapId, PoseGraphInterface::SubmapData> submaps;
+  MapById<SubmapId, ::cartographer::mapping::SubmapData> submaps;
   for (const auto& submap_id_data : data_.submap_data) {
     submaps.Insert(submap_id_data.id,
                    GetSubmapDataUnderLock(submap_id_data.id));
@@ -1327,7 +1325,9 @@ PoseGraph2D::GetSubmapDataUnderLock() const {
 }
 
 void PoseGraph2D::SetGlobalSlamOptimizationCallback(
-    PoseGraphInterface::GlobalSlamOptimizationCallback callback) {
+    std::function<void(const std::map<int, SubmapId>&,
+                       const std::map<int, NodeId>&)>
+        callback) {
   global_slam_optimization_callback_ = callback;
 }
 
@@ -1355,6 +1355,164 @@ void PoseGraph2D::SetGlobalSlamOptimizationCallback(
 //   kFrozenSubmapsMetric = submaps->Add({{"state", "frozen"}});
 //   kDeletedSubmapsMetric = submaps->Add({{"state", "deleted"}});
 // }
+
+// proto::PoseGraph::Constraint ToProto(const PoseGraph::Constraint& constraint)
+// {
+//   proto::PoseGraph::Constraint constraint_proto;
+//   *constraint_proto.mutable_relative_pose() =
+//       transform::ToProto(constraint.pose.zbar_ij);
+//   constraint_proto.set_translation_weight(constraint.pose.translation_weight);
+//   constraint_proto.set_rotation_weight(constraint.pose.rotation_weight);
+//   constraint_proto.mutable_submap_id()->set_trajectory_id(
+//       constraint.submap_id.trajectory_id);
+//   constraint_proto.mutable_submap_id()->set_submap_index(
+//       constraint.submap_id.submap_index);
+//   constraint_proto.mutable_node_id()->set_trajectory_id(
+//       constraint.node_id.trajectory_id);
+//   constraint_proto.mutable_node_id()->set_node_index(
+//       constraint.node_id.node_index);
+//   constraint_proto.set_tag(mapping::ToProto(constraint.tag));
+//   return constraint_proto;
+// }
+
+proto::PoseGraph PoseGraph2D::ToProto(bool include_unfinished_submaps) const {
+  proto::PoseGraph proto;
+
+  std::map<int, proto::Trajectory* const> trajectory_protos;
+  const auto trajectory = [&proto, &trajectory_protos](
+                              const int trajectory_id) -> proto::Trajectory* {
+    if (trajectory_protos.count(trajectory_id) == 0) {
+      auto* const trajectory_proto = proto.add_trajectory();
+      trajectory_proto->set_trajectory_id(trajectory_id);
+      CHECK(trajectory_protos.emplace(trajectory_id, trajectory_proto).second);
+    }
+    return trajectory_protos.at(trajectory_id);
+  };
+
+  std::set<mapping::SubmapId> unfinished_submaps;
+  for (const auto& submap_id_data : GetAllSubmapData()) {
+    proto::Trajectory* trajectory_proto =
+        trajectory(submap_id_data.id.trajectory_id);
+    if (!include_unfinished_submaps &&
+        !submap_id_data.data.submap->insertion_finished()) {
+      // Collect IDs of all unfinished submaps and skip them.
+      unfinished_submaps.insert(submap_id_data.id);
+      continue;
+    }
+    CHECK(submap_id_data.data.submap != nullptr);
+    auto* const submap_proto = trajectory_proto->add_submap();
+    submap_proto->set_submap_index(submap_id_data.id.submap_index);
+    *submap_proto->mutable_pose() =
+        transform::ToProto(submap_id_data.data.pose);
+  }
+
+  auto constraints_copy = constraints();
+  std::set<mapping::NodeId> orphaned_nodes;
+  proto.mutable_constraint()->Reserve(constraints_copy.size());
+  for (auto it = constraints_copy.begin(); it != constraints_copy.end();) {
+    if (!include_unfinished_submaps &&
+        unfinished_submaps.count(it->submap_id) > 0) {
+      // Skip all those constraints that refer to unfinished submaps and
+      // remember the corresponding trajectory nodes as potentially orphaned.
+      orphaned_nodes.insert(it->node_id);
+      it = constraints_copy.erase(it);
+      continue;
+    }
+    *proto.add_constraint() = cartographer::mapping::ToProto(*it);
+    ++it;
+  }
+
+  if (!include_unfinished_submaps) {
+    // Iterate over all constraints and remove trajectory nodes from
+    // 'orphaned_nodes' that are not actually orphaned.
+    for (const auto& constraint : constraints_copy) {
+      orphaned_nodes.erase(constraint.node_id);
+    }
+  }
+
+  for (const auto& node_id_data : GetTrajectoryNodes()) {
+    proto::Trajectory* trajectory_proto =
+        trajectory(node_id_data.id.trajectory_id);
+    CHECK(node_id_data.data.constant_data != nullptr);
+    auto* const node_proto = trajectory_proto->add_node();
+    node_proto->set_node_index(node_id_data.id.node_index);
+    node_proto->set_timestamp(
+        common::ToUniversal(node_id_data.data.constant_data->time));
+    *node_proto->mutable_pose() =
+        transform::ToProto(node_id_data.data.global_pose);
+  }
+
+  // auto landmarks_copy = GetLandmarkPoses();
+  // proto.mutable_landmark_poses()->Reserve(landmarks_copy.size());
+  // for (const auto& id_pose : landmarks_copy) {
+  //   auto* landmark_proto = proto.add_landmark_poses();
+  //   landmark_proto->set_landmark_id(id_pose.first);
+  //   *landmark_proto->mutable_global_pose() =
+  //   transform::ToProto(id_pose.second);
+  // }
+  return proto;
+}
+
+proto::PoseGraph::Constraint::Tag ToProto(const Constraint::Tag& tag) {
+  switch (tag) {
+    case Constraint::Tag::INTRA_SUBMAP:
+      return proto::PoseGraph::Constraint::INTRA_SUBMAP;
+    case Constraint::Tag::INTER_SUBMAP:
+      return proto::PoseGraph::Constraint::INTER_SUBMAP;
+  }
+  LOG(FATAL) << "Unsupported tag.";
+}
+
+Constraint::Tag FromProto(const proto::PoseGraph::Constraint::Tag& proto) {
+  switch (proto) {
+    case proto::PoseGraph::Constraint::INTRA_SUBMAP:
+      return Constraint::Tag::INTRA_SUBMAP;
+    case proto::PoseGraph::Constraint::INTER_SUBMAP:
+      return Constraint::Tag::INTER_SUBMAP;
+    case ::google::protobuf::kint32max:
+    case ::google::protobuf::kint32min: {
+    }
+  }
+  LOG(FATAL) << "Unsupported tag.";
+}
+
+std::vector<Constraint> FromProto(
+    const ::google::protobuf::RepeatedPtrField<proto::PoseGraph::Constraint>&
+        constraint_protos) {
+  std::vector<Constraint> constraints;
+  for (const auto& constraint_proto : constraint_protos) {
+    const mapping::SubmapId submap_id{
+        constraint_proto.submap_id().trajectory_id(),
+        constraint_proto.submap_id().submap_index()};
+    const mapping::NodeId node_id{constraint_proto.node_id().trajectory_id(),
+                                  constraint_proto.node_id().node_index()};
+    const Constraint::Pose pose{
+        transform::ToRigid3(constraint_proto.relative_pose()),
+        constraint_proto.translation_weight(),
+        constraint_proto.rotation_weight()};
+    const Constraint::Tag tag = FromProto(constraint_proto.tag());
+    constraints.push_back(Constraint{submap_id, node_id, pose, tag});
+  }
+  return constraints;
+}
+
+proto::PoseGraph::Constraint ToProto(const Constraint& constraint) {
+  proto::PoseGraph::Constraint constraint_proto;
+  *constraint_proto.mutable_relative_pose() =
+      transform::ToProto(constraint.pose.zbar_ij);
+  constraint_proto.set_translation_weight(constraint.pose.translation_weight);
+  constraint_proto.set_rotation_weight(constraint.pose.rotation_weight);
+  constraint_proto.mutable_submap_id()->set_trajectory_id(
+      constraint.submap_id.trajectory_id);
+  constraint_proto.mutable_submap_id()->set_submap_index(
+      constraint.submap_id.submap_index);
+  constraint_proto.mutable_node_id()->set_trajectory_id(
+      constraint.node_id.trajectory_id);
+  constraint_proto.mutable_node_id()->set_node_index(
+      constraint.node_id.node_index);
+  constraint_proto.set_tag(mapping::ToProto(constraint.tag));
+  return constraint_proto;
+}
 
 }  // namespace mapping
 }  // namespace cartographer

@@ -34,7 +34,7 @@ namespace {
 class SpaCostFunction2D {
  public:
   explicit SpaCostFunction2D(
-      const PoseGraphInterface::Constraint::Pose& observed_relative_pose)
+      const ::cartographer::mapping::Constraint::Pose& observed_relative_pose)
       : observed_relative_pose_(observed_relative_pose) {}
 
   template <typename T>
@@ -51,7 +51,7 @@ class SpaCostFunction2D {
   }
 
  private:
-  const PoseGraphInterface::Constraint::Pose observed_relative_pose_;
+  const ::cartographer::mapping::Constraint::Pose observed_relative_pose_;
 };
 
 class AnalyticalSpaCostFunction2D
@@ -60,7 +60,7 @@ class AnalyticalSpaCostFunction2D
                                       3 /* size of end pose */> {
  public:
   explicit AnalyticalSpaCostFunction2D(
-      const PoseGraphInterface::Constraint::Pose& constraint_pose)
+      const ::cartographer::mapping::Constraint::Pose& constraint_pose)
       : observed_relative_pose_(transform::Project2D(constraint_pose.zbar_ij)),
         translation_weight_(constraint_pose.translation_weight),
         rotation_weight_(constraint_pose.rotation_weight) {}
@@ -133,7 +133,7 @@ class AnalyticalSpaCostFunction2D
 }  // namespace
 
 ceres::CostFunction* CreateAutoDiffSpaCostFunction(
-    const PoseGraphInterface::Constraint::Pose& observed_relative_pose) {
+    const ::cartographer::mapping::Constraint::Pose& observed_relative_pose) {
   return new ceres::AutoDiffCostFunction<SpaCostFunction2D, 3 /* residuals */,
                                          3 /* start pose variables */,
                                          3 /* end pose variables */>(
@@ -141,7 +141,7 @@ ceres::CostFunction* CreateAutoDiffSpaCostFunction(
 }
 
 ceres::CostFunction* CreateAnalyticalSpaCostFunction(
-    const PoseGraphInterface::Constraint::Pose& observed_relative_pose) {
+    const ::cartographer::mapping::Constraint::Pose& observed_relative_pose) {
   return new AnalyticalSpaCostFunction2D(observed_relative_pose);
 }
 

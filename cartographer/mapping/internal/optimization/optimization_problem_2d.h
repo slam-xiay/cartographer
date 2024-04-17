@@ -34,7 +34,8 @@
 #include "Eigen/Geometry"
 #include "cartographer/common/time.h"
 #include "cartographer/mapping/id.h"
-#include "cartographer/mapping/pose_graph_interface.h"
+// #include "cartographer/mapping/pose_graph_interface.h"
+#include "cartographer/mapping/internal/pose_graph_data.h"
 // #include
 // "cartographer/mapping/proto/pose_graph/optimization_problem_options.pb.h"
 #include "cartographer/sensor/imu_data.h"
@@ -43,14 +44,17 @@
 #include "cartographer/transform/timestamped_transform.h"
 // #include "cartographer/sensor/fixed_frame_pose_data.h"
 #include "cartographer/common/config.h"
+#include "cartographer/mapping/internal/pose_graph_data.h"
 #include "cartographer/sensor/imu_data.h"
 #include "cartographer/sensor/map_by_time.h"
 #include "cartographer/sensor/odometry_data.h"
 
 namespace cartographer {
 namespace mapping {
+struct Constraint;
+struct TrajectoryData;
+enum class TrajectoryState;
 namespace optimization {
-
 struct NodeSpec2D {
   common::Time time;
   transform::Rigid2d local_pose_2d;
@@ -65,7 +69,7 @@ struct SubmapSpec2D {
 // template <typename NodeSpec2D, typename SubmapSpec2D, typename Rigid2d>
 class OptimizationProblem2D {
  public:
-  using Constraint = PoseGraphInterface::Constraint;
+  // using Constraint = ::cartographer::mapping::Constraint;
   // explicit OptimizationProblem2D(
   //     const optimization::proto::OptimizationProblemOptions& options);
   explicit OptimizationProblem2D();
@@ -89,11 +93,11 @@ class OptimizationProblem2D {
 
   // void Solve(
   //     const std::vector<Constraint>& constraints,
-  //     const std::map<int, PoseGraphInterface::TrajectoryState>&
+  //     const std::map<int, ::cartographer::mapping::TrajectoryState>&
   //         trajectories_state,
   //     const std::map<std::string, LandmarkNode>& landmark_nodes) ;
   void Solve(const std::vector<Constraint>& constraints,
-             const std::map<int, PoseGraphInterface::TrajectoryState>&
+             const std::map<int, ::cartographer::mapping::TrajectoryState>&
                  trajectories_state);
 
   const MapById<NodeId, NodeSpec2D>& node_data() const { return node_data_; }
@@ -116,14 +120,14 @@ class OptimizationProblem2D {
   //     const sensor::FixedFramePoseData& fixed_frame_pose_data);
   void SetTrajectoryData(
       int trajectory_id,
-      const PoseGraphInterface::TrajectoryData& trajectory_data);
+      const ::cartographer::mapping::TrajectoryData& trajectory_data);
   // const sensor::MapByTime<sensor::FixedFramePoseData>&
   // fixed_frame_pose_data()
   //     const {
   //   return fixed_frame_pose_data_;
   // }
-  const std::map<int, PoseGraphInterface::TrajectoryData>& trajectory_data()
-      const {
+  const std::map<int, ::cartographer::mapping::TrajectoryData>&
+  trajectory_data() const {
     return trajectory_data_;
   }
 
@@ -142,7 +146,7 @@ class OptimizationProblem2D {
   sensor::MapByTime<sensor::ImuData> empty_imu_data_;
   sensor::MapByTime<sensor::OdometryData> odometry_data_;
   // sensor::MapByTime<sensor::FixedFramePoseData> fixed_frame_pose_data_;
-  std::map<int, PoseGraphInterface::TrajectoryData> trajectory_data_;
+  std::map<int, ::cartographer::mapping::TrajectoryData> trajectory_data_;
 };
 
 }  // namespace optimization

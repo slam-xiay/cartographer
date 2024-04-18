@@ -78,7 +78,10 @@ class Rigid2 {
   }
 
   std::string DebugString() const {
-    return std::string();
+    std::ostringstream out;
+    out << std::fixed << "t:[" << translation().x() << "," << translation().y()
+        << "],r:[" << rotation << "]";
+    return out.str();
     // return absl::Substitute("{ t: [$0, $1], r: [$2] }", translation().x(),
     //                         translation().y(), rotation().angle());
   }
@@ -164,7 +167,12 @@ class Rigid3 {
   }
 
   std::string DebugString() const {
-    return std::string();
+    std::ostringstream out;
+    out << std::fixed << "t:[" << translation().x() << "," << translation().y()
+        << "," << translation().z() << "],r:[" << rotation().w() << ","
+        << rotation().x() << "," << rotation().y() << "," << rotation().z()
+        << "]";
+    return out.str();
     // return absl::Substitute("{ t: [$0, $1, $2], q: [$3, $4, $5, $6] }",
     //                         translation().x(), translation().y(),
     //                         translation().z(), rotation().w(),

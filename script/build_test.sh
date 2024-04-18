@@ -9,5 +9,4 @@ git push origin master -f
 popd
 
 ssh root@172.17.0.2 'cd /root/gamma/cartographer/ &&git reset --hard origin/master && git pull origin master && sync'
-ssh root@172.17.0.2 'rm /root/gamma/cartographer/build/libcartographer.a && sync'
-ssh root@172.17.0.2 'cd /root/gamma/cartographer/build && cmake .. && make -j16 install'
+ssh root@172.17.0.2 'cd /root/gamma/cartographer/build && cmake -DBUILD_TEST=true .. && make -j16 install'

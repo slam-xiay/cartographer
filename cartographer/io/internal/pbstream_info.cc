@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include "cartographer/io/internal/pbstream_info.h"
+#include "pbstream_info.h"
 
 #include <map>
 #include <sstream>

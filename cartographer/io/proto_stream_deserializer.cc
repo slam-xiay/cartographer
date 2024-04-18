@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include "cartographer/io/proto_stream_deserializer.h"
+#include "proto_stream_deserializer.h"
 
 #include "cartographer/io/internal/mapping_state_serialization.h"
 #include "cartographer/io/proto_stream.h"

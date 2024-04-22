@@ -7,6 +7,8 @@ find_package(Boost REQUIRED COMPONENTS iostreams)
 find_package(Ceres REQUIRED COMPONENTS SuiteSparse)
 find_package(Eigen3 REQUIRED)
 find_package(Protobuf 3.0.0 REQUIRED)
+find_package(catkin REQUIRED COMPONENTS roscpp)
+catkin_package()
 include(FindPkgConfig)
 find_library(CAIRO_LIBRARIES cairo)
 install(FILES package.xml DESTINATION share/cartographer)
@@ -45,22 +47,21 @@ set_source_files_properties(${ALL_PROTO_SRCS} ${ALL_PROTO_HDRS} PROPERTIES GENER
 list(APPEND ALL_LIBRARY_HDRS ${ALL_PROTO_HDRS})
 list(APPEND ALL_LIBRARY_SRCS ${ALL_PROTO_SRCS})
 set(INSTALL_GENERATED_HDRS ${ALL_PROTO_HDRS})
-
-include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${OpenCV_INCLUDE_DIRS} ${GTest_INCLUDE_DIRS} ${Glog_INCLUDE_DIRS} 
+include_directories(${CMAKE_CURRENT_SOURCE_DIR} /opt/ros/noetic/include ${OpenCV_INCLUDE_DIRS} ${GTest_INCLUDE_DIRS} ${Glog_INCLUDE_DIRS} 
 ${catkin_INCLUDE_DIRS} ${EIGEN3_INCLUDE_DIR} ${CERES_INCLUDE_DIRS} ${PROTOBUF_INCLUDE_DIR})
 
 
 if(${BUILD_TEST})
   add_executable(test_node ${TEST_MAIN} ${ALL_LIBRARY_SRCS} ${TEST_HDRS} ${TEST_SRCS})
-  target_link_libraries(test_node ${EIGEN3_LIBRARIES} ${CERES_LIBRARIES} ${PROTOBUF_LIBRARY}
+  target_link_libraries(test_node ${catkin_LIBRARIES} ${EIGEN3_LIBRARIES} ${CERES_LIBRARIES} ${PROTOBUF_LIBRARY}
     ${Boost_LIBRARIES} ${CAIRO_LIBRARIES} pthread gtest glog gflags)
 endif()
 
 
 if(${BUILD_SLAM})
   add_executable(slam_node ${SLAM_MAIN} ${ALL_LIBRARY_SRCS})
-  target_link_libraries(slam_node ${EIGEN3_LIBRARIES} ${CERES_LIBRARIES} ${PROTOBUF_LIBRARY}
-    ${Boost_LIBRARIES} ${CAIRO_LIBRARIES} pthread glog gflags)
+  target_link_libraries(slam_node ${catkin_LIBRARIES} ${EIGEN3_LIBRARIES} ${CERES_LIBRARIES} ${PROTOBUF_LIBRARY}
+    ${Boost_LIBRARIES} ${CAIRO_LIBRARIES} pthread glog gflags )
 endif()
 
 foreach(HDR ${INSTALL_SOURCE_HDRS})

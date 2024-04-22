@@ -1,0 +1,3 @@
+<launch>
+ <node name="slam_node" output="screen" pkg="cartographer" type="slam_node" required="true"/>
+ </launch>

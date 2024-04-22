@@ -1,0 +1,3 @@
+<launch>
+ <node name="test_node" output="screen" pkg="cartographer" type="test_node" required="true"/>
+</launch>

@@ -2,3 +2,4 @@ build
 bazel-*
 .clang-format
 .vscode
+.vscode/settings.

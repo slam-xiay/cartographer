@@ -44,7 +44,7 @@
 #include "cartographer/mapping/proto/submap_visualization.pb.h"
 // #include "cartographer/mapping/proto/trajectory_builder_options.pb.h"
 #include "cartographer/mapping/submaps.h"
-#include "cartographer/mapping/trajectory_builder_interface.h"
+// #include "cartographer/mapping/trajectory_builder_interface.h"
 #include "cartographer/sensor/internal/voxel_filter.h"
 #include "cartographer/transform/rigid_transform.h"
 // #include "cartographer/mapping/map_builder_interface.h"

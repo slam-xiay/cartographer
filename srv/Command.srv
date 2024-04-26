@@ -1,0 +1,5 @@
+string command
+int32 filename
+Posture pose
+---
+string message

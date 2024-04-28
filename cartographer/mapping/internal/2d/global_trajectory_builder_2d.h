@@ -107,8 +107,8 @@ class GlobalTrajectoryBuilder2D {
   std::optional<MotionFilter> pose_graph_odometry_motion_filter_;
 };
 
-proto::SensorId ToProto(const SensorId& sensor_id);
-SensorId FromProto(const proto::SensorId& sensor_id_proto);
+// proto::SensorId ToProto(const SensorId& sensor_id);
+// SensorId FromProto(const proto::SensorId& sensor_id_proto);
 }  // namespace
 }  // namespace cartographer
 

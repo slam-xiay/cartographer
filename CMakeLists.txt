@@ -8,23 +8,10 @@ find_package(Ceres REQUIRED COMPONENTS SuiteSparse)
 find_package(Eigen3 REQUIRED)
 find_package(Protobuf 3.0.0 REQUIRED)
 find_package(catkin REQUIRED COMPONENTS roscpp message_generation)
-add_message_files(
-  DIRECTORY msg
-  FILES
-    Posture.msg
-)
-
-add_service_files(
-  DIRECTORY srv
-  FILES
-    Command.srv
-)
-
-catkin_package(
-  CATKIN_DEPENDS    
-    message_runtime
-)
-
+add_message_files(FILES Posture.msg)
+add_service_files(FILES Command.srv)
+generate_messages(DEPENDENCIES std_msgs)
+catkin_package(CATKIN_DEPENDS message_runtime)
 include(FindPkgConfig)
 find_library(CAIRO_LIBRARIES cairo)
 install(FILES package.xml DESTINATION share/cartographer)

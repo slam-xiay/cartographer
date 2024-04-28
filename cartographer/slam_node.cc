@@ -6,11 +6,12 @@
 #include <time.h>
 int main(int argc, char* argv[]) {
   google::InitGoogleLogging(argv[0]);
+  google::SetLogDestination(google::GLOG_INFO, "/root/gamma/log/log.txt");
   ros::init(argc, argv, "slam");
   ros::NodeHandle nh;
   ros::Rate loop_rate(1);
   while (ros::ok()) {
-    LOG(INFO) << "Sleep 1";
+    LOG(ERROR) << "Sleep.";
     ros::spinOnce();
     loop_rate.sleep();
   }

@@ -139,49 +139,49 @@ namespace mapping {
   //   parameter_dictionary); return options;
   // }
 
-  proto::SensorId ToProto(const SensorId& sensor_id) {
-    proto::SensorId sensor_id_proto;
-    switch (sensor_id.type) {
-      case SensorId::SensorType::RANGE:
-        sensor_id_proto.set_type(proto::SensorId::RANGE);
-        break;
-      case SensorId::SensorType::IMU:
-        sensor_id_proto.set_type(proto::SensorId::IMU);
-        break;
-      case SensorId::SensorType::ODOMETRY:
-        sensor_id_proto.set_type(proto::SensorId::ODOMETRY);
-        break;
-      case SensorId::SensorType::LOCAL_SLAM_RESULT:
-        sensor_id_proto.set_type(proto::SensorId::LOCAL_SLAM_RESULT);
-        break;
-      default:
-        LOG(FATAL) << "Unsupported sensor type.";
-    }
-    sensor_id_proto.set_id(sensor_id.id);
-    return sensor_id_proto;
-  }
+  // proto::SensorId ToProto(const SensorId& sensor_id) {
+  //   proto::SensorId sensor_id_proto;
+  //   switch (sensor_id.type) {
+  //     case SensorId::SensorType::RANGE:
+  //       sensor_id_proto.set_type(proto::SensorId::RANGE);
+  //       break;
+  //     case SensorId::SensorType::IMU:
+  //       sensor_id_proto.set_type(proto::SensorId::IMU);
+  //       break;
+  //     case SensorId::SensorType::ODOMETRY:
+  //       sensor_id_proto.set_type(proto::SensorId::ODOMETRY);
+  //       break;
+  //     case SensorId::SensorType::LOCAL_SLAM_RESULT:
+  //       sensor_id_proto.set_type(proto::SensorId::LOCAL_SLAM_RESULT);
+  //       break;
+  //     default:
+  //       LOG(FATAL) << "Unsupported sensor type.";
+  //   }
+  //   sensor_id_proto.set_id(sensor_id.id);
+  //   return sensor_id_proto;
+  // }
 
-  SensorId FromProto(const proto::SensorId& sensor_id_proto) {
-    SensorId sensor_id;
-    switch (sensor_id_proto.type()) {
-      case proto::SensorId::RANGE:
-        sensor_id.type = SensorId::SensorType::RANGE;
-        break;
-      case proto::SensorId::IMU:
-        sensor_id.type = SensorId::SensorType::IMU;
-        break;
-      case proto::SensorId::ODOMETRY:
-        sensor_id.type = SensorId::SensorType::ODOMETRY;
-        break;
-      case proto::SensorId::LOCAL_SLAM_RESULT:
-        sensor_id.type = SensorId::SensorType::LOCAL_SLAM_RESULT;
-        break;
-      default:
-        LOG(FATAL) << "Unsupported sensor type.";
-    }
-    sensor_id.id = sensor_id_proto.id();
-    return sensor_id;
-  }
+  // SensorId FromProto(const proto::SensorId& sensor_id_proto) {
+  //   SensorId sensor_id;
+  //   switch (sensor_id_proto.type()) {
+  //     case proto::SensorId::RANGE:
+  //       sensor_id.type = SensorId::SensorType::RANGE;
+  //       break;
+  //     case proto::SensorId::IMU:
+  //       sensor_id.type = SensorId::SensorType::IMU;
+  //       break;
+  //     case proto::SensorId::ODOMETRY:
+  //       sensor_id.type = SensorId::SensorType::ODOMETRY;
+  //       break;
+  //     case proto::SensorId::LOCAL_SLAM_RESULT:
+  //       sensor_id.type = SensorId::SensorType::LOCAL_SLAM_RESULT;
+  //       break;
+  //     default:
+  //       LOG(FATAL) << "Unsupported sensor type.";
+  //   }
+  //   sensor_id.id = sensor_id_proto.id();
+  //   return sensor_id;
+  // }
 
 }  // namespace mapping
 }  // namespace cartographer

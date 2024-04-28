@@ -20,19 +20,18 @@ import "cartographer/transform/proto/transform.proto";
 
 option java_outer_classname = "TrajectoryOuterClass";
 
-message SensorId {
-  enum SensorType {
-    RANGE = 0;
-    IMU = 1;
-    ODOMETRY = 2;
+//message SensorId {
+  //enum SensorType {
+    //RANGE = 0;
+    //IMU = 1;
+    //ODOMETRY = 2;
     //FIXED_FRAME_POSE = 3;
     //LANDMARK = 4;
-    LOCAL_SLAM_RESULT = 5;
-  }
-
-  SensorType type = 1;
-  string id = 2;
-}
+    //LOCAL_SLAM_RESULT = 5;
+  //}
+  //SensorType type =11;
+  //string id = 12;
+//} 
 
 message Trajectory {
   // NEXT_ID: 8

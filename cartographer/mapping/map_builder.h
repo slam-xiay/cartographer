@@ -82,6 +82,8 @@ class MapBuilder {
   int AddTrajectoryForDeserialization();
   void FinishTrajectory(int trajectory_id);
 
+  MapById<SubmapId, ::cartographer::mapping::SubmapData> GetAllSubmapData();
+
   std::string SubmapToProto(const SubmapId& submap_id,
                             proto::SubmapQuery::Response* response);
 

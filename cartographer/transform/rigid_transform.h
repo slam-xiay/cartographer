@@ -80,7 +80,7 @@ class Rigid2 {
   std::string DebugString() const {
     std::ostringstream out;
     out << std::fixed << "t:[" << translation().x() << "," << translation().y()
-        << "],r:[" << rotation << "]";
+        << "],r:[" << rotation().angle() << "]";
     return out.str();
     // return absl::Substitute("{ t: [$0, $1], r: [$2] }", translation().x(),
     //                         translation().y(), rotation().angle());

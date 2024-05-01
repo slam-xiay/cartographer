@@ -272,6 +272,11 @@ void MapBuilder::FinishTrajectory(const int trajectory_id) {
   pose_graph_2d_->FinishTrajectory(trajectory_id);
 }
 
+MapById<SubmapId, ::cartographer::mapping::SubmapData>
+MapBuilder::GetAllSubmapData() {
+  return pose_graph_2d_->GetAllSubmapData();
+}
+
 std::string MapBuilder::SubmapToProto(
     const SubmapId& submap_id, proto::SubmapQuery::Response* const response) {
   if (submap_id.trajectory_id < 0 ||
@@ -313,7 +318,8 @@ std::map<int, int> MapBuilder::LoadState(io::ProtoStreamReader* const reader,
   proto::PoseGraph pose_graph_proto = deserializer.pose_graph();
   // const auto& all_builder_options_proto =
   //     deserializer.all_trajectory_builder_options();
-
+  // LOG(ERROR) << "Trajectory size:(" << pose_graph_proto.trajectory_size()
+  //            << ").";
   std::map<int, int> trajectory_remapping;
   for (int i = 0; i < pose_graph_proto.trajectory_size(); ++i) {
     auto& trajectory_proto = *pose_graph_proto.mutable_trajectory(i);
@@ -343,6 +349,11 @@ std::map<int, int> MapBuilder::LoadState(io::ProtoStreamReader* const reader,
        pose_graph_proto.trajectory()) {
     for (const proto::Trajectory::Submap& submap_proto :
          trajectory_proto.submap()) {
+      // LOG(ERROR) << "Submap:(" << trajectory_proto.trajectory_id() << ","
+      //            << submap_proto.submap_index() << "),pose:("
+      //            << transform::Project2D(
+      //                   transform::ToRigid3(submap_proto.pose()))
+      //            << ").";
       submap_poses.Insert(SubmapId{trajectory_proto.trajectory_id(),
                                    submap_proto.submap_index()},
                           transform::ToRigid3(submap_proto.pose()));
@@ -353,6 +364,11 @@ std::map<int, int> MapBuilder::LoadState(io::ProtoStreamReader* const reader,
   for (const proto::Trajectory& trajectory_proto :
        pose_graph_proto.trajectory()) {
     for (const proto::Trajectory::Node& node_proto : trajectory_proto.node()) {
+      // LOG(ERROR) << "Node:(" << trajectory_proto.trajectory_id() << ","
+      //            << node_proto.node_index() << "),pose:("
+      //            <<
+      //            transform::Project2D(transform::ToRigid3(node_proto.pose()))
+      //            << ").";
       node_poses.Insert(
           NodeId{trajectory_proto.trajectory_id(), node_proto.node_index()},
           transform::ToRigid3(node_proto.pose()));
@@ -382,11 +398,12 @@ std::map<int, int> MapBuilder::LoadState(io::ProtoStreamReader* const reader,
         LOG(ERROR) << "Found multiple serialized `PoseGraph`. Serialized "
                       "stream likely corrupt!.";
         break;
-      // case SerializedData::kAllTrajectoryBuilderOptions:
-      //   LOG(ERROR) << "Found multiple serialized "
-      //                 "`AllTrajectoryBuilderOptions`. Serialized stream likely "
-      //                 "corrupt!.";
-      //   break;
+      case SerializedData::kAllTrajectoryBuilderOptions:
+        LOG(ERROR) << "Found AllTrajectoryBuilderOptions";
+        //   LOG(ERROR) << "Found multiple serialized "
+        //                 "`AllTrajectoryBuilderOptions`. Serialized stream
+        //                 likely " "corrupt!.";
+        break;
       case SerializedData::kSubmap: {
         proto.mutable_submap()->mutable_submap_id()->set_trajectory_id(
             trajectory_remapping.at(
@@ -414,6 +431,7 @@ std::map<int, int> MapBuilder::LoadState(io::ProtoStreamReader* const reader,
       }
       case SerializedData::kImuData: {
         if (load_frozen_state) break;
+        LOG(ERROR) << "AddImuData";
         pose_graph_2d_->AddImuData(
             trajectory_remapping.at(proto.imu_data().trajectory_id()),
             sensor::FromProto(proto.imu_data().imu_data()));
@@ -421,34 +439,39 @@ std::map<int, int> MapBuilder::LoadState(io::ProtoStreamReader* const reader,
       }
       case SerializedData::kOdometryData: {
         if (load_frozen_state) break;
+        LOG(ERROR) << "AddOdometryData";
         pose_graph_2d_->AddOdometryData(
             trajectory_remapping.at(proto.odometry_data().trajectory_id()),
             sensor::FromProto(proto.odometry_data().odometry_data()));
         break;
       }
-      // case SerializedData::kFixedFramePoseData: {
-      //   if (load_frozen_state) break;
-      //   pose_graph_->AddFixedFramePoseData(
-      //       trajectory_remapping.at(
-      //           proto.fixed_frame_pose_data().trajectory_id()),
-      //       sensor::FromProto(
-      //           proto.fixed_frame_pose_data().fixed_frame_pose_data()));
-      //   break;
-      // }
-      // case SerializedData::kLandmarkData: {
-      //   if (load_frozen_state) break;
-      //   pose_graph_->AddLandmarkData(
-      //       trajectory_remapping.at(proto.landmark_data().trajectory_id()),
-      //       sensor::FromProto(proto.landmark_data().landmark_data()));
-      //   break;
-      // }
+      case SerializedData::kFixedFramePoseData: {
+        LOG(ERROR) << "kFixedFramePoseData";
+        //   if (load_frozen_state) break;
+        //   pose_graph_->AddFixedFramePoseData(
+        //       trajectory_remapping.at(
+        //           proto.fixed_frame_pose_data().trajectory_id()),
+        //       sensor::FromProto(
+        //           proto.fixed_frame_pose_data().fixed_frame_pose_data()));
+        break;
+      }
+      case SerializedData::kLandmarkData: {
+        LOG(ERROR) << "kLandmarkData";
+        //   if (load_frozen_state) break;
+        //   pose_graph_->AddLandmarkData(
+        //       trajectory_remapping.at(proto.landmark_data().trajectory_id()),
+        //       sensor::FromProto(proto.landmark_data().landmark_data()));
+        break;
+      }
       default:
-        LOG(WARNING) << "Skipping unknown message type in stream: "
-                     << proto.GetTypeName();
+        LOG(WARNING) << "Skipping unknown message type in stream:("
+                     //  << proto.GetTypeName() << "),(" << proto.data_case()
+                     << ").";
     }
   }
 
   if (load_frozen_state) {
+    // LOG(ERROR) << "load_frozen_state:(" << load_frozen_state << ").";
     // Add information about which nodes belong to which submap.
     // This is required, even without constraints.
     for (const proto::PoseGraph::Constraint& constraint_proto :

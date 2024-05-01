@@ -64,7 +64,9 @@
         "typeinfo": "cpp",
         "variant": "cpp",
         "bit": "cpp",
-        "*.inc": "cpp"
+        "*.inc": "cpp",
+        "cfenv": "cpp",
+        "geometry": "cpp"
     },
     "cmake.configureOnOpen": false
 }

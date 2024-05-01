@@ -12,3 +12,4 @@ ssh root@172.17.0.2 'killall roslaunch && killall slam_node && killall test_node
 ssh root@172.17.0.2 'cd /root/gamma/src/cartographer/ &&git reset --hard origin/master && git pull origin master && sync'
 ssh root@172.17.0.2 'source /opt/ros/noetic/setup.bash && cd /root/gamma/ && catkin_make -DBUILD_SLAM=true -DBUILD_TEST=false -j16'
 ssh root@172.17.0.2 'source /root/gamma/devel/setup.bash && roslaunch cartographer slam.launch'
+#ssh root@172.17.0.2 '/root/gamma/src/cartographer/scripts/command_load.sh'

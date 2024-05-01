@@ -112,7 +112,6 @@ bool ProbabilityGrid::DrawToSubmapTexture(
   Eigen::Array2i offset;
   CellLimits cell_limits;
   ComputeCroppedLimits(&offset, &cell_limits);
-
   std::string cells;
   for (const Eigen::Array2i& xy_index : XYIndexRangeIterator(cell_limits)) {
     if (!IsKnown(xy_index + offset)) {
@@ -126,12 +125,16 @@ bool ProbabilityGrid::DrawToSubmapTexture(
     // zero, and use 'alpha' to subtract. This is only correct when the pixel
     // is currently white, so walls will look too gray. This should be hard to
     // detect visually for the user, though.
-    const int delta =
-        128 - ProbabilityToLogOddsInteger(GetProbability(xy_index + offset));
+    // const int delta =
+    // 128 - ProbabilityToLogOddsInteger(GetProbability(xy_index + offset));
+    const int delta = 100 * GetProbability(xy_index + offset);
     const uint8 alpha = delta > 0 ? 0 : -delta;
     const uint8 value = delta > 0 ? delta : 0;
     cells.push_back(value);
     cells.push_back((value || alpha) ? alpha : 1);
+    // if (delta < 10)
+    //   LOG(ERROR) << "delta:(" << delta << "),alpha:(" << int(alpha)
+    //              << "),value:(" << ((value || alpha) ? alpha : 1) << ").";
   }
 
   common::FastGzipString(cells, texture->mutable_cells());

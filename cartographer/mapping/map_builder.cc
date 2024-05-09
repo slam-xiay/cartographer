@@ -22,7 +22,7 @@
 #include "cartographer/io/internal/mapping_state_serialization.h"
 #include "cartographer/io/proto_stream.h"
 #include "cartographer/io/proto_stream_deserializer.h"
-#include "cartographer/io/serialization_format_migration.h"
+// #include "cartographer/io/serialization_format_migration.h"
 #include "cartographer/mapping/internal/2d/local_trajectory_builder_2d.h"
 #include "cartographer/mapping/internal/2d/pose_graph_2d.h"
 // #include "cartographer/mapping/internal/3d/local_trajectory_builder_3d.h"
@@ -398,12 +398,12 @@ std::map<int, int> MapBuilder::LoadState(io::ProtoStreamReader* const reader,
         LOG(ERROR) << "Found multiple serialized `PoseGraph`. Serialized "
                       "stream likely corrupt!.";
         break;
-      case SerializedData::kAllTrajectoryBuilderOptions:
-        LOG(ERROR) << "Found AllTrajectoryBuilderOptions";
-        //   LOG(ERROR) << "Found multiple serialized "
-        //                 "`AllTrajectoryBuilderOptions`. Serialized stream
-        //                 likely " "corrupt!.";
-        break;
+      // case SerializedData::kAllTrajectoryBuilderOptions:
+      //   LOG(ERROR) << "Found AllTrajectoryBuilderOptions";
+      //   //   LOG(ERROR) << "Found multiple serialized "
+      //   //                 "`AllTrajectoryBuilderOptions`. Serialized stream
+      //   //                 likely " "corrupt!.";
+      //   break;
       case SerializedData::kSubmap: {
         proto.mutable_submap()->mutable_submap_id()->set_trajectory_id(
             trajectory_remapping.at(
@@ -445,24 +445,24 @@ std::map<int, int> MapBuilder::LoadState(io::ProtoStreamReader* const reader,
             sensor::FromProto(proto.odometry_data().odometry_data()));
         break;
       }
-      case SerializedData::kFixedFramePoseData: {
-        LOG(ERROR) << "kFixedFramePoseData";
-        //   if (load_frozen_state) break;
-        //   pose_graph_->AddFixedFramePoseData(
-        //       trajectory_remapping.at(
-        //           proto.fixed_frame_pose_data().trajectory_id()),
-        //       sensor::FromProto(
-        //           proto.fixed_frame_pose_data().fixed_frame_pose_data()));
-        break;
-      }
-      case SerializedData::kLandmarkData: {
-        LOG(ERROR) << "kLandmarkData";
-        //   if (load_frozen_state) break;
-        //   pose_graph_->AddLandmarkData(
-        //       trajectory_remapping.at(proto.landmark_data().trajectory_id()),
-        //       sensor::FromProto(proto.landmark_data().landmark_data()));
-        break;
-      }
+      // case SerializedData::kFixedFramePoseData: {
+      //   LOG(ERROR) << "kFixedFramePoseData";
+      //   //   if (load_frozen_state) break;
+      //   //   pose_graph_->AddFixedFramePoseData(
+      //   //       trajectory_remapping.at(
+      //   //           proto.fixed_frame_pose_data().trajectory_id()),
+      //   //       sensor::FromProto(
+      //   //           proto.fixed_frame_pose_data().fixed_frame_pose_data()));
+      //   break;
+      // }
+      // case SerializedData::kLandmarkData: {
+      //   LOG(ERROR) << "kLandmarkData";
+      //   //   if (load_frozen_state) break;
+      //   //   pose_graph_->AddLandmarkData(
+      //   // trajectory_remapping.at(proto.landmark_data().trajectory_id()),
+      //   //       sensor::FromProto(proto.landmark_data().landmark_data()));
+      //   break;
+      // }
       default:
         LOG(WARNING) << "Skipping unknown message type in stream:("
                      //  << proto.GetTypeName() << "),(" << proto.data_case()

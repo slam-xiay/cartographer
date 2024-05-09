@@ -113,7 +113,8 @@ ROS相关:
   [1]:一键安装(推荐):ROS(支持ROS/ROS2,树莓派Jetson)
   [3]:一键安装:rosdep(小鱼的rosdepc,又快又好用)
   [4]:一键配置:ROS环境(快速更新ROS环境设置,自动生成环境选择)
-  [9]:一键安装:Cartographer(18 20测试通过,16未测. updateTime 20240125)
+  [9]:一键安装:Cartographer(18 20测试通过,16未测. updateTime 1
+  20240125)
   [11]:一键安装:ROS Docker版(支持所有版本ROS/ROS2)
   [16]:一键安装：系统自带ROS (！！警告！！仅供特殊情况下使用)
 常用软件:
@@ -1019,8 +1020,6 @@ rm cartographer/common/internal/testing
 rm cartographer/mapping/internal/testing
 ```
 
-## 代码优化
-
 ### 删除metrics
 
 替换所有的
@@ -1290,6 +1289,8 @@ submap2d.cc
 ```
 //#include "cartographer/mapping/internal/2d/tsdf_range_data_inserter_2d.h"
 ```
+
+## 优化接口
 
 ### 删除pose_extrapolator_interface
 
@@ -1576,7 +1577,7 @@ class OptimizationProblem2D
                                           改为
 class OptimizationProblem2D 
   删除类中的override
-  迁移 using Constraint = PoseGraphInterface::Constraint; 到类中
+  迁移 using Constraint = Constraint; 到类中
 ```
 
 ### 删除map_build_interface
@@ -1600,13 +1601,13 @@ class OptimizationProblem2D
 ```
 std::unique_ptr<MapBuilderInterface> CreateMapBuilder(
     const proto::MapBuilderOptions& options) {
-  return std::make_unique<MapBuilder>(options);
+  return absl::make_unique<MapBuilder>(options);
 }
 
 改成
 std::unique_ptr<MapBuilder> CreateMapBuilder(
     const proto::MapBuilderOptions& options) {
-  return std::make_unique<MapBuilder>(options);
+  return absl::make_unique<MapBuilder>(options);
 }
 ```
 
@@ -1616,7 +1617,7 @@ std::unique_ptr<MapBuilder> CreateMapBuilder(
 rm cartographer/mapping/map_builder_interface.h
 ```
 
-### 梳理TrajectoryBuilderInterface
+### 优化TrajectoryBuilderInterface
 
 优化前
 
@@ -1653,17 +1654,15 @@ graph TD
 4(cartographer::mapping::Struct)
 ```
 
-新建global_trajectroy_builder_2d*
+新建global_trajectory_builder_2d*
 
 ```
 两个模版类改为LocalTrajectoryBuilder2D PoseGraph2D
 拷贝global_trajectroy_builder，修改为2d,删除Create
-删除继承关系，删除override。理顺cc 和 h 类的分工。
+删除继承关系，删除override。理顺.cc和.h的分工。
 ```
 
 屏蔽TrajectoryBuilderInterface，CollatedTrajectoryBuilder，GlobalTrajectoryBuilder三个类代码
-
-
 
 使用时map_build.h
 
@@ -1711,7 +1710,7 @@ graph TD
 ```
     // }
     // DCHECK(dynamic_cast<PoseGraph2D*>(pose_graph_.get()));
-    // trajectory_builders_.push_back(std::make_unique<CollatedTrajectoryBuilder>(
+    // trajectory_builders_.push_back(absl::make_unique<CollatedTrajectoryBuilder>(
     //     trajectory_options, sensor_collator_.get(), trajectory_id,
     //     expected_sensor_ids,
     //     CreateGlobalTrajectoryBuilder2D(
@@ -1739,27 +1738,13 @@ rm trajectory_builder_interface
 rm collated_trajectory_builder
 ```
 
-### 梳理配置
-
-在common文件夹新建config.h
-
-```
-#ifndef CARTOGRAPHER_COMMON_CONFIG_H_
-#define CARTOGRAPHER_COMMON_CONFIG_H_
-namespace cartographer {
-namespace common {}}
-#endif
-```
-
-
-
-### 梳理PoseGraphInterface
+### 优化PoseGraphInterface
 
 ```mermaid
 graph TD
-1(constrait_builder)
-2(constrait_builder_2d)
-3(constrait_builder_3d)
+1(constraint_builder)
+2(constraint_builder_2d)
+3(constraint_builder_3d)
 4(PoseGraph2D)
 5(PoseGraph3D)
 2-->4
@@ -1770,8 +1755,6 @@ graph TD
 7(PoseGraphInterface)
 6-->7
 ```
-
-
 
 最终优化后得到
 
@@ -1787,68 +1770,12 @@ graph TD
 ```
 constrait_builder只有一个Create函数，把这个函数放入PoseGraph后删除。
 然后把constrait_builder,posegraph都屏蔽
-
 ```
 
-
-
-```
-enum class SubmapState { kNoConstraintSearch, kFinished };
-
-struct InternalTrajectoryState {
-  enum class DeletionState {
-    NORMAL,
-    SCHEDULED_FOR_DELETION,
-    WAIT_FOR_DELETION
-  };
-
-  ::cartographer::mapping::TrajectoryState state =
-      ::cartographer::mapping::TrajectoryState::ACTIVE;
-  DeletionState deletion_state = DeletionState::NORMAL;
-};
-
-struct InternalSubmapData {
-  std::shared_ptr<const Submap> submap;
-  SubmapState state = SubmapState::kNoConstraintSearch;
-
-  // IDs of the nodes that were inserted into this map together with
-  // constraints for them. They are not to be matched again when this submap
-  // becomes 'kFinished'.
-  std::set<NodeId> node_ids;
-};
-
-struct PoseGraphData {
-  // Submaps get assigned an ID and state as soon as they are seen, even
-  // before they take part in the background computations.
-  MapById<SubmapId, InternalSubmapData> submap_data;
-
-  // Global submap poses currently used for displaying data.
-  MapById<SubmapId, optimization::SubmapSpec2D> global_submap_poses_2d;
-  // MapById<SubmapId, optimization::SubmapSpec3D> global_submap_poses_3d;
-
-  // Data that are currently being shown.
-  MapById<NodeId, TrajectoryNode> trajectory_nodes;
-
-  // Global landmark poses with all observations.
-  // std::map<std::string /* landmark ID */, PoseGraphInterface::LandmarkNode>
-  //     landmark_nodes;
-
-  // How our various trajectories are related.
-  TrajectoryConnectivityState trajectory_connectivity_state;
-  int num_trajectory_nodes = 0;
-  std::map<int, InternalTrajectoryState> trajectories_state;
-
-  // Set of all initial trajectory poses.
-  std::map<int, PoseGraph::InitialTrajectoryPose> initial_trajectory_poses;
-
-  std::vector<PoseGraphInterface::Constraint> constraints;
-};
-```
-
-把pose_grapher_data.h的结构体拷贝到之后
+其中涉及几个优化的结构。首先把pose_graph_interface.h的结构体剪切到pose_graph_data.h
 
 ```
-struct Constraint {
+  struct Constraint {
     struct Pose {
       transform::Rigid3d zbar_ij;
       double translation_weight;
@@ -1893,7 +1820,8 @@ struct Constraint {
   struct TrajectoryData {
     double gravity_constant = 9.8;
     std::array<double, 4> imu_calibration{{1., 0., 0., 0.}};
-    absl::optional<transform::Rigid3d> fixed_frame_origin_in_map;
+    // absl::optional<transform::Rigid3d> fixed_frame_origin_in_map;
+    std::optional<transform::Rigid3d> fixed_frame_origin_in_map;
   };
 
   enum class TrajectoryState { ACTIVE, FINISHED, FROZEN, DELETED };
@@ -1903,22 +1831,53 @@ struct Constraint {
                          const std::map<int /* trajectory_id */, NodeId>&)>;
 ```
 
-把pose_grapher.cc的结构体 拷贝到之后
+在把pose_graph.h的结构体拷贝到pose_graph_data.h
 
 ```
-//   struct InitialTrajectoryPose {
-//     int to_trajectory_id;
-//     transform::Rigid3d relative_pose;
-//     common::Time time;
-//   };
-```
-
-删除pose_graph_2d里使用 结构体的前缀。
+  struct InitialTrajectoryPose {
+    int to_trajectory_id;
+    transform::Rigid3d relative_pose;
+    common::Time time;
+  };
 
 ```
-PoseGraph::InitialTrajectoryPose
-改为
-InitialTrajectoryPose
+
+屏蔽所有的PoseGraphInterface::
+
+在optimization_problem_2d.h加入前置声明
+
+```
+namespace mapping {
+struct Constraint;
+struct TrajectoryData;
+enum class TrajectoryState;
+namespace optimization {
+```
+
+在pose_graph_data.h加入前置声明
+
+```
+namespace optimization {
+struct NodeSpec2D;
+struct SubmapSpec2D;
+}  // namespace optimization
+
+```
+
+并取消public PoseGraph的继承关系，删除类内的override
+
+```
+// #include "cartographer/mapping/pose_graph.h"
+// #include "cartographer/mapping/pose_graph_interface.h"
+#include "cartographer/mapping/internal/pose_graph_data.h"
+#include "cartographer/mapping/internal/2d/pose_graph_2d.h"
+```
+
+修改一系列使用PoseGraph接口的函数,WritePbStream
+
+```
+WritePbStream(const mapping::PoseGraph2D& pose_graph,)
+SerializePoseGraph(const mapping::PoseGraph2D& pose_graph,
 ```
 
 把pose_graph.h头文件拷贝到pose_graph_2d.h
@@ -1930,10 +1889,170 @@ InitialTrajectoryPose
 ```
 
 ```
-MaybeAddPureLocalizationTrimmer 的 PoseGraph改为PoseGraph2D
+屏蔽MaybeAddPureLocalizationTrimmer
 ```
 
+把pose_graph.h的函数拷贝到pose_graph_2d
+
+.h
+
+```
+class PoseGraph2D{proto::PoseGraph ToProto(bool include_unfinished_submaps) const{};}
+std::vector<Constraint> FromProto(
+    const ::google::protobuf::RepeatedPtrField<
+        ::cartographer::mapping::proto::PoseGraph::Constraint>&
+        constraint_protos);
+proto::PoseGraph::Constraint ToProto(const Constraint& constraint);
+```
+
+.cc
+
+```
+proto::PoseGraph PoseGraph2D::ToProto(bool include_unfinished_submaps) const {
+  proto::PoseGraph proto;
+
+  std::map<int, proto::Trajectory* const> trajectory_protos;
+  const auto trajectory = [&proto, &trajectory_protos](
+                              const int trajectory_id) -> proto::Trajectory* {
+    if (trajectory_protos.count(trajectory_id) == 0) {
+      auto* const trajectory_proto = proto.add_trajectory();
+      trajectory_proto->set_trajectory_id(trajectory_id);
+      CHECK(trajectory_protos.emplace(trajectory_id, trajectory_proto).second);
+    }
+    return trajectory_protos.at(trajectory_id);
+  };
+
+  std::set<mapping::SubmapId> unfinished_submaps;
+  for (const auto& submap_id_data : GetAllSubmapData()) {
+    proto::Trajectory* trajectory_proto =
+        trajectory(submap_id_data.id.trajectory_id);
+    if (!include_unfinished_submaps &&
+        !submap_id_data.data.submap->insertion_finished()) {
+      // Collect IDs of all unfinished submaps and skip them.
+      unfinished_submaps.insert(submap_id_data.id);
+      continue;
+    }
+    CHECK(submap_id_data.data.submap != nullptr);
+    auto* const submap_proto = trajectory_proto->add_submap();
+    submap_proto->set_submap_index(submap_id_data.id.submap_index);
+    *submap_proto->mutable_pose() =
+        transform::ToProto(submap_id_data.data.pose);
+  }
+
+  auto constraints_copy = constraints();
+  std::set<mapping::NodeId> orphaned_nodes;
+  proto.mutable_constraint()->Reserve(constraints_copy.size());
+  for (auto it = constraints_copy.begin(); it != constraints_copy.end();) {
+    if (!include_unfinished_submaps &&
+        unfinished_submaps.count(it->submap_id) > 0) {
+      // Skip all those constraints that refer to unfinished submaps and
+      // remember the corresponding trajectory nodes as potentially orphaned.
+      orphaned_nodes.insert(it->node_id);
+      it = constraints_copy.erase(it);
+      continue;
+    }
+    *proto.add_constraint() = cartographer::mapping::ToProto(*it);
+    ++it;
+  }
+
+  if (!include_unfinished_submaps) {
+    // Iterate over all constraints and remove trajectory nodes from
+    // 'orphaned_nodes' that are not actually orphaned.
+    for (const auto& constraint : constraints_copy) {
+      orphaned_nodes.erase(constraint.node_id);
+    }
+  }
+
+  for (const auto& node_id_data : GetTrajectoryNodes()) {
+    proto::Trajectory* trajectory_proto =
+        trajectory(node_id_data.id.trajectory_id);
+    CHECK(node_id_data.data.constant_data != nullptr);
+    auto* const node_proto = trajectory_proto->add_node();
+    node_proto->set_node_index(node_id_data.id.node_index);
+    node_proto->set_timestamp(
+        common::ToUniversal(node_id_data.data.constant_data->time));
+    *node_proto->mutable_pose() =
+        transform::ToProto(node_id_data.data.global_pose);
+  }
+
+  // auto landmarks_copy = GetLandmarkPoses();
+  // proto.mutable_landmark_poses()->Reserve(landmarks_copy.size());
+  // for (const auto& id_pose : landmarks_copy) {
+  //   auto* landmark_proto = proto.add_landmark_poses();
+  //   landmark_proto->set_landmark_id(id_pose.first);
+  //   *landmark_proto->mutable_global_pose() =
+  //   transform::ToProto(id_pose.second);
+  // }
+  return proto;
+}
+
+proto::PoseGraph::Constraint::Tag ToProto(const Constraint::Tag& tag) {
+  switch (tag) {
+    case Constraint::Tag::INTRA_SUBMAP:
+      return proto::PoseGraph::Constraint::INTRA_SUBMAP;
+    case Constraint::Tag::INTER_SUBMAP:
+      return proto::PoseGraph::Constraint::INTER_SUBMAP;
+  }
+  LOG(FATAL) << "Unsupported tag.";
+}
+
+Constraint::Tag FromProto(const proto::PoseGraph::Constraint::Tag& proto) {
+  switch (proto) {
+    case proto::PoseGraph::Constraint::INTRA_SUBMAP:
+      return Constraint::Tag::INTRA_SUBMAP;
+    case proto::PoseGraph::Constraint::INTER_SUBMAP:
+      return Constraint::Tag::INTER_SUBMAP;
+    case ::google::protobuf::kint32max:
+    case ::google::protobuf::kint32min: {
+    }
+  }
+  LOG(FATAL) << "Unsupported tag.";
+}
+
+std::vector<Constraint> FromProto(
+    const ::google::protobuf::RepeatedPtrField<proto::PoseGraph::Constraint>&
+        constraint_protos) {
+  std::vector<Constraint> constraints;
+  for (const auto& constraint_proto : constraint_protos) {
+    const mapping::SubmapId submap_id{
+        constraint_proto.submap_id().trajectory_id(),
+        constraint_proto.submap_id().submap_index()};
+    const mapping::NodeId node_id{constraint_proto.node_id().trajectory_id(),
+                                  constraint_proto.node_id().node_index()};
+    const Constraint::Pose pose{
+        transform::ToRigid3(constraint_proto.relative_pose()),
+        constraint_proto.translation_weight(),
+        constraint_proto.rotation_weight()};
+    const Constraint::Tag tag = FromProto(constraint_proto.tag());
+    constraints.push_back(Constraint{submap_id, node_id, pose, tag});
+  }
+  return constraints;
+}
+
+proto::PoseGraph::Constraint ToProto(const Constraint& constraint) {
+  proto::PoseGraph::Constraint constraint_proto;
+  *constraint_proto.mutable_relative_pose() =
+      transform::ToProto(constraint.pose.zbar_ij);
+  constraint_proto.set_translation_weight(constraint.pose.translation_weight);
+  constraint_proto.set_rotation_weight(constraint.pose.rotation_weight);
+  constraint_proto.mutable_submap_id()->set_trajectory_id(
+      constraint.submap_id.trajectory_id);
+  constraint_proto.mutable_submap_id()->set_submap_index(
+      constraint.submap_id.submap_index);
+  constraint_proto.mutable_node_id()->set_trajectory_id(
+      constraint.node_id.trajectory_id);
+  constraint_proto.mutable_node_id()->set_node_index(
+      constraint.node_id.node_index);
+  constraint_proto.set_tag(mapping::ToProto(constraint.tag));
+  return constraint_proto;
+}
+```
+
+在通过编译查漏补缺，编译通过后删除pose_graph.h,pose_graph.cc,pose_graph_interface.h
+
 ## 优化配置参数
+
+
 
 参数传递方向
 
@@ -1953,6 +2072,108 @@ graph TD
 2-->6
 6-->7
 ```
+
+```
+#ifndef CARTOGRAPHER_COMMON_CONFIG_H_
+#define CARTOGRAPHER_COMMON_CONFIG_H_
+#include "math.h"
+
+namespace cartographer {
+
+constexpr size_t kBackgroundThreadsCount = 4;  // num_background_threads
+constexpr bool kCollateByTrajectory = false;   // collate_by_trajectory
+
+constexpr bool kUseImuData = true;
+constexpr double kLidarMinRange = 0.2;
+constexpr double kLidarMaxRange = 50.0;
+constexpr double kMinHeight = -0.8;
+constexpr double kMaxHeight = 2.0;
+constexpr double kMissingDataRayDistance = 5.0;
+constexpr size_t kAccumulatedRangeCount = 1;
+constexpr double kVoxelFilterSize = 0.025;
+
+constexpr double kAdaptiveVoxelFilterMaxLength = 0.5;
+constexpr size_t kAdaptiveVoxelFilterCount = 200;
+constexpr double kAdaptiveVoxelFilterMaxRange = 50.;
+
+constexpr double kLoopClosureAdaptiveVoxelFilterMaxLength = 0.9;
+constexpr size_t kLoopClosureAdaptiveVoxelFilterMaxCount = 200;
+constexpr double kLoopClosureAdaptiveVoxelFilterMaxRange = 50.;
+
+constexpr bool kUseOnlineCSM = false;
+constexpr double kRealTimeCSMLinearSearchWindow = 0.1;
+constexpr double kRealTimeCSMAngularSearchWindow = common::DegToRad(20.);
+constexpr double kRealTimeCSMTranslationDeltaCostWeight =
+    1e-1;  // translation_delta_cost_weight
+constexpr double kRealTimeCSMRotationDeltaCostWeight =
+    1e-1;  // options_.rotation_delta_cost_weight()
+
+constexpr double kCSMOccupiedSapceWeight = 1.;  // occupied_space_weight
+constexpr double kCSMTranslationWeight = 10.;
+constexpr double kCSMRotationWeight = 40.;
+constexpr bool kCSMUseNonmonotonicSteps = false;
+constexpr double kCSMMaxIterationsCount = 20;    // max_num_iterations
+constexpr size_t kCSMCeresThreadsCount = 1;      // num_threads
+constexpr double kMotionFilterMaxDuration = 5.;  // max_time_seconds
+constexpr double kMotionFilterTranslation = 0.2;
+constexpr double kMotionFilterRotaiton = common::DegToRad(1.);
+
+constexpr double kImuGravityTimeConstant = 10.;  // imu_gravity_time_constant
+constexpr bool kPoseExtrapolatorUseImuBase = false;
+constexpr bool kPoseExtrapolatorDuration = 0.5;  // pose_queue_duration
+
+constexpr size_t kSubmapsNodeCount = 50;  // num_range_data
+constexpr double kResolution = 0.10;      // resolution
+constexpr bool kSubmapsInsertFreeSpace = true;  // insert_free_space
+constexpr double kSubmapsHitPorbility = 0.55;
+constexpr double kSubmapsMissPorbility = 0.49;
+
+constexpr size_t kOptimizeEveryNNodes = 90;
+constexpr double kSamplingRatio = 0.3;
+constexpr double kMaxConstrantDistance = 15;
+constexpr double kLocalMatchMinScore = 0.55;  // 注意重复
+constexpr double kGlobalMatchMinScore = 0.6;
+constexpr double kLoopClosureTranslationWeight = 1.1e4;
+constexpr double kLoopClosureRotationWeight = 1.1e4;
+constexpr bool kLogMatches = false;
+constexpr double kFastCSMLinearSearchWindow = 7.;
+constexpr double kFastCSMAngularSearchWindow = common::DegToRad(30.);
+constexpr size_t kBranchAndBoundDepth = 7;
+constexpr double kFastCSMOccupiedSapceWeight = 20.;
+constexpr double kFastCSMTranslationWeight = 10.;
+constexpr double kFastCSMRotationWeight = 1.;
+constexpr double kFastCSMUseNonmonotonicSteps = true;
+constexpr double kFastCSMCeresMaxIterationsCount = 10;
+constexpr double kFastCSMCeresThreadsCount = 1;
+
+// optimization
+constexpr double kHuberScale = 1e1;  // huber_scale
+constexpr double kLocalSlmPoseTranslationWeight = 1e5;
+// local_slam_pose_translation_weight
+constexpr double kLocalSlamPoseRotationWeight = 1e5;
+// local_slam_pose_rotation_weight
+constexpr double kOdometryTranslationWeight = 1e5;
+// odometry_translation_weight
+constexpr double kOdometryRotationWeight = 1e5;  // odometry_rotation_weight
+constexpr bool kLogSolverSummary = false;        // log_solver_summary
+// constexpr bool kUseOnlineImuExtrinsicsIn3d = true;
+// use_online_imu_extrinsics_in_3d
+// constexpr bool kFixZIn3D = false;  // fix_z_in_3d
+constexpr double kOptimizationUseNonmonotonicSteps = true;
+// use_nonmonotonic_steps
+constexpr double kOptimizationMaxIterationsCount = 10;  // max_num_iterations
+constexpr double kOptimizationThreadsCount = 7;         // num_threads
+constexpr double kMaxFinalIterationsCount = 50;  // max_num_final_iterations
+constexpr double kGlobalSamplingRatio = 0.003;   // global_sampling_ratio
+constexpr bool kLogResidualHistograms = false;   // log_residual_histograms
+constexpr double kGlobalConstraintSearchInterval = 10;
+// global_constraint_search_after_n_seconds
+
+}  // namespace cartographer
+#endif
+```
+
+
 
 ### ProbabilityGridRangeDataInserter2D参数优化
 
@@ -2077,7 +2298,7 @@ ProbabilityGridPointsProcessor(
 //       dictionary->HasKey("output_type")
 //           ? OutputTypeFromString(dictionary->GetString("output_type"))
 //           : OutputType::kPng;
-//   return std::make_unique<ProbabilityGridPointsProcessor>(
+//   return absl::make_unique<ProbabilityGridPointsProcessor>(
 //       dictionary->GetDouble("resolution"),
 //       mapping::CreateProbabilityGridRangeDataInserterOptions2D(
 //           dictionary->GetDictionary("range_data_inserter").get()),
@@ -2155,11 +2376,11 @@ submap_2d.cc修改
 //   switch (options_.range_data_inserter_options().range_data_inserter_type())
 //   {
 //     case proto::RangeDataInserterOptions::PROBABILITY_GRID_INSERTER_2D:
-//       return std::make_unique<ProbabilityGridRangeDataInserter2D>(
+//       return absl::make_unique<ProbabilityGridRangeDataInserter2D>(
 //           options_.range_data_inserter_options()
 //               .probability_grid_range_data_inserter_options_2d());
 //     // case proto::RangeDataInserterOptions::TSDF_INSERTER_2D:
-//     //   return std::make_unique<TSDFRangeDataInserter2D>(
+//     //   return absl::make_unique<TSDFRangeDataInserter2D>(
 //     //       options_.range_data_inserter_options()
 //     //           .tsdf_range_data_inserter_options_2d());
 //     default:
@@ -2168,7 +2389,7 @@ submap_2d.cc修改
 // }
 std::unique_ptr<ProbabilityGridRangeDataInserter2D>
 ActiveSubmaps2D::CreateRangeDataInserter() {
-  return std::make_unique<ProbabilityGridRangeDataInserter2D>();
+  return absl::make_unique<ProbabilityGridRangeDataInserter2D>();
 }
 
 // std::unique_ptr<Grid2D> ActiveSubmaps2D::CreateGrid(
@@ -2177,7 +2398,7 @@ ActiveSubmaps2D::CreateRangeDataInserter() {
 //   float resolution = kResolution;
 //   switch (options_.grid_options_2d().grid_type()) {
 //     case proto::GridOptions2D::PROBABILITY_GRID:
-//       return std::make_unique<ProbabilityGrid>(
+//       return absl::make_unique<ProbabilityGrid>(
 //           MapLimits(resolution,
 //                     origin.cast<double>() + 0.5 * kInitialSubmapSize *
 //                                                 resolution *
@@ -2185,7 +2406,7 @@ ActiveSubmaps2D::CreateRangeDataInserter() {
 //                     CellLimits(kInitialSubmapSize, kInitialSubmapSize)),
 //           &conversion_tables_);
 //     // case proto::GridOptions2D::TSDF:
-//     //   return std::make_unique<TSDF2D>(
+//     //   return absl::make_unique<TSDF2D>(
 //     //       MapLimits(resolution,
 //     //                 origin.cast<double>() + 0.5 * kInitialSubmapSize *
 //     //                                             resolution *
@@ -2206,7 +2427,7 @@ ActiveSubmaps2D::CreateRangeDataInserter() {
 std::unique_ptr<Grid2D> ActiveSubmaps2D::CreateGrid(
     const Eigen::Vector2f& origin) {
   constexpr int kInitialSubmapSize = 100;
-  return std::make_unique<ProbabilityGrid>(
+  return absl::make_unique<ProbabilityGrid>(
       MapLimits(kResolution,
                 origin.cast<double>() + 0.5 * kInitialSubmapSize * kResolution *
                                             Eigen::Vector2d::Ones(),
@@ -2235,7 +2456,7 @@ ActiveSubmaps2D::ActiveSubmaps2D()
 .h
 
 ```
-// #include "cartographer/common/lua_parameter_dictionary.h"
+// //#include "cartographer/common/lua_parameter_dictionary.h"
 #include "cartographer/common/config.h"
 // #include "cartographer/mapping/proto/motion_filter_options.pb.h"
 // proto::MotionFilterOptions CreateMotionFilterOptions(
@@ -2429,30 +2650,30 @@ options.max_length() -- kAdaptiveVoxelFilterMaxLength
 //   // CHECK(options.use_trajectory_builder_2d() ^
 //   //       options.use_trajectory_builder_3d());
 //   if (options.use_trajectory_builder_2d()) {
-//     pose_graph_2d_ = std::make_unique<PoseGraph2D>(
+//     pose_graph_2d_ = absl::make_unique<PoseGraph2D>(
 //         options_.pose_graph_options(),
-//         std::make_unique<optimization::OptimizationProblem2D>(
+//         absl::make_unique<optimization::OptimizationProblem2D>(
 //             options_.pose_graph_options().optimization_problem_options()),
 //         &thread_pool_);
 //   }
 //   // if (options.use_trajectory_builder_3d()) {
-//   //   pose_graph_ = std::make_unique<PoseGraph3D>(
+//   //   pose_graph_ = absl::make_unique<PoseGraph3D>(
 //   //       options_.pose_graph_options(),
-//   //       std::make_unique<optimization::OptimizationProblem3D>(
+//   //       absl::make_unique<optimization::OptimizationProblem3D>(
 //   //           options_.pose_graph_options().optimization_problem_options()),
 //   //       &thread_pool_);
 //   // }
 //   // if (options.collate_by_trajectory()) {
-//   //   sensor_collator_ = std::make_unique<sensor::TrajectoryCollator>();
+//   //   sensor_collator_ = absl::make_unique<sensor::TrajectoryCollator>();
 //   // } else {
-//   sensor_collator_ = std::make_unique<sensor::Collator>();
+//   sensor_collator_ = absl::make_unique<sensor::Collator>();
 //   // }
 // }
 
 MapBuilder::MapBuilder() : thread_pool_(kBackgroundThreadsCount) {
-  pose_graph_2d_ = std::make_unique<PoseGraph2D>(
-      std::make_unique<optimization::OptimizationProblem2D>(), &thread_pool_);
-  sensor_collator_ = std::make_unique<sensor::Collator>();
+  pose_graph_2d_ = absl::make_unique<PoseGraph2D>(
+      absl::make_unique<optimization::OptimizationProblem2D>(), &thread_pool_);
+  sensor_collator_ = absl::make_unique<sensor::Collator>();
 }
 ```
 
@@ -2543,14 +2764,14 @@ options_.min_score() kLocalMatchMinScore
   scan_matcher_task->SetWorkItem(
       [&submap_scan_matcher, &scan_matcher_options]() {
         submap_scan_matcher.fast_correlative_scan_matcher =
-            std::make_unique<scan_matching::FastCorrelativeScanMatcher2D>(
+            absl::make_unique<scan_matching::FastCorrelativeScanMatcher2D>(
                 *submap_scan_matcher.grid, scan_matcher_options);
       });
       改为
     scan_matcher_task->SetWorkItem(
       [&submap_scan_matcher]() {
         submap_scan_matcher.fast_correlative_scan_matcher =
-            std::make_unique<scan_matching::FastCorrelativeScanMatcher2D>(
+            absl::make_unique<scan_matching::FastCorrelativeScanMatcher2D>(
                 *submap_scan_matcher.grid, scan_matcher_options);
       });    
       
@@ -2558,14 +2779,14 @@ options_.min_score() kLocalMatchMinScore
         scan_matcher_task->SetWorkItem(
       [&submap_scan_matcher]() {
         submap_scan_matcher.fast_correlative_scan_matcher =
-            std::make_unique<scan_matching::FastCorrelativeScanMatcher2D>(
+            absl::make_unique<scan_matching::FastCorrelativeScanMatcher2D>(
                 *submap_scan_matcher.grid, scan_matcher_options);
       });
       
       改为 
         scan_matcher_task->SetWorkItem([&submap_scan_matcher]() {
     submap_scan_matcher.fast_correlative_scan_matcher =
-        std::make_unique<scan_matching::FastCorrelativeScanMatcher2D>(
+        absl::make_unique<scan_matching::FastCorrelativeScanMatcher2D>(
             *submap_scan_matcher.grid);
   });
       
@@ -2734,7 +2955,7 @@ real_time_correlative_scan_matcher.cc
 全局屏蔽 删除FromDictionary
 
 ```
-// #include "cartographer/common/lua_parameter_dictionary.h"
+//#include "cartographer/common/lua_parameter_dictionary.h"
 ```
 
 在CMakeLists.txt删除lua
@@ -2754,6 +2975,33 @@ real_time_correlative_scan_matcher.cc
 rm -rf configuration_files
 ```
 
+删除配置的proto相关文件
+
+```
+find . -name *_options_2d.proto -delete
+find . -name *_options.proto -delete
+```
+
+在cartographer/mapping/proto/trajectory.proto添加
+
+```
+message SensorId {
+  enum SensorType {
+    RANGE = 0;
+    IMU = 1;
+    ODOMETRY = 2;
+    //FIXED_FRAME_POSE = 3;
+    //LANDMARK = 4;
+    LOCAL_SLAM_RESULT = 5;
+  }
+
+  SensorType type = 1;
+  string id = 2;
+}
+```
+
+
+
 ## 优化ABSL
 
 cartographer在absl库调用了几个函数
@@ -2764,13 +3012,13 @@ absl::MutexLock locker(&mutex_)
 absl::flat_hash_map
 absl::Condition
 absl::FromChrono
-std::make_unique
+absl::make_unique
 absl::Substitute
 GUARDED_BY
 EXCLUSIVE_LOCKS_REQUIRED
 ```
 
-### 删除histogram
+### 优化histogram
 
 ```
 删除 score_histogram_
@@ -2778,18 +3026,26 @@ EXCLUSIVE_LOCKS_REQUIRED
 
 删除 histogram 类的.h 和 .cc
 
-### 删除DebugString
+### 优化DebugString
 
 ```
   //#include "absl/strings/substitute.h"
   std::string DebugString() const {
-    return std::string();
+    std::ostringstream out;
+    out << std::fixed << std::setprecision(2) << "t:[" << translation().x()
+        << "," << translation().y() << "],r:[" << rotation << "]";
+    return out.str();
     // return absl::Substitute("{ t: [$0, $1], r: [$2] }", translation().x(),
     //                         translation().y(), rotation().angle());
   }
   
-    std::string DebugString() const {
-    return std::string();
+  std::string DebugString() const {
+    std::ostringstream out;
+    out << std::fixed << std::setprecision(2) << "t:[" << translation().x()
+        << "," << translation().y() << "," << translation().z() << "],r:["
+        << rotation().w() << "," << rotation().x() << "," << rotation().y()
+        << "," << rotation().z() << "]";
+    return out.str();
     // return absl::Substitute("{ t: [$0, $1, $2], q: [$3, $4, $5, $6] }",
     //                         translation().x(), translation().y(),
     //                         translation().z(), rotation().w(),
@@ -2797,13 +3053,1407 @@ EXCLUSIVE_LOCKS_REQUIRED
   }
 ```
 
+cartographer/io/xray_points_processor.cc
+
+```
+//file_writer_factory_(absl::StrCat(output_filename_, i, ".png"))
+file_writer_factory_(output_filename_ + std::to_string(i) + ".png")
+```
+
+### 优化flat_hash_map
+
+用std::unordered_map替换absl::flat_hast_map
+
+在CMakeLists.txt
+
+```
+# absl::flat_hash_map
+```
+
+```
+#include "absl/container/flat_hash_map.h"
+替换为// #include "absl/container/flat_hash_map.h"
+```
+
+### 优化optional
+
+```
+用std::optional替换absl::optional
+```
+
+### 优化flat_hash_set
+
+```
+用std::set替换absl::flat_hash_set
+```
+
+### 优化make_unique
+
+```
+用std::make_unique替换absl::make_unique
+```
+
+```
+//#include "absl/memory/memory.h"
+修改为
+#include <memory>
+```
+
+### 优化mutex
+
+这五个要一起优化，而且耦合性很高，暂时未找到std库未有对应函数。
+
+```
+absl::MutexLock locker(&mutex_)
+absl::Condition
+absl::FromChrono
+GUARDED_BY
+EXCLUSIVE_LOCKS_REQUIRED
+LOCKS_EXCLUDED
+```
+
+修改
+
+blocking_queue.h
+
+```
+void Push(T t) {
+    // const auto predicate = [this]()  {
+    //   return QueueNotFullCondition();
+    // };
+    // absl::MutexLock lock(&mutex_);
+    // mutex_.Await(absl::Condition(&predicate));
+    // deque_.push_back(std::move(t));
+
+    std::unique_lock<std::mutex> lock(mutex_);
+    cv.wait(lock, [&] { return QueueNotFullCondition(); });
+    deque_.push_back(std::move(t));
+  }
+
+  bool PushWithTimeout(T t, const common::Duration timeout) {
+    std::unique_lock<std::mutex> lock(mutex_);
+    if (!cv.wait_for(lock, timeout, [&] { return QueueNotFullCondition(); })) {
+      return false;
+    } else {
+      deque_.push_back(std::move(t));
+      return true;
+    }
+
+    // const auto predicate = [this]()  {
+    //   return QueueNotFullCondition();
+    // };
+    // absl::MutexLock lock(&mutex_);
+    // if (!mutex_.AwaitWithTimeout(absl::Condition(&predicate),
+    //                              absl::FromChrono(timeout))) {
+    //   return false;
+    // }
+    // deque_.push_back(std::move(t));
+    // return true;
+  }
+
+  // Pops the next value from the queue. Blocks until a value is available.
+  T Pop() {
+    // const auto predicate = [this]()  {
+    //   return !QueueEmptyCondition();
+    // };
+    // absl::MutexLock lock(&mutex_);
+    // mutex_.Await(absl::Condition(&predicate));
+
+    // T t = std::move(deque_.front());
+    // deque_.pop_front();
+    // return t;
+    std::unique_lock<std::mutex> lock(mutex_);
+    cv.wait(lock, [&] { return !QueueEmptyCondition(); });
+    T t = std::move(deque_.front());
+    deque_.pop_front();
+    return t;
+  }
+
+  // Like Pop, but can timeout. Returns nullptr in this case.
+  T PopWithTimeout(const common::Duration timeout) {
+    // const auto predicate = [this]()  {
+    //   return !QueueEmptyCondition();
+    // };
+    // absl::MutexLock lock(&mutex_);
+    // if (!mutex_.AwaitWithTimeout(absl::Condition(&predicate),
+    //                              absl::FromChrono(timeout))) {
+    //   return nullptr;
+    // }
+    // T t = std::move(deque_.front());
+    // deque_.pop_front();
+    // return t;
+
+    std::unique_lock<std::mutex> lock(mutex_);
+    if (!cv.wait_for(lock, timeout, [&] { return QueueEmptyCondition(); })) {
+      return nullptr;
+    } else {
+      T t = std::move(deque_.front());
+      deque_.pop_front();
+      return t;
+    }
+  }
+
+  // Like Peek, but can timeout. Returns nullptr in this case.
+  template <typename R>
+  R* PeekWithTimeout(const common::Duration timeout) {
+    // const auto predicate = [this]()  {
+    //   return !QueueEmptyCondition();
+    // };
+    // absl::MutexLock lock(&mutex_);
+    // if (!mutex_.AwaitWithTimeout(absl::Condition(&predicate),
+    //                              absl::FromChrono(timeout))) {
+    //   return nullptr;
+    // }
+    // return deque_.front().get();
+
+    std::unique_lock<std::mutex> lock(mutex_);
+    if (!cv.wait_for(lock, timeout, [&] { return !QueueEmptyCondition(); })) {
+      return nullptr;
+    } else {
+      return deque_.front().get();
+    }
+  }
+
+  // Returns the next value in the queue or nullptr if the queue is empty.
+  // Maintains ownership. This assumes a member function get() that returns
+  // a pointer to the given type R.
+  template <typename R>
+  const R* Peek() {
+    // absl::MutexLock lock(&mutex_);
+    // if (deque_.empty()) {
+    //   return nullptr;
+    // }
+    // return deque_.front().get();
+    std::unique_lock<std::mutex> lock(mutex_);
+    if (deque_.empty()) {
+      return nullptr;
+    }
+    return deque_.front().get();
+  }
+
+  // Returns the number of items currently in the queue.
+  size_t Size() {
+    // absl::MutexLock lock(&mutex_);
+    // return deque_.size();
+    std::unique_lock<std::mutex> lock(mutex_);
+    return deque_.size();
+  }
+
+  // Blocks until the queue is empty.
+  void WaitUntilEmpty() {
+    // const auto predicate = [this]()  {
+    //   return QueueEmptyCondition();
+    // };
+    // absl::MutexLock lock(&mutex_);
+    // mutex_.Await(absl::Condition(&predicate));
+    std::unique_lock<std::mutex> lock(mutex_);
+    cv.wait(lock, [&] { return QueueEmptyCondition(); });
+  }
+
+ private:
+    std::condition_variable cv;
+  // Returns true iff the queue is empty.
+  bool QueueEmptyCondition() { return deque_.empty(); }
+
+  // Returns true iff the queue is not full.
+  bool QueueNotFullCondition() {
+    return queue_size_ == kInfiniteQueueSize || deque_.size() < queue_size_;
+  }
+  std::mutex mutex_;
+  // absl::Mutex mutex_;
+  const size_t queue_size_;
+  std::deque<T> deque_;
+```
+
+修改thread_pool.h和task.h
+
+修改include
+
+```
+#include <mutex>
+// #include "absl/synchronization/mutex.h"
+std::mutex mutex_;
+```
+
+删除所有的
+
+```
+LOCKS_EXCLUDED(mutex_) 
+GUARDED_BY(mutex_)
+EXCLUSIVE_LOCKS_REQUIRED(mutex_)
+```
+
+在cc里替换
+
+```
+//absl::MutexLock locker(&mutex_)
+std::unique_lock<std::mutex> lock(mutex_);
+```
+
+修改PoseGraph2D里的Await
+
+.h修改include
+
+```
+#include <mutex>
+// #include "absl/synchronization/mutex.h"
+```
+
+pose_graph_2d.h删除宏
+
+```
+LOCKS_EXCLUDED(mutex_) 
+GUARDED_BY(mutex_)
+EXCLUSIVE_LOCKS_REQUIRED(mutex_)
+LOCKS_EXCLUDED(work_queue_mutex_)
+GUARDED_BY(work_queue_mutex_)
+EXCLUSIVE_LOCKS_REQUIRED(parent_->mutex_)
+```
+
+.cc删除宏
+
+```
+LOCKS_EXCLUDED(mutex_) 
+```
+
+修改
+
+```
+//absl::MutexLock locker(&mutex_)
+std::unique_lock<std::mutex> lock(mutex_)
+//absl::MutexLock locker(&work_queue_mutex_);
+std::unique_lock<std::mutex> lock(work_queue_mutex_)
+```
+
+把
+
+```
+    const auto predicate = [this]() { return work_queue_ == nullptr; };
+    // absl::MutexLock locker(&work_queue_mutex_);
+    // while (!work_queue_mutex_.AwaitWithTimeout(
+    //     absl::Condition(&predicate),
+    //     absl::FromChrono(common::FromSeconds(1.)))) {
+    //   report_progress();
+    // }
+    std::unique_lock<std::mutex> lock(work_queue_mutex_);
+    while (!cv_.wait_for(lock, common::FromSeconds(1), predicate)) {
+      report_progress();
+    }
+ 
+  {
+    // const auto predicate = [this]() { return work_queue_ == nullptr; };
+    // absl::MutexLock locker(&work_queue_mutex_);
+    // while (!work_queue_mutex_.AwaitWithTimeout(
+    //     absl::Condition(&predicate),
+    //     absl::FromChrono(common::FromSeconds(1.)))) {
+    //   report_progress();
+    // }
+    std::unique_lock<std::mutex> lock(work_queue_mutex_);
+    while (!cv_.wait_for(lock, common::FromSeconds(1), [this]() { return work_queue_ == nullptr; })) {
+      report_progress();
+    }
+  }
+```
+
+删除在connected_components.h connected_components.cc里的mutex
+
+```
+// #include "absl/synchronization/mutex.h"
+#include <mutex>
+//absl::Mutex lock_;
+std::mutex_ lock_;
+//absl::MutexLock locker(&lock_);
+std::unique_lock<std::mutex> lock(mutex_);
+```
+
+删除所有的
+
+```
+EXCLUSIVE_LOCKS_REQUIRED(lock_)
+GUARDED_BY(lock_)
+LOCKS_EXCLUDED(lock_)
+```
+
+最后处理constraint_builder_2d.h
+
+```
+// #include "absl/synchronization/mutex.h"
+#include <mutex>
+//absl::Mutex mutex_;
+std::mutex lock_;
+```
+
+constraint_builder_2d.cc
+
+```
+//absl::MutexLock locker(&mutex_)
+std::unique_lock<std::mutex> lock(mutex_)
+```
+
+```
+删除LOCKS_EXCLUDED(lock_)
+EXCLUSIVE_LOCKS_REQUIRED
+```
+
+### 删除absl依赖
+
+```
+# find_package(absl REQUIRED)
+# target_link_libraries(${PROJECT_NAME} PUBLIC ${PROTOBUF_LIBRARY} 
+#   absl::algorithm
+#   absl::base
+#   absl::debugging
+#   # absl::flat_hash_map
+#   absl::memory
+#   absl::meta
+#   absl::numeric
+#   absl::str_format
+#   absl::strings
+#   absl::synchronization
+#   absl::time
+#   absl::utility 
+# )
+```
+
+### 删除文件
+
+```
+rm cartographer/common/configuration_file_resolver.cc
+rm cartographer/common/configuration_file_resolver.h
+rm cartographer/common/histogram.cc
+rm cartographer/common/histogram.h
+rm cartographer/common/lua_parameter_dictionary.cc
+rm cartographer/common/lua_parameter_dictionary.h
+rm cartographer/common/lua.h
+rm cartographer/io/internal/pbstream_migrate.cc
+rm cartographer/io/internal/pbstream_migrate.h
+rm cartographer/io/hybrid_grid_points_processor.cc
+rm cartographer/io/hybrid_grid_points_processor.h
+rm cartographer/io/min_max_range_filtering_points_processor.h
+rm cartographer/io/min_max_range_filtering_points_processor.cc
+rm cartographer/io/points_processor_pipeline_builder.cc
+rm cartographer/io/points_processor_pipeline_builder.h
+rm cartographer/io/serialization_format_migration.cc
+rm cartographer/io/serialization_format_migration.h
+rm cartographer/io/vertical_range_filtering_points_processor.h
+rm cartographer/io/vertical_range_filtering_points_processor.cc
+rm cartographer/mapping/internal/2d/normal_estimation_2d.cc
+rm cartographer/mapping/internal/2d/normal_estimation_2d.h
+rm cartographer/mapping/internal/2d/tsd_value_converter.cc
+rm cartographer/mapping/internal/2d/tsd_value_converter.h
+rm cartographer/mapping/internal/constraints/constraint_builder.cc
+rm cartographer/mapping/internal/constraints/constraint_builder.h
+rm cartographer/mapping/internal/optimization/optimization_problem_options.cc
+rm cartographer/mapping/internal/optimization/optimization_problem_options.h
+rm cartographer/mapping/internal/scan_matching/real_time_correlative_scan_matcher.cc
+rm cartographer/mapping/internal/scan_matching/real_time_correlative_scan_matcher.h
+rm cartographer/mapping/internal/collated_trajectory_builder.*
+rm cartographer/mapping/internal/global_trajectory_builder.cc
+rm cartographer/mapping/pose_graph_interface.*
+rm cartographer/mapping/pose_graph.*
+rm cartographer/mapping/trajectory_builder_interface.*
+```
+
+# Slam原理
+
+## 应用改造
+
+安装killall
+
+```
+apt-get install -y psmisc
+```
+
+在cartographer目录下修改test_node.cc
+
+```
+#include <glog/logging.h>
+#include <gtest/gtest.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
+int main(int argc, char* argv[]) {
+  google::InitGoogleLogging(argv[0]);
+  testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
+}
+```
+
+新增slam_node.cc
+
+```
+#include <glog/logging.h>
+#include <gtest/gtest.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+int main(int argc, char* argv[]) {
+  google::InitGoogleLogging(argv[0]);
+  //   testing::InitGoogleTest(&argc, argv);
+  return 0;
+  //   return RUN_ALL_TESTS();
+}
+```
+
+修改CMakeLists.txt
+
+1、新增对main.cc,test.cc结尾文件的特殊处理
+
+```
+file(GLOB_RECURSE TEST_MAIN "cartographer/test_node.cc")
+file(GLOB_RECURSE SLAM_MAIN "cartographer/slam_node.cc")
+file(GLOB_RECURSE TEST_HDRS "cartographer/*_test.h")
+file(GLOB_RECURSE TEST_SRCS "cartographer/*_test.cc")
+list(REMOVE_ITEM ALL_LIBRARY_SRCS ${TEST_MAIN} ${SLAM_MAIN} ${TEST_SRCS} )
+
+if(${BUILD_TEST})
+  add_executable(test_node ${TEST_MAIN} ${ALL_LIBRARY_SRCS} ${TEST_HDRS} ${TEST_SRCS})
+  target_link_libraries(test_node ${EIGEN3_LIBRARIES} ${CERES_LIBRARIES} ${PROTOBUF_LIBRARY}
+    ${Boost_LIBRARIES} ${CAIRO_LIBRARIES} pthread gtest glog gflags)
+endif()
+
+if(${BUILD_SLAM})
+  add_executable(slam_node ${SLAM_MAIN} ${ALL_LIBRARY_SRCS})
+  target_link_libraries(slam_node ${EIGEN3_LIBRARIES} ${CERES_LIBRARIES} ${PROTOBUF_LIBRARY}
+    ${Boost_LIBRARIES} ${CAIRO_LIBRARIES} pthread glog gflags)
+endif()
+```
+
+2、不再生成静态链接库，而是生成应用
+
+```
+include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${OpenCV_INCLUDE_DIRS} ${GTest_INCLUDE_DIRS} ${Glog_INCLUDE_DIRS} 
+${catkin_INCLUDE_DIRS} ${EIGEN3_INCLUDE_DIR} ${CERES_INCLUDE_DIRS} ${PROTOBUF_INCLUDE_DIR})
+
+if(${BUILD_TEST})
+  add_executable(test_node ${TEST_MAIN} ${ALL_LIBRARY_SRCS} ${TEST_HDRS} ${TEST_SRCS})
+  target_link_libraries(test_node ${EIGEN3_LIBRARIES} ${CERES_LIBRARIES} ${PROTOBUF_LIBRARY}
+    ${Boost_LIBRARIES} ${CAIRO_LIBRARIES} pthread gtest glog gflags)
+endif()
 
 
-## 视频演示
+if(${BUILD_SLAM})
+  add_executable(slam_node ${SLAM_MAIN} ${ALL_LIBRARY_SRCS})
+  target_link_libraries(slam_node ${EIGEN3_LIBRARIES} ${CERES_LIBRARIES} ${PROTOBUF_LIBRARY}
+    ${Boost_LIBRARIES} ${CAIRO_LIBRARIES} pthread glog gflags)
+endif()
+```
 
-## 系统框架
+最终改成
 
-## 信号输入
+```
+cmake_minimum_required(VERSION 3.2)
+project(cartographer)
+set(CMAKE_CXX_STANDARD 17)
+include("${PROJECT_SOURCE_DIR}/cmake/functions.cmake")
+google_initialize_cartographer_project()
+find_package(Boost REQUIRED COMPONENTS iostreams)
+find_package(Ceres REQUIRED COMPONENTS SuiteSparse)
+find_package(Eigen3 REQUIRED)
+find_package(Protobuf 3.0.0 REQUIRED)
+include(FindPkgConfig)
+find_library(CAIRO_LIBRARIES cairo)
+install(FILES package.xml DESTINATION share/cartographer)
+install(DIRECTORY cmake DESTINATION share/cartographer)
+file(GLOB_RECURSE ALL_LIBRARY_HDRS "cartographer/*.h")
+file(GLOB_RECURSE ALL_LIBRARY_SRCS "cartographer/*.cc")
+file(GLOB_RECURSE TEST_MAIN "cartographer/test_node.cc")
+file(GLOB_RECURSE SLAM_MAIN "cartographer/slam_node.cc")
+file(GLOB_RECURSE TEST_HDRS "cartographer/*_test.h")
+file(GLOB_RECURSE TEST_SRCS "cartographer/*_test.cc")
+list(REMOVE_ITEM ALL_LIBRARY_SRCS ${TEST_MAIN} ${SLAM_MAIN} ${TEST_SRCS} )
+set(INSTALL_SOURCE_HDRS ${ALL_LIBRARY_HDRS})
+file(GLOB_RECURSE INTERNAL_HDRS "cartographer/*/internal/*.h")
+list(REMOVE_ITEM INSTALL_SOURCE_HDRS ${INTERNAL_HDRS})
+file(GLOB_RECURSE ALL_PROTOS "cartographer/*.proto")
+set(ALL_PROTO_SRCS)
+set(ALL_PROTO_HDRS)
+foreach(ABS_FIL ${ALL_PROTOS})
+  file(RELATIVE_PATH REL_FIL ${PROJECT_SOURCE_DIR} ${ABS_FIL})
+  get_filename_component(DIR ${REL_FIL} DIRECTORY)
+  get_filename_component(FIL_WE ${REL_FIL} NAME_WE)
+  list(APPEND ALL_PROTO_SRCS "${PROJECT_BINARY_DIR}/${DIR}/${FIL_WE}.pb.cc")
+  list(APPEND ALL_PROTO_HDRS "${PROJECT_BINARY_DIR}/${DIR}/${FIL_WE}.pb.h")
+  add_custom_command(
+    OUTPUT "${PROJECT_BINARY_DIR}/${DIR}/${FIL_WE}.pb.cc"
+           "${PROJECT_BINARY_DIR}/${DIR}/${FIL_WE}.pb.h"
+    COMMAND  ${PROTOBUF_PROTOC_EXECUTABLE}
+    ARGS --cpp_out  ${PROJECT_BINARY_DIR} -I
+      ${PROJECT_SOURCE_DIR} ${ABS_FIL}
+    DEPENDS ${ABS_FIL}
+    COMMENT "Running C++ protocol buffer compiler on ${ABS_FIL}"
+    VERBATIM
+  )
+endforeach()
+set_source_files_properties(${ALL_PROTO_SRCS} ${ALL_PROTO_HDRS} PROPERTIES GENERATED TRUE)
+list(APPEND ALL_LIBRARY_HDRS ${ALL_PROTO_HDRS})
+list(APPEND ALL_LIBRARY_SRCS ${ALL_PROTO_SRCS})
+set(INSTALL_GENERATED_HDRS ${ALL_PROTO_HDRS})
+include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${OpenCV_INCLUDE_DIRS} ${GTest_INCLUDE_DIRS} ${Glog_INCLUDE_DIRS} 
+${catkin_INCLUDE_DIRS} ${EIGEN3_INCLUDE_DIR} ${CERES_INCLUDE_DIRS} ${PROTOBUF_INCLUDE_DIR})
+
+if(${BUILD_TEST})
+  add_executable(test_node ${TEST_MAIN} ${ALL_LIBRARY_SRCS} ${TEST_HDRS} ${TEST_SRCS})
+  target_link_libraries(test_node ${EIGEN3_LIBRARIES} ${CERES_LIBRARIES} ${PROTOBUF_LIBRARY}
+    ${Boost_LIBRARIES} ${CAIRO_LIBRARIES} pthread gtest glog gflags)
+endif()
+
+if(${BUILD_SLAM})
+  add_executable(slam_node ${SLAM_MAIN} ${ALL_LIBRARY_SRCS})
+  target_link_libraries(slam_node ${EIGEN3_LIBRARIES} ${CERES_LIBRARIES} ${PROTOBUF_LIBRARY}
+    ${Boost_LIBRARIES} ${CAIRO_LIBRARIES} pthread glog gflags)
+endif()
+
+foreach(HDR ${INSTALL_SOURCE_HDRS})
+  file(RELATIVE_PATH REL_FIL ${PROJECT_SOURCE_DIR} ${HDR})
+  get_filename_component(DIR ${REL_FIL} DIRECTORY)
+  install(
+    FILES ${HDR}
+    DESTINATION include/${DIR}
+  )
+endforeach()
+
+foreach(HDR ${INSTALL_GENERATED_HDRS})
+  file(RELATIVE_PATH REL_FIL ${PROJECT_BINARY_DIR} ${HDR})
+  get_filename_component(DIR ${REL_FIL} DIRECTORY)
+  install(
+    FILES ${HDR}
+    DESTINATION include/${DIR}
+  )
+endforeach()
+```
+
+在scripts目录下新建build_slam.sh和build_test.sh
+
+build_slam.sh
+
+```
+docker start slam
+docker exec slam service ssh start
+
+reset
+pushd ~/gamma/cartographer/
+git add .
+git commit -m "modify cartographer"
+git push origin master -f
+popd
+
+ssh root@172.17.0.2 'cd /root/gamma/cartographer/ &&git reset --hard origin/master && git pull origin master && sync'
+ssh root@172.17.0.2 'cd /root/gamma/cartographer/build && cmake -DBUILD_SLAM=true .. && make -j16 install'
+```
+
+build_test.sh
+
+```
+docker start slam
+docker exec slam service ssh start
+
+reset
+pushd ~/gamma/cartographer/
+git add .
+git commit -m "modify cartographer"
+git push origin master -f
+popd
+
+ssh root@172.17.0.2 'cd /root/gamma/cartographer/ &&git reset --hard origin/master && git pull origin master && sync'
+ssh root@172.17.0.2 'cd /root/gamma/cartographer/build && cmake -DBUILD_TEST=true .. && make -j16 install'
+```
+
+## catkin改造
+
+我们要把现有的设备改造成catkin_make编译，并且集成ros的相关内容。
+
+在docker下，/root/gamma/目录新建src
+
+```
+mkdir -p /root/gamma/src
+cd /root/gamma/src
+catkin_ini_workspace
+cd /root/gamma
+catkin_make
+```
+
+这个时候会提示cartographer满足catkin_make的编译，让我们用catkin_make_isolated编译
+
+```
+-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-- ~~  traversing 1 packages in topological order:
+-- ~~  - cartographer (plain cmake)
+-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+CMake Error at /opt/ros/noetic/share/catkin/cmake/catkin_workspace.cmake:100 (message):
+  This workspace contains non-catkin packages in it, and catkin cannot build
+  a non-homogeneous workspace without isolation.  Try the
+  'catkin_make_isolated' command instead.
+Call Stack (most recent call first):
+  CMakeLists.txt:69 (catkin_workspace)
+
+
+-- Configuring incomplete, errors occurred!
+See also "/root/gamma/build/CMakeFiles/CMakeOutput.log".
+See also "/root/gamma/build/CMakeFiles/CMakeError.log".
+```
+
+这个时候退出docker，修改scripts/build_slam.sh，原来的docker的目录是/root/gamma/cartographer/改成/root/gamma/src/cartographer/，这样保证catkin_make的目录调用一致。
+
+```
+docker start slam
+docker exec slam service ssh start
+
+reset
+pushd ~/gamma/cartographer/
+git add .
+git commit -m "modify cartographer"
+git push origin master -f
+popd
+
+ssh root@172.17.0.2 'cd /root/gamma/src/cartographer/ &&git reset --hard origin/master && git pull origin master && sync'
+ssh root@172.17.0.2 'source /opt/ros/noetic/setup.bash && cd /root/gamma/ && catkin_make -DBUILD_SLAM=true -j16'
+```
+
+这个时候提示报错
+
+```
+Invoking "cmake" failed
+```
+
+这个时候修改package.xml
+
+```
+    <!-- <depend>libabsl-dev</depend> -->
+      <!-- <depend>lua5.2-dev</depend> -->
+  <!-- <export>
+    <build_type>cmake</build_type>
+  </export> -->
+```
+
+修改后再编译，就可以编译成功
+
+新建一个launch文件夹,新建slam.launch
+
+```
+<launch>
+ <node name="slam_node" output="screen" pkg="cartographer" type="slam_node" required="true"/>
+</launch>
+```
+
+新建test.launch
+
+```
+<launch>
+ <node name="test_node" output="screen" pkg="cartographer" type="test_node" required="true"/>
+</launch>
+```
+
+在scrips下修改 build_slam.sh脚本
+
+```
+docker start slam
+docker exec slam service ssh start
+
+reset
+pushd ~/gamma/cartographer/
+git add .
+git commit -m "modify cartographer"
+git push origin master -f
+popd
+
+ssh root@172.17.0.2 'killall roslaunch && killall slam_node && killall test_node'
+ssh root@172.17.0.2 'cd /root/gamma/src/cartographer/ &&git reset --hard origin/master && git pull origin master && sync'
+ssh root@172.17.0.2 'source /opt/ros/noetic/setup.bash && cd /root/gamma/ && catkin_make -DBUILD_SLAM=true -DBUILD_TEST=false -j16'
+ssh root@172.17.0.2 'source /root/gamma/devel/setup.bash && roslaunch cartographer slam.launch'
+```
+
+修改build_test.sh脚本
+
+```
+docker start slam
+docker exec slam service ssh start
+
+reset
+pushd ~/gamma/cartographer/
+git add .
+git commit -m "modify cartographer"
+git push origin master -f
+popd
+
+ssh root@172.17.0.2 'killall roslaunch && killall slam_node && killall test_node'
+ssh root@172.17.0.2 'cd /root/gamma/src/cartographer/ &&git reset --hard origin/master && git pull origin master && sync'
+ssh root@172.17.0.2 'source /opt/ros/noetic/setup.bash && cd /root/gamma/ && catkin_make -DBUILD_SLAM=false -DBUILD_TEST=true -j16'
+ssh root@172.17.0.2 'source /root/gamma/devel/setup.bash && roslaunch cartographer test.launch'
+```
+
+分别进行测试，通过即可。
+
+改造完slam_node就是一个ros节点。可以正常使用。
+
+## 服务消息改造
+
+整体业务框架
+
+```mermaid
+graph LR
+1(激光数据)
+2(里程计)
+3(IMU)
+4(体素滤波)
+5(自适应体素滤波)
+6(位姿推算器)
+7(匹配)
+8(运动滤波)
+9(子图处理)
+10(输出结果)
+11(当前位姿)
+12(地图)
+1-->4
+4-->5
+5-->7
+7-->8
+8-->|滤波|9
+2-->6
+3-->6
+6<-->7
+9-->10
+10-->11
+10-->12
+
+```
+
+输入是LIO，激光，IMU，里程计三个数据，输出是当前位姿(tf)和地图。
+
+ros接口集中在业务管理、输入、输出三个方面。
+
+![cmd](/home/xiay/gamma/doc/image/cmd.png)
+
+ros接口流程
+
+```mermaid
+graph TD
+1(main)
+2(slam)
+4(Serveice build)
+5(Serveice extend)
+6(Serveice switch)
+7(Serveice save)
+8(Serveice load)
+1-->2
+4-->|build|2
+5-->|extend|2
+6-->|switch|2
+7-->|save|2
+8-->|load|2
+9(map_builder)
+2-->9
+
+```
+
+最后我们得到几个业务接口
+
+1、建图，初次建图，不需要重定位，需要首帧对齐，新建轨迹为0的地图。可以取消，可以保存。保存后立刻切换为该地图。服务需要一个命令名称build，一个地图名称。地图通过消息/map发布，每5秒发布一次。机器的位姿
+
+2、扩建，二次建图，需要重定位，需要重定位，新建轨迹>0的地图。可以取消，可以保存。保存后立刻切换为该地图。服务需要一个命令名称extend，一个地图名称。地图通过消息/map发布，每5秒发布一次。
+
+3、切图，对保存后的地图文件进行切换，读取一个地图，需要重定位。新建的轨迹>0。可以再次切图，此时地图不会更新。可以保存，根据参数配置确定保存子图的数量，保存会检测是否有人工建图和人工扩建的轨迹，这部分会继续保留，但是自动切图的轨迹会替换成我们最新的轨迹。
+
+4、保存，建图、扩建地图时保存地图，保存地图需要最终优化和保存地图两个步骤。切图后的保存功能设计初衷为让机器可以始终保持地图更新，又需要保证轨迹不会逐步增加。
+
+5、重定位，扩建、切图均需要重定位，在全局地图里找到最合适的匹配，并且设置轨迹的相对位姿，如果定位成功则继续进行工作，如果定位失败则以默认初始位姿开始进行相应工作，后续重定位交给约束间的自动重定位。
+
+6、导入，单纯导入一张地图并打印地图的所有信息。
+
+涉及消息：
+
+msg/posture.msg
+
+```
+float x
+float y
+float yaw
+```
+
+srv/Command.srv
+
+```
+string command
+int32 filename
+Posture pose
+---
+string message
+```
+
+在package.xml里加入两个依赖
+
+```
+  <build_depend>message_generation</build_depend>
+  <exec_depend>message_runtime</exec_depend>
+```
+
+在CMakeLists.txt
+
+里修改
+
+```
+find_package(catkin REQUIRED COMPONENTS roscpp message_generation)
+add_message_files(
+  DIRECTORY msg
+  FILES
+    Posture.msg
+)
+
+add_service_files(
+  DIRECTORY srv
+  FILES
+    Command.srv
+)
+
+catkin_package(
+  CATKIN_DEPENDS    
+    message_runtime
+)
+```
+
+新建一个slam类，来接收处理命令。
+
+## 读取地图
+
+写第一个接口函数，通过load一张已经建好的pbstream地图，逐步打印地图的信息。
+
+在cartographer下新建一个ros目录，在目录里新建一个slam类，这个slam类作为沟通main和map_builder的接口，成员变量为map_builder的智能指针。
+
+```mermaid
+graph LR
+1(main)
+2(slam)
+3(map_builder)
+4(controller)
+1-->2
+2-->3
+4-->|load|2
+5(pbstream map)
+3-->|read|5
+```
+
+重写一个Slam。初始化需要能够接收消息。
+
+在scripts接口新建一个
+
+```
+rosservice call /command "
+  command: load
+  filename: 1
+  pose:
+    x: 0.0
+    y: 0.0
+    yaw: 0.0
+"
+```
+
+
+
+## 地图信息展示
+
+ 	一个pbstream地图，使用proto压缩过的各种信息的集合。包含配置信息，位姿信息，地图信息，约束信息等。最终是通过子图的位姿，拼接成一个大地图。
+
+### 地图信息构成
+
+大地图由多个带位姿的子图组成。
+
+```mermaid	
+graph TD
+2(Submap2D)
+3(Grid2D)
+4(Submap_pose)
+1(MapLimits 地图信息)
+6(CellLimits x,y的个数)
+7(resolution_ 分辨率)
+8(max_ x,y的最大值)
+5(uint16的一维数组)
+6-->|成员|1
+3-->|成员|2
+4-->|成员|2
+1-->|成员|3
+7-->|成员|1
+8-->|成员|1
+5-->|成员|3
+```
+
+```
+Submap2D的成员
+  std::unique_ptr<Grid2D> grid_;//一张栅格地图
+  ValueConversionTables* conversion_tables_;//一个转换表
+继承于Submap的成员
+  const transform::Rigid3d local_pose_;//地图的位姿，相对于map的位姿。  
+```
+
+```
+Grid2D的成员
+  MapLimits limits_;//地图的零点，宽高，分辨率信息。
+  std::vector<uint16> correspondence_cost_cells_;//真正的地图数据
+  const std::vector<float>* value_to_correspondence_cost_table_;//代价地图对应表
+```
+
+```
+MapLimits的成员
+  double resolution_;//分辨率
+  Eigen::Vector2d max_;//x,y的最大值
+  CellLimits cell_limits_;//离散化后x的个数，y的个数
+```
+
+```
+CellLimits栅格的限制
+  int num_x_cells = 0;
+  int num_y_cells = 0;
+```
+
+### 子图信息展示
+
+在map_builder加一个函数
+
+```
+.h
+MapById<SubmapId, ::cartographer::mapping::SubmapData> GetAllSubmapData();
+.cc
+MapById<SubmapId, ::cartographer::mapping::SubmapData>
+MapBuilder::GetAllSubmapData() {
+  return pose_graph_2d_->GetAllSubmapData();
+}
+```
+
+原来的地图发布查询子图流程，最终得到填写内容的std::map<SubmapId, SubmapSlice> submap_slices_。
+
+```mermaid
+graph TD
+1(Node::HandleSubmapList)
+2(Node::FetchSubmapTextures)
+3(MapBuilderBridge::HandleSubmapQuery)
+4(MapBuilder::SubmapToProto)
+5(Submap2D::ToResponseProto)
+6(Grid2D::DrawToSubmapTexture)
+1-->2
+2-->3
+3-->4
+4-->5
+5-->6
+```
+
+```
+bool ProbabilityGrid::DrawToSubmapTexture(
+    proto::SubmapQuery::Response::SubmapTexture* const texture,
+    transform::Rigid3d local_pose) const {
+  Eigen::Array2i offset;
+  CellLimits cell_limits;
+  ComputeCroppedLimits(&offset, &cell_limits);
+  std::string cells;
+  for (const Eigen::Array2i& xy_index : XYIndexRangeIterator(cell_limits)) {
+    if (!IsKnown(xy_index + offset)) {
+      cells.push_back(0 /* unknown log odds value */);
+      cells.push_back(0 /* alpha */);
+      continue;
+    }
+    const int delta =
+        128 - ProbabilityToLogOddsInteger(GetProbability(xy_index + offset));
+    const uint8 alpha = delta > 0 ? 0 : -delta;
+    const uint8 value = delta > 0 ? delta : 0;
+    cells.push_back(value);
+    cells.push_back((value || alpha) ? alpha : 1);
+  }
+
+  common::FastGzipString(cells, texture->mutable_cells());
+  texture->set_width(cell_limits.num_x_cells);
+  texture->set_height(cell_limits.num_y_cells);
+  const double resolution = limits().resolution();
+  texture->set_resolution(resolution);
+  const double max_x = limits().max().x() - resolution * offset.y();
+  const double max_y = limits().max().y() - resolution * offset.x();
+  *texture->mutable_slice_pose() = transform::ToProto(
+      local_pose.inverse() *
+      transform::Rigid3d::Translation(Eigen::Vector3d(max_x, max_y, 0.)));
+
+  return true;
+}
+```
+
+原cartographer ros的地图发布流程
+
+```mermaid
+graph TD
+1(DrawAndPublish)
+2(PaintSubmapSlices)
+3(CreateOccupancyGridMsg)
+4(publish)
+1-->2
+1-->3
+1-->4
+```
+
+```
+PaintSubmapSlicesResult PaintSubmapSlices(
+    const std::map<::cartographer::mapping::SubmapId, SubmapSlice>& submaps,
+    const double resolution) {
+  Eigen::AlignedBox2f bounding_box;
+  {
+    auto surface = MakeUniqueCairoSurfacePtr(
+        cairo_image_surface_create(kCairoFormat, 1, 1));
+    auto cr = MakeUniqueCairoPtr(cairo_create(surface.get()));
+    const auto update_bounding_box = [&bounding_box, &cr](double x, double y) {
+      cairo_user_to_device(cr.get(), &x, &y);
+      bounding_box.extend(Eigen::Vector2f(x, y));
+    };
+
+    CairoPaintSubmapSlices(
+        1. / resolution, submaps, cr.get(),
+        [&update_bounding_box](const SubmapSlice& submap_slice) {
+          update_bounding_box(0, 0);
+          update_bounding_box(submap_slice.width, 0);
+          update_bounding_box(0, submap_slice.height);
+          update_bounding_box(submap_slice.width, submap_slice.height);
+        });
+  }
+
+  const int kPaddingPixel = 5;
+  const Eigen::Array2i size(
+      std::ceil(bounding_box.sizes().x()) + 2 * kPaddingPixel,
+      std::ceil(bounding_box.sizes().y()) + 2 * kPaddingPixel);
+  const Eigen::Array2f origin(-bounding_box.min().x() + kPaddingPixel,
+                              -bounding_box.min().y() + kPaddingPixel);
+
+  auto surface = MakeUniqueCairoSurfacePtr(
+      cairo_image_surface_create(kCairoFormat, size.x(), size.y()));
+  {
+    auto cr = MakeUniqueCairoPtr(cairo_create(surface.get()));
+    cairo_set_source_rgba(cr.get(), 0.5, 0.0, 0.0, 1.);
+    cairo_paint(cr.get());
+    cairo_translate(cr.get(), origin.x(), origin.y());
+    CairoPaintSubmapSlices(1. / resolution, submaps, cr.get(),
+                           [&cr](const SubmapSlice& submap_slice) {
+                             cairo_set_source_surface(
+                                 cr.get(), submap_slice.surface.get(), 0., 0.);
+                             cairo_paint(cr.get());
+                           });
+    cairo_surface_flush(surface.get());
+  }
+  return PaintSubmapSlicesResult(std::move(surface), origin);
+}
+```
+
+```
+std::unique_ptr<nav_msgs::OccupancyGrid> CreateOccupancyGridMsg(
+    const cartographer::io::PaintSubmapSlicesResult& painted_slices,
+    const double resolution, const std::string& frame_id,
+    const ros::Time& time) {
+  auto occupancy_grid = absl::make_unique<nav_msgs::OccupancyGrid>();
+  const int width = cairo_image_surface_get_width(painted_slices.surface.get());
+  const int height =
+      cairo_image_surface_get_height(painted_slices.surface.get());
+  occupancy_grid->header.stamp = time;
+  occupancy_grid->header.frame_id = frame_id;
+  occupancy_grid->info.map_load_time = time;
+  occupancy_grid->info.resolution = resolution;
+  occupancy_grid->info.width = width;
+  occupancy_grid->info.height = height;
+  occupancy_grid->info.origin.position.x =
+      -painted_slices.origin.x() * resolution;
+  occupancy_grid->info.origin.position.y =
+      (-height + painted_slices.origin.y()) * resolution;
+  occupancy_grid->info.origin.position.z = 0.;
+  occupancy_grid->info.origin.orientation.w = 1.;
+  occupancy_grid->info.origin.orientation.x = 0.;
+  occupancy_grid->info.origin.orientation.y = 0.;
+  occupancy_grid->info.origin.orientation.z = 0.;
+  const uint32_t* pixel_data = reinterpret_cast<uint32_t*>(
+      cairo_image_surface_get_data(painted_slices.surface.get()));
+  occupancy_grid->data.reserve(width * height);
+  for (int y = height - 1; y >= 0; --y) {
+    for (int x = 0; x < width; ++x) {
+      const uint32_t packed = pixel_data[y * width + x];
+      const unsigned char color = packed >> 16;
+      const unsigned char observed = packed >> 8;
+      const int value =
+          observed == 0
+              ? -1
+              : ::cartographer::common::RoundToInt((1. - color / 255.) * 100.);
+      CHECK_LE(-1, value);
+      CHECK_GE(100, value);
+      occupancy_grid->data.push_back(value);
+    }
+  }
+  return occupancy_grid;
+}
+```
+
+DrawToSubmapTexture时
+
+```
+    const int delta =
+        128 - ProbabilityToLogOddsInteger(GetProbability(xy_index + offset));
+    const uint8 alpha = delta > 0 ? 0 : -delta;
+    const uint8 value = delta > 0 ? delta : 0;
+    cells.push_back(value);
+    cells.push_back((value || alpha) ? alpha : 1);
+```
+
+GetProbability输出的是0.1到0.9的占据概率值。
+
+ProbabilityToLogOddsInteger转化成1-255的值
+
+```
+inline uint8 ProbabilityToLogOddsInteger(const float probability) {
+  const int value = common::RoundToInt((Logit(probability) - kMinLogOdds) *
+                                       254.f / (kMaxLogOdds - kMinLogOdds)) + 1;
+  return value;
+}
+```
+
+大概的意思是通过对数函数可以启到一个平滑的作用，0代表未知，已知概率0.1到0.9映射到1~255。又通过DrawToSubmapTexture的函数处理。一个字节装value，一个字节装alpha。通过1-颠倒概率，越小代表占据概率越大。
+
+PaintSubmapSlices对我们来说是没有源码的黑盒。只知道加了一圈5像素的padding，原点因此改变。
+
+CreateOccupancyGridMsg生成Grid的时候，一个cell已经变成32位。高位16~31位代表颜色，低位8~15位代表观测，0-7位不知道干啥。如果8-15位等于0则代表未知。
+
+```
+  for (int y = height - 1; y >= 0; --y) {
+    for (int x = 0; x < width; ++x) {
+      const uint32_t packed = pixel_data[y * width + x];
+      const unsigned char color = packed >> 16;
+      const unsigned char observed = packed >> 8;
+      const int value =
+          observed == 0
+              ? -1
+              : ::cartographer::common::RoundToInt((1. - color / 255.) * 100.);
+      CHECK_LE(-1, value);
+      CHECK_GE(100, value);
+      occupancy_grid->data.push_back(value);
+    }
+  }
+```
+
+这里又有一个1-颠倒概率，代表越大概率越大。
+
+我们对系统进行修改，不进行颠来倒去。仅输出0，10-90的概率栅格。
+
+DrawToSubmapTexture
+
+```
+    const int delta = 100 * GetProbability(xy_index + offset);
+    const uint8 alpha = delta > 0 ? 0 : -delta;
+    const uint8 value = delta > 0 ? delta : 0;
+    cells.push_back(value);
+    cells.push_back((value || alpha) ? alpha : 1);
+```
+
+PublishSubmaps
+
+```
+      geometry_msgs::Pose pose = to_geometry_pose(submap_id_pose.data.pose);
+    mapping::proto::SubmapQuery::Response proto;
+    std::string error =
+        map_builder_ptr_->SubmapToProto(submap_id_pose.id, &proto);
+    if (proto.textures().size() > 1) {
+      LOG(ERROR) << "Proto textures size is (" << proto.textures().size()
+                 << "),continue.";
+      continue;
+    }
+    if (proto.textures().empty()) {
+      LOG(ERROR) << "Proto textures is empty,continue.";
+      continue;
+    }
+    for (auto&& texture : proto.textures()) {
+      nav_msgs::OccupancyGrid grid;
+      grid.header.stamp = ros::Time::now();
+      grid.header.frame_id = "map";
+      grid.info.resolution = texture.resolution();
+      grid.info.width = texture.width();
+      grid.info.height = texture.height();
+      grid.info.origin.position.x = 0.;
+      grid.info.origin.position.y = 0.;
+      grid.info.origin.position.z = 0.;
+      grid.info.origin.orientation.w = 1.;
+      grid.info.origin.orientation.x = 0.;
+      grid.info.origin.orientation.y = 0.;
+      grid.info.origin.orientation.z = 0.;
+      std::string cells;
+      ::cartographer::common::FastGunzipString(texture.cells(), &cells);
+      const int num_pixels = texture.width() * texture.height();
+      CHECK_EQ(cells.size(), 2 * num_pixels);
+      LOG(ERROR) << "Cells size:(" << cells.size() << "),num_pixels:("
+                 << num_pixels << ").";
+
+      for (int i = 0; i < texture.height(); ++i) {
+        for (int j = 0; j < texture.width(); ++j) {
+          int intensity = cells[(i * texture.width() + j) * 2];
+          // uint8_t value = ::cartographer::common::RoundToInt(
+          //     (1. - intensity / 255.) * 100.);
+          if (intensity > 0)
+            grid.data.push_back(intensity);
+          else
+            grid.data.push_back(-1);
+          // int alpha = cells[(i * texture.width() + j) * 2];
+          // grid.data.push_back(255 - cells[(i * texture.width() + j) *
+          // 2]); pixels.intensity.push_back(cells[(i * width + j) *
+          // 2]); pixels.alpha.push_back(cells[(i * width + j) * 2 +
+          // 1]);
+        }
+      }
+      submaps_publisher_.publish(grid);
+      sleep(1);
+    }    
+```
+
+我们新建一个成员ros::Publisher submaps_publisher_;
+
+PublishSubmaps每秒打印一个子图信息
+
+```
+void Slam::PublishSubmaps(){
+  for (auto&& submap_data : map_builder_ptr_->GetAllSubmapData()) {
+    const mapping::Grid2D& grid =
+        *std::static_pointer_cast<const mapping::Submap2D>(
+             submap_data.data.submap)
+             ->grid();
+    LOG(ERROR) << "Submap id:(" << submap_data.id << "),relocation:("
+               << grid.limits().resolution() << "),max:("
+               << grid.limits().max().x() << "," << grid.limits().max().y()
+               << "),count:(" << grid.limits().cell_limits().num_x_cells << ","
+               << grid.limits().cell_limits().num_y_cells << ")";
+    sleep(1);
+  }
+}
+```
+
+### 位姿信息
+
+
+
+### 约束信息
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+6.1 案例分析：建图过程中产生脚印
+
+
+
+概率栅格地图概率模型
+$$
+odd(s|z) = \frac{p(z|s=1)}{p(z|s=0)}odd(s)\\
+Hit:odds_z=\frac{p(z=1|s=1)}{p(z=1|s=0)}\\
+Miss:odds_z=\frac{p(z=0|s=1)}{p(z=0|s=0)}\\
+M_{new}(x)=clamp(odds^{-1}(odds(M_{old}(x)*odds(p_{hist}))))
+$$
+
+​	对于一个点，要么有障碍物，要么没有障碍物，我们用$p(s=0)$标识为空，用$p(s=1)$标识为占。二者和$p(s=0)+p(s=1)=1$。一个点的状态用二者比例标识$Odd(s) = \frac{p(s=0)}{p(s=1)}$。假设当前状态为$Odd(s)$当有一个新的测量值出现$z\sim(0,1)$，则更新为：
+$$
+Odd(s)=\frac{p(s=0|z)}{p(s=1|z)}
+$$
+表示在z发生情况下s的状态。
+
+根据贝叶斯公式：
+$$
+p(s=1|z)=\frac{p(z|s=1)p(s=1)}{p(z)}\\
+p(s=0|z)=\frac{p(z|s=0)p(s=0)}{p(z)}
+$$
+带入公示后得到
+$$
+Odd(s|z)_{k} = \frac{p(s=1|z)}{p(s=0|z)}\\=\frac{p(z|s=1)p(s=1)/p(z)}{p(z|s=0)p(s=0)/p(z)}\\
+=\frac{p(z|s=1)}{p(z|s=0)}*Odd(s)_{k-1}
+$$
+​	默认的一类错误概率（拒真错误）hit_probability参数 0.55，二类错误概率（存伪概率）miss_probability0.49。粉丝的参数为0.75和0.45。hit  0.7  miss 0.49
+
+|           | 观测值为1        | 观测值为0         |
+| --------- | ---------------- | ----------------- |
+| 预测值为1 | $p(z=1|s=1)=0.7$ | $p(z=0|s=1)=0.51$ |
+| 预测值为0 | $p(z=1|s=0)=0.3$ | $p(z=0|s=0)=0.49$ |
+
+​		根据公式（4），计算得到转移矩阵：
+$$
+C(z|s)=\begin{cases} \frac{p(z=1|s=1)}{p(z=1|s=0)}=0.7/0.3=2.33,z=1 \\ \frac{p(z=0|s=1)}{p(z=0|s=0)} =0.49/0.51=0.96,z=0 \end{cases}
+$$
+​		由于clamp的存在将odds的初值限定在了0.1到0.9之间。可以理解为在状态发生变化前的初值。
+
+| 观测值 | 当前odd(s)值                                                 | 归一化到[0,100] |
+| ------ | ------------------------------------------------------------ | --------------- |
+| -      | -                                                            | -1              |
+| 0      | $Odds(z|s)_{k0}=0.1$                                         | 10              |
+| 1      | $Odds(z|s)_{k1}=Odd(s)_{k0}*C(z|s)=0.1*2.33$                 | 23              |
+| 1      | $Odds(z|s)_{k2}=Odd(s)_{k0}*C(z|s)=0.1*2.33^2$               | 54              |
+| 1      | $Odds(z|s)_{k3}=min(Odd(s)_{k0}*C(z|s))=min(0.1*2.33^3,0.9)$ | 90              |
+
+​		当发现障碍物，最少需要7个抽样才能到达最大值。由于我们的设置了35、53的阈值，连续两个就会超过阈值。我们再来看障碍物离开的情况。
+
+| 观测值 | 当前odd(s)值                                         | 四舍五入后归一化 |
+| ------ | ---------------------------------------------------- | ---------------- |
+| 1      | $Odd(z|s)_{k0}=0.9$                                  | 90               |
+| 0      | $Odd(z|s)_{k1}=Odd(z|s)_{k0}*C(z)=0.9*0.96$          | 86               |
+| ...    | ...                                                  | ...              |
+| 0      | $Odd(z|s)_{k13}=Odds(z|s)_{k12}=0.9*0.96^{12}=0.529$ | 53               |
+| 0      | $Odd(z|s)_{14}=0.9*0.96^{13}=0.508$                  | 51               |
+| ...    | ...                                                  | ...              |
+| 0      | $Odd(z|s)_{21}=0.9*0.96^{21}=0.358$                  | 35               |
+| 0      | $Odd(z|s)_{22}=0.9*0.96^{22}=0.344$                  | 34               |
+| 0      | $max(0.1,0.9*0.96^N)$                                | 10               |
+
+​		可以看出需要22次miss才会更新掉障碍物。
+
+```
+
+```
+
+如果配置参数是0.75和0.45按表计算
+
+2次看见栅格概率就会从10到90。
+
+11次看不见，栅格的概率就会从90到10。
+
+motion filter 
+
+constexpr double kMotionFilterMaxDuration = 5.;  // max_time_seconds
+
+constexpr double kMotionFilterTranslation = 0.2;
+
+constexpr double kMotionFilterRotaiton = common::DegToRad(10);
+
+比如说我们的激光是10hz.每一帧都会插图，我在一个地方呆上0.2秒，这个地方的脚步的栅格就是90。
+
+如果我离开这个地方1.1秒以上，这个地方的栅格就是10.
+
+我们的地图 int8,-127~128,            -1，[10,90]。
+
+最后一帧，应该有脚印，其他位置的脚印应该被消除。
+
+--------
+
+3次看见 到90，11次看不见到10。0.5米每秒运行。激光用多少米的，不希望插图太快。1秒一次，0.2到0.5之间。旋转阈值设置在20度。调个头，9次。6次，因为角速度太快了。
+
+
+
+
+
+
 
 ## 信号输出
 
@@ -2827,77 +4477,77 @@ EXCLUSIVE_LOCKS_REQUIRED
 
 ## 业务逻辑梳理
 
-#### 5.1.1 建图模式
+###  建图模式
 
-#### 5.1.2 扩建模式
+### 扩建模式
 
-#### 5.1.3 定位模式
+### 定位模式
 
-#### 5.1.4 保存行为
+### 保存行为
 
-#### 5.1.5 重定位行为
+#### 重定位行为
 
-#### 5.1.5.1. 全局匹配重定位
+#### 全局匹配重定位
 
-#### 5.1.5.2. 指定位姿重定位
+#### 指定位姿重定位
 
-#### 5.1.5.3. 指定范围重定位
+#### 指定范围重定位
 
-### 5.2. 配置修改
+### 配置修改
 
-#### 5.2.1.建图模式参数
+#### .建图模式参数
 
-#### 5.2.2.定位模式参数
+#### 定位模式参数
 
-### 5.3. 输入接口
+###  输入接口
 
-#### 5.3.1. 激光接口
+#### 激光接口
 
-#### 5.3.2. 里程计接口
+#### 里程计接口
 
-#### 5.3.3. imu接口
+#### imu接口
 
-### 5.4. 输出接口
+### 输出接口
 
-#### 5.4.1 tf的转换关系
+#### tf的转换关系
 
-#### 5.4.2 tf的输出
+#### tf的输出
 
-#### 5.4.3 map的输出
+####  map的输出
 
-## 6. 性能优化
+## 性能优化
 
-### 6.1. 性能分析
+### 性能分析
 
-### 6.2. 找到关键点
+### 找到关键点
 
-### 6.2.1. 频繁插图
+### 频繁插图
 
-### 6.2.2. 频繁Rcsm
+### 频繁Rcsm
 
-### 6.2.3. 频繁找约束
+### 频繁找约束
 
-### 6.2.4. 频繁后优
+### 频繁后优
 
-## 7. 难题疑点
+# 难题疑点
 
-#### 7.1. 长走廊问题
+## 长走廊问题
 
-#### 7.2. 玻璃环境
+## 玻璃环境
 
-#### 7.3. 地图纠正
+## 地图纠正
 
-#### 7.4. 环境变动
+##  环境变动
 
-#### 7.5. 严重打滑
+##  严重打滑
 
-#### 7.6. 危险区域
+##  危险区域
 
-## 8. 附录
+#  附录
 
-## 8.1. 软件使用
+## 软件使用
 
-### 8.1.1. apt-get
+###  apt-get
 
 ```
 命令：
@@ -2948,7 +4598,7 @@ apt-get autoclean 清理无用的包
 apt-get check 检查是否有损坏的依赖
 ```
 
-### 8.1.2.docker run
+### docker run
 
 ```
 -i	以交互模式运行容器，通常与 -t 同时使用
@@ -2966,3 +4616,14 @@ apt-get check 检查是否有损坏的依赖
 –restart Docker	重启后，容器是否自动重启
 –privileged	容器内是否使用真正的 root 权限
 ```
+
+### docker 显示
+
+```
+-v /tmp/.X11-unix:/tmp/.X11-unix
+-e DISPLAY=:0
+docker run -itd --name 容器名 -h 容器主机名 --privileged \
+           -v /tmp/.X11-unix:/tmp/.X11-unix  \
+           -e DISPLAY=:0 镜像名或id /bin/bash
+```
+

@@ -21,6 +21,7 @@ class Slam {
   Slam& operator=(const Slam&) = delete;
   bool SetCommandCallBack(Command::Request& req, Command::Response& res);
   void PublishSubmaps();
+  void PublishMap();
   // void PublishNodes();
 
  private:

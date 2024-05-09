@@ -35,9 +35,9 @@
 // "cartographer/mapping/proto/scan_matching/ceres_scan_matcher_options_2d.pb.h"
 // #include
 // "cartographer/mapping/proto/scan_matching/fast_correlative_scan_matcher_options_2d.pb.h"
-#include "cartographer/metrics/counter.h"
-#include "cartographer/metrics/gauge.h"
-#include "cartographer/metrics/histogram.h"
+// #include "cartographer/metrics/counter.h"
+// #include "cartographer/metrics/gauge.h"
+// #include "cartographer/metrics/histogram.h"
 #include "cartographer/transform/transform.h"
 #include "glog/logging.h"
 

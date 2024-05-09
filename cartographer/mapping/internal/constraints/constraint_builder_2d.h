@@ -30,7 +30,7 @@
 #include <mutex>
 
 #include "cartographer/common/fixed_ratio_sampler.h"
-#include "cartographer/common/histogram.h"
+// #include "cartographer/common/histogram.h"
 #include "cartographer/common/math.h"
 #include "cartographer/common/task.h"
 #include "cartographer/common/thread_pool.h"

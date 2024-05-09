@@ -24,8 +24,8 @@
 #include <string>
 #include <vector>
 
-#include "cartographer/common/histogram.h"
-#include "cartographer/common/internal/ceres_solver_options.h"
+// #include "cartographer/common/histogram.h"
+// #include "cartographer/common/internal/ceres_solver_options.h"
 #include "cartographer/common/math.h"
 #include "cartographer/mapping/internal/optimization/ceres_pose.h"
 // #include
@@ -415,7 +415,11 @@ void OptimizationProblem2D::Solve(
 
   // Solve.
   ceres::Solver::Summary summary;
-  ceres::Solve(common::CreateCeresSolverOptions(), &problem, &summary);
+  ceres::Solver::Options options;
+  options.use_nonmonotonic_steps = kCSMUseNonmonotonicSteps;
+  options.max_num_iterations = kCSMMaxIterationsCount;
+  options.num_threads = kCSMCeresThreadsCount;
+  ceres::Solve(options, &problem, &summary);
   // if (options_.log_solver_summary()) {
   //   LOG(INFO) << summary.FullReport();
   // }

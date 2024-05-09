@@ -53,28 +53,17 @@ set(INSTALL_GENERATED_HDRS ${ALL_PROTO_HDRS})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR} /opt/ros/noetic/include ${OpenCV_INCLUDE_DIRS} ${GTest_INCLUDE_DIRS} ${Glog_INCLUDE_DIRS} 
 ${catkin_INCLUDE_DIRS} ${EIGEN3_INCLUDE_DIR} ${CERES_INCLUDE_DIRS} ${PROTOBUF_INCLUDE_DIR})
 
-
 if(${BUILD_TEST})
   add_executable(test_node ${TEST_MAIN} ${ALL_LIBRARY_SRCS} ${TEST_HDRS} ${TEST_SRCS})
   target_link_libraries(test_node ${catkin_LIBRARIES} ${EIGEN3_LIBRARIES} ${CERES_LIBRARIES} ${PROTOBUF_LIBRARY}
     ${Boost_LIBRARIES} ${CAIRO_LIBRARIES} pthread gtest glog gflags)
 endif()
 
-
 if(${BUILD_SLAM})
   add_executable(slam_node ${SLAM_MAIN} ${ALL_LIBRARY_SRCS})
   target_link_libraries(slam_node ${catkin_LIBRARIES} ${EIGEN3_LIBRARIES} ${CERES_LIBRARIES} ${PROTOBUF_LIBRARY}
     ${Boost_LIBRARIES} ${CAIRO_LIBRARIES} pthread glog gflags )
 endif()
-
-foreach(HDR ${INSTALL_SOURCE_HDRS})
-  file(RELATIVE_PATH REL_FIL ${PROJECT_SOURCE_DIR} ${HDR})
-  get_filename_component(DIR ${REL_FIL} DIRECTORY)
-  install(
-    FILES ${HDR}
-    DESTINATION include/${DIR}
-  )
-endforeach()
 
 foreach(HDR ${INSTALL_GENERATED_HDRS})
   file(RELATIVE_PATH REL_FIL ${PROJECT_BINARY_DIR} ${HDR})
@@ -85,3 +74,11 @@ foreach(HDR ${INSTALL_GENERATED_HDRS})
   )
 endforeach()
 
+foreach(HDR ${INSTALL_SOURCE_HDRS})
+  file(RELATIVE_PATH REL_FIL ${PROJECT_SOURCE_DIR} ${HDR})
+  get_filename_component(DIR ${REL_FIL} DIRECTORY)
+  install(
+    FILES ${HDR}
+    DESTINATION include/${DIR}
+  )
+endforeach()

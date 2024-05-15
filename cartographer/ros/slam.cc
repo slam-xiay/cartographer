@@ -85,6 +85,7 @@ void Slam::PublishSubmaps() {
         }
       }
       submaps_publisher_.publish(grid);
+      submap_poses_publisher_.publish(pose);
       sleep(1);
     }
   }

@@ -28,6 +28,7 @@ class Slam {
   std::unique_ptr<ros::NodeHandle> node_handle_ptr_;
   ros::ServiceServer command_srv_;
   ros::Publisher submaps_publisher_;
+  ros::Publisher submap_poses_publisher_;
 };
 }  // namespace slam
 }  // namespace cartographer

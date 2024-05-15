@@ -86,7 +86,10 @@ void Slam::PublishSubmaps() {
         }
       }
       submaps_publisher_.publish(grid);
-      submap_poses_publisher_.publish(pose);
+      geometry_msgs::PoseStamped pose_stamped;
+      pose_stamped.header = grid.header;
+      pose_stamped.pose = pose;
+      submap_poses_publisher_.publish(pose_stamped);
       sleep(1);
     }
   }

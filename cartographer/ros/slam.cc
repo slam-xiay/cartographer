@@ -9,7 +9,8 @@ Slam::Slam() {
   submaps_publisher_ =
       node_handle_ptr_->advertise<nav_msgs::OccupancyGrid>("map", 100);
   submap_poses_publisher_ =
-      node_handle_ptr_->advertise<geometry_msgs::Pose>("submap_poses", 100);
+      node_handle_ptr_->advertise<geometry_msgs::PoseStamped>("submap_poses",
+                                                              100);
 };
 
 Slam::~Slam(){};

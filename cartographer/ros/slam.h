@@ -7,6 +7,7 @@
 #include "cartographer/mapping/proto/submap_visualization.pb.h"
 #include "cartographer/transform/rigid_transform.h"
 #include "geometry_msgs/Pose.h"
+#include "geometry_msgs/PoseStamped.h"
 #include "nav_msgs/OccupancyGrid.h"
 #include "ros/ros.h"
 namespace cartographer {

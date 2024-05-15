@@ -8,7 +8,7 @@ Slam::Slam() {
       "command", &Slam::SetCommandCallBack, this);
   submaps_publisher_ =
       node_handle_ptr_->advertise<nav_msgs::OccupancyGrid>("map", 100);
-  submaps_publisher_ =
+  submap_poses_publisher_ =
       node_handle_ptr_->advertise<geometry_msgs::Pose>("submap_poses", 100);
 };
 

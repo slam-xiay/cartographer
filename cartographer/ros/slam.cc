@@ -63,10 +63,8 @@ void Slam::PublishSubmaps() {
       grid.info.width = texture.width();
       grid.info.height = texture.height();
       grid.info.origin = pose;
-      grid.info.origin.position.x =
-          texture.width() - grid.info.origin.position.x;
-      grid.info.origin.position.y =
-          texture.height() - grid.info.origin.position.y;
+      grid.info.origin.position.x = -grid.info.origin.position.x;
+      grid.info.origin.position.y = -grid.info.origin.position.y;
       // grid.info.origin.position.y = 0.;
       // grid.info.origin.position.z = 0.;
       // grid.info.origin.orientation.w = 1.;

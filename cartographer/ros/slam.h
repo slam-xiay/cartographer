@@ -20,9 +20,8 @@ class Slam {
   Slam(const Slam&) = delete;
   Slam& operator=(const Slam&) = delete;
   bool SetCommandCallBack(Command::Request& req, Command::Response& res);
+  void PublishNodes();
   void PublishSubmaps();
-  // void PublishMap();
-  // void PublishNodes();
 
  private:
   std::unique_ptr<mapping::MapBuilder> map_builder_ptr_;

@@ -22,6 +22,8 @@ bool Slam::SetCommandCallBack(Command::Request& req, Command::Response& res) {
   return true;
 };
 
+void Slam::PublishNodes() {}
+
 void Slam::PublishSubmaps() {
   auto to_geometry_pose = [&](const transform::Rigid3d& rigid3d) {
     geometry_msgs::Pose pose;

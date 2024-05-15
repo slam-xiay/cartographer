@@ -4625,5 +4625,6 @@ apt-get check 检查是否有损坏的依赖
 docker run -itd --name 容器名 -h 容器主机名 --privileged \
            -v /tmp/.X11-unix:/tmp/.X11-unix  \
            -e DISPLAY=:0 镜像名或id /bin/bash
+           --net=none
 ```
 

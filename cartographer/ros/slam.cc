@@ -113,7 +113,7 @@ void Slam::PublishSubmaps() {
         LOG(ERROR) << "node:id:(" << node_pose.id << "),pose:("
                    << node_pose.data.global_pose << ").";
         node_poses_publisher_.publish(pose_stamped);
-        sleep(0.1);
+        sleep(1);
       }
       sleep(1);
     }

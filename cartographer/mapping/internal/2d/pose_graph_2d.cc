@@ -985,15 +985,15 @@ MapById<NodeId, TrajectoryNodePose> PoseGraph2D::GetTrajectoryNodePoses()
 MapById<NodeId, TrajectoryNodePose> PoseGraph2D::GetNodePosesBySubmapId(
     const SubmapId& submap_id) const {
   MapById<NodeId, TrajectoryNodePose> node_poses;
+  LOG(ERROR) << "constraints size:(" << data_.constraints.size() << ");";
   for (auto&& constraint : data_.constraints) {
-    if (constraint.tag == Constraint::Tag::INTRA_SUBMAP &&
+    if (constraint.tag == Constraint::Tag::INTER_SUBMAP &&
         constraint.submap_id == submap_id) {
-      std::optional<TrajectoryNodePose::ConstantPoseData> constant_pose_data;
       node_poses.Insert(
           constraint.node_id,
           TrajectoryNodePose{
               data_.trajectory_nodes.at(constraint.node_id).global_pose,
-              constant_pose_data});
+              std::nullopt});
     }
   }
   LOG(ERROR) << "submap_id:(" << submap_id << "),node size:("

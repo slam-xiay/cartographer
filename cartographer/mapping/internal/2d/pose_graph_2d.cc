@@ -1136,10 +1136,17 @@ transform::Rigid3d PoseGraph2D::ComputeLocalToGlobalTransform(
   if (begin_it == end_it) {
     const auto it = data_.initial_trajectory_poses.find(trajectory_id);
     if (it != data_.initial_trajectory_poses.end()) {
+      transform::Rigid3d relative_pose =
+          GetInterpolatedGlobalTrajectoryPose(it->second.to_trajectory_id,
+                                              it->second.time) *
+          it->second.relative_pose;
+      LOG(ERROR) << "ComputeLocalToGlobalTransform relative_pose:("
+                 << relative_pose << ")";
       return GetInterpolatedGlobalTrajectoryPose(it->second.to_trajectory_id,
                                                  it->second.time) *
              it->second.relative_pose;
     } else {
+      LOG(ERROR) << "ComputeLocalToGlobalTransform Identity";
       return transform::Rigid3d::Identity();
     }
   }

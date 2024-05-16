@@ -12,8 +12,7 @@ Slam::Slam() {
       node_handle_ptr_->advertise<geometry_msgs::PoseStamped>("submap_poses",
                                                               100);
   node_poses_publisher_ =
-      node_handle_ptr_->advertise<geometry_msgs::PoseStamped>("node_poses",
-                                                              100);
+      node_handle_ptr_->advertise<nav_msgs::Path>("node_poses", 100);
 };
 
 Slam::~Slam(){};
@@ -105,16 +104,20 @@ void Slam::PublishSubmaps() {
       mapping::MapById<mapping::NodeId, mapping::TrajectoryNodePose>
           node_poses = map_builder_ptr_->pose_graph()->GetNodePosesBySubmapId(
               submap_id_pose.id);
+
+      nav_msgs::Path path;
+      path.header = grid.header;
+
       for (auto&& node_pose : node_poses) {
         // node_pose.data.global_pose;
-        pose_stamped.header.stamp = ros::Time::now();
-        pose_stamped.header.frame_id = "map";
-        pose_stamped.pose = to_geometry_pose(node_pose.data.global_pose);
-        LOG(ERROR) << "node:id:(" << node_pose.id << "),pose:("
-                   << node_pose.data.global_pose << ").";
-        node_poses_publisher_.publish(pose_stamped);
-        sleep(1);
+        // pose_stamped.header.stamp = ros::Time::now();
+        // pose_stamped.header.frame_id = "map";
+        path.pose.push_back(to_geometry_pose(node_pose.data.global_pose));
+        // pose_stamped.pose = to_geometry_pose(node_pose.data.global_pose);
+        // LOG(ERROR) << "node:id:(" << node_pose.id << "),pose:("
+        //            << node_pose.data.global_pose << ").";
       }
+      node_poses_publisher_.publish(pose_stamped);
       sleep(1);
     }
   }

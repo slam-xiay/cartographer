@@ -990,9 +990,10 @@ MapById<NodeId, TrajectoryNodePose> PoseGraph2D::GetNodePosesBySubmapId(
         constraint.submap_id == submap_id) {
       std::optional<TrajectoryNodePose::ConstantPoseData> constant_pose_data;
       node_poses.Insert(
-          constraint.node_,
-          TrajectoryNodePose{data_.trajectory_nodes.at(node_id).global_pose,
-                             constant_pose_data});
+          constraint.node_id,
+          TrajectoryNodePose{
+              data_.trajectory_nodes.at(constraint.node_id).global_pose,
+              constant_pose_data});
     }
   }
   LOG(ERROR) << "submap_id:(" << submap_id << "),node size:("

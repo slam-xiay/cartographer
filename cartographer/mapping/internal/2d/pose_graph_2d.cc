@@ -984,10 +984,13 @@ MapById<NodeId, TrajectoryNodePose> PoseGraph2D::GetTrajectoryNodePoses()
 
 MapById<NodeId, TrajectoryNodePose> PoseGraph2D::GetNodePosesBySubmapId(
     const SubmapId& submap_id) const {
-  LOG(ERROR) << "submap id contain node ids:("
-             << data_.submap_data.at(submap_id).node_ids.size() << ").";
-  MapById<NodeId, TrajectoryNodePose> node_poses;
+  // LOG(ERROR) << "Submap id contain node ids:("
+  //            << data_.submap_data.at(submap_id).node_ids.size() << ").";
   // LOG(ERROR) << "constraints size:(" << data_.constraints.size() << ");";
+  LOG(ERROR) << "Trajectory node size:(" << data_.trajectory_nodes.size()
+             << ").";
+  MapById<NodeId, TrajectoryNodePose> node_poses;
+  // data_.trajectory_nodes.size();
   // for (auto&& constraint : data_.constraints) {
   //   if (constraint.tag == Constraint::Tag::INTER_SUBMAP &&
   //       constraint.submap_id == submap_id) {

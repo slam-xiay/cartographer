@@ -107,6 +107,7 @@ void Slam::PublishSubmaps() {
               submap_id_pose.id);
       for (auto&& node_pose : node_poses) {
         pose_stamped.pose = to_geometry_pose(node_pose.pose);
+        node_poses_publisher_.publish(pose_stamped);
       }
 
       sleep(1);

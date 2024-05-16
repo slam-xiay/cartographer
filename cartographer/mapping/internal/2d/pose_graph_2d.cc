@@ -986,10 +986,11 @@ MapById<NodeId, TrajectoryNodePose> PoseGraph2D::GetNodePosesBySubmapId(
     const SubmapId& submap_id) const {
   MapById<NodeId, TrajectoryNodePose> node_poses;
   for (auto&& constraint : data_.constraints) {
-    if (constraint.tag == 0 && constraint.submap_id == submap_id) {
+    if (constraint.tag == Constraint::INTRA_SUBMAP &&
+        constraint.submap_id == submap_id) {
       std::optional<TrajectoryNodePose::ConstantPoseData> constant_pose_data;
       node_poses.Insert(
-          node_id,
+          constraint.node_,
           TrajectoryNodePose{data_.trajectory_nodes.at(node_id).global_pose,
                              constant_pose_data});
     }

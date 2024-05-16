@@ -93,7 +93,7 @@ void Slam::PublishSubmaps() {
       submaps_publisher_.publish(grid);
       geometry_msgs::PoseStamped pose_stamped;
       pose_stamped.header = grid.header;
-      pose_stamped.pose = slice_pose;
+      pose_stamped.pose = submap_pose;
       submap_poses_publisher_.publish(pose_stamped);
       sleep(1);
     }

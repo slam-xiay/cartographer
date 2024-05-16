@@ -108,6 +108,8 @@ void Slam::PublishSubmaps() {
       for (auto&& node_pose : node_poses) {
         // node_pose.data.global_pose;
         pose_stamped.pose = to_geometry_pose(node_pose.data.global_pose);
+        LOG(ERROR) << "node:id:(" << node_pose.id << "),pose:("
+                   << node_pose.data.global_pose << ").";
         node_poses_publisher_.publish(pose_stamped);
       }
       sleep(1);

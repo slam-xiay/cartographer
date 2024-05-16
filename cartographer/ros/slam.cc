@@ -64,10 +64,10 @@ void Slam::PublishSubmaps() {
       grid.info.resolution = texture.resolution();
       grid.info.width = texture.width();
       grid.info.height = texture.height();
-      grid.info.origin = submap_pose;
-      // transform::Rigid3d slice_pose =
-      // transform::ToRigid3(texture.slice_pose()); grid.info.origin =
-      //     to_geometry_pose(submap_id_pose.data.pose * slice_pose);
+      // grid.info.origin = submap_pose;
+      transform::Rigid3d slice_pose = transform::ToRigid3(texture.slice_pose());
+      grid.info.origin =
+          to_geometry_pose(submap_id_pose.data.pose * slice_pose);
       // grid.info.origin.position.x = 0.;
       // grid.info.origin.position.y = 0.;
       // grid.info.origin.position.y = 0.;

@@ -50,7 +50,7 @@ void Slam::PublishSubmaps() {
   for (auto&& submap_id_pose : submap_poses) {
     geometry_msgs::Pose submap_pose =
         to_geometry_pose(submap_id_pose.data.pose);
-    LOG(ERROR) << "Submap pose 1:(" << submap_id_pose.data.pose << ").";
+    // LOG(ERROR) << "Submap pose 1:(" << submap_id_pose.data.pose << ").";
     mapping::proto::SubmapQuery::Response proto;
     std::string error =
         map_builder_ptr_->SubmapToProto(submap_id_pose.id, &proto);
@@ -85,8 +85,8 @@ void Slam::PublishSubmaps() {
       ::cartographer::common::FastGunzipString(texture.cells(), &cells);
       const int num_pixels = texture.width() * texture.height();
       CHECK_EQ(cells.size(), 2 * num_pixels);
-      LOG(ERROR) << "id:" << submap_id_pose.id << ",Cells size:("
-                 << cells.size() << "),num_pixels:(" << num_pixels << ").";
+      // LOG(ERROR) << "id:" << submap_id_pose.id << ",Cells size:("
+      //            << cells.size() << "),num_pixels:(" << num_pixels << ").";
       for (int i = 0; i < texture.height(); ++i) {
         for (int j = 0; j < texture.width(); ++j) {
           int intensity = cells[(i * texture.width() + j) * 2];

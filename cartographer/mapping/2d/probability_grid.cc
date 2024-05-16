@@ -154,6 +154,7 @@ bool ProbabilityGrid::DrawToSubmapTexture(
   // *texture->mutable_slice_pose() = transform::ToProto(
   //     local_pose.inverse() *
   //     transform::Rigid3d::Translation(Eigen::Vector3d(max_x, max_y, 0.)));
+
   *texture->mutable_slice_pose() = transform::ToProto(
       local_pose.inverse() *
       transform::Rigid3d::Translation(Eigen::Vector3d(max_x, max_y, 0.)));

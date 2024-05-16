@@ -1168,6 +1168,7 @@ transform::Rigid3d PoseGraph2D::ComputeLocalToGlobalTransform(
   auto submap = it->data.submap;
   if (data_.global_submap_poses_2d.Contains(submap_id)) {
     // We already have an optimized pose.
+    LOG(ERROR) << "We already have an optimized pose";
     return {submap,
             transform::Embed3D(
                 data_.global_submap_poses_2d.at(submap_id).global_pose)};

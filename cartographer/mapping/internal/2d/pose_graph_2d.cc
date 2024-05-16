@@ -984,20 +984,22 @@ MapById<NodeId, TrajectoryNodePose> PoseGraph2D::GetTrajectoryNodePoses()
 
 MapById<NodeId, TrajectoryNodePose> PoseGraph2D::GetNodePosesBySubmapId(
     const SubmapId& submap_id) const {
+  LOG(ERROR) << "submap id contain node ids:("
+             << data_.submap_data.at(submap_id).node_ids.size() << ").";
   MapById<NodeId, TrajectoryNodePose> node_poses;
-  LOG(ERROR) << "constraints size:(" << data_.constraints.size() << ");";
-  for (auto&& constraint : data_.constraints) {
-    if (constraint.tag == Constraint::Tag::INTER_SUBMAP &&
-        constraint.submap_id == submap_id) {
-      node_poses.Insert(
-          constraint.node_id,
-          TrajectoryNodePose{
-              data_.trajectory_nodes.at(constraint.node_id).global_pose,
-              std::nullopt});
-    }
-  }
-  LOG(ERROR) << "submap_id:(" << submap_id << "),node size:("
-             << node_poses.size() << ").";
+  // LOG(ERROR) << "constraints size:(" << data_.constraints.size() << ");";
+  // for (auto&& constraint : data_.constraints) {
+  //   if (constraint.tag == Constraint::Tag::INTER_SUBMAP &&
+  //       constraint.submap_id == submap_id) {
+  //     node_poses.Insert(
+  //         constraint.node_id,
+  //         TrajectoryNodePose{
+  //             data_.trajectory_nodes.at(constraint.node_id).global_pose,
+  //             std::nullopt});
+  //   }
+  // }
+  // LOG(ERROR) << "submap_id:(" << submap_id << "),node size:("
+  //            << node_poses.size() << ").";
   return node_poses;
 }
 

@@ -990,6 +990,11 @@ MapById<NodeId, TrajectoryNodePose> PoseGraph2D::GetNodePosesBySubmapId(
   LOG(ERROR) << "Trajectory node size:(" << data_.trajectory_nodes.size()
              << ").";
   MapById<NodeId, TrajectoryNodePose> node_poses;
+  for (auto&& trajectory_node : data_.trajectory_nodes)
+    LOG(ERROR) << "point size:("
+               << trajectory_node.data.constant_data
+                      ->filtered_gravity_aligned_point_cloud.size()
+               << ").";
   // data_.trajectory_nodes.size();
   // for (auto&& constraint : data_.constraints) {
   //   if (constraint.tag == Constraint::Tag::INTER_SUBMAP &&

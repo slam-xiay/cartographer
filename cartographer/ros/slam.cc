@@ -113,10 +113,8 @@ void Slam::PublishSubmaps() {
         pose_stamped.header.frame_id = "map";
         pose_stamped.pose = to_geometry_pose(node_pose.data.global_pose);
         path.poses.push_back(pose_stamped);
-        node_poses_publisher_.publish(path);
-        sleep(1);
       }
-
+      node_poses_publisher_.publish(path);
       sleep(1);
     }
   }

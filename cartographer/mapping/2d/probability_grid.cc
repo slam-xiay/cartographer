@@ -144,6 +144,9 @@ bool ProbabilityGrid::DrawToSubmapTexture(
   texture->set_resolution(resolution);
   const double max_x = limits().max().x() - resolution * offset.y();
   const double max_y = limits().max().y() - resolution * offset.x();
+  LOG(ERROR) << "max_x:(" << max_x << "), max_y:(" << max_y << "),resolution:("
+             << resolution << "),offset:(" << offset.x() << "," << offset.y()
+             << ").";
   *texture->mutable_slice_pose() = transform::ToProto(
       local_pose.inverse() *
       transform::Rigid3d::Translation(Eigen::Vector3d(max_x, max_y, 0.)));

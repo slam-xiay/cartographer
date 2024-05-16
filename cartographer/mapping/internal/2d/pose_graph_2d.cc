@@ -985,22 +985,19 @@ MapById<NodeId, TrajectoryNodePose> PoseGraph2D::GetTrajectoryNodePoses()
 MapById<NodeId, TrajectoryNodePose> PoseGraph2D::GetNodePosesBySubmapId(
     const SubmapId& submap_id) const {
   MapById<NodeId, TrajectoryNodePose> node_poses;
-  // 假设data_.constraint_index是一个有效的索引，能够高效地根据submap_id查找约束
-  // 如果不存在这样的索引，应创建一个。
-  for (const auto& constraint : data_.constraint_index.at(submap_id)) {
-    CHECK_EQ(constraint.tag, Constraint::INTRA_SUBMAP);
-    CHECK_EQ(constraint.submap_id, submap_id);
-    node_poses.Insert(
-        constraint.node_id,
-        TrajectoryNodePose{
-            data_.trajectory_nodes.at(constraint.node_id).global_pose,
-            /* constant_pose_data可以被赋值，如果它有实际用途 */
-            std::nullopt /* 或者一个合适的值 */
-        });
+  for (auto&& constraint : data_.constraints) {
+    if (constraint.tag == Constraint::INTRA_SUBMAP &&
+        constraint.submap_id == submap_id) {
+      std::optional<TrajectoryNodePose::ConstantPoseData> constant_pose_data;
+      node_poses.Insert(
+          constraint.node_id,
+          TrajectoryNodePose{
+              data_.trajectory_nodes.at(constraint.node_id).global_pose,
+              constant_pose_data});
+    }
   }
-  // 使用INFO级别的日志，因为这条信息是为了调试或信息输出
-  LOG(INFO) << "Collected " << node_poses.size()
-            << " node poses for submap with ID: " << submap_id;
+  LOG(ERROR) << "submap_id:(" << submap_id << "),node size:("
+             << node_poses.size() << ").";
   return node_poses;
 }
 

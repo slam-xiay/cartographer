@@ -30,6 +30,7 @@ class Slam {
   ros::ServiceServer command_srv_;
   ros::Publisher submaps_publisher_;
   ros::Publisher submap_poses_publisher_;
+  ros::Publisher node_poses_publisher_;
 };
 }  // namespace slam
 }  // namespace cartographer

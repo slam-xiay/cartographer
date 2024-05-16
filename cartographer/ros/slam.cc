@@ -11,6 +11,9 @@ Slam::Slam() {
   submap_poses_publisher_ =
       node_handle_ptr_->advertise<geometry_msgs::PoseStamped>("submap_poses",
                                                               100);
+  node_poses_publisher_ =
+      node_handle_ptr_->advertise<geometry_msgs::PoseStamped>("node_poses",
+                                                              100);
 };
 
 Slam::~Slam(){};
@@ -39,9 +42,12 @@ void Slam::PublishSubmaps() {
     pose.orientation.z = rigid3d.rotation().z();
     return pose;
   };
-  mapping::MapById<mapping::SubmapId, mapping::SubmapPose> all_submap_poses =
+  mapping::MapById<mapping::SubmapId, mapping::SubmapPose> submap_poses =
       map_builder_ptr_->pose_graph()->GetAllSubmapPoses();
-  for (auto&& submap_id_pose : all_submap_poses) {
+  mapping::MapById<mapping::NodeId, mapping::TrajectoryNodePose>
+      trajectory_poses =
+          map_builder_ptr_->pose_graph()->GetTrajectoryNodePoses();
+  for (auto&& submap_id_pose : submap_poses) {
     geometry_msgs::Pose submap_pose =
         to_geometry_pose(submap_id_pose.data.pose);
     LOG(ERROR) << "Submap pose 1:(" << submap_id_pose.data.pose << ").";

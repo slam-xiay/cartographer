@@ -110,10 +110,11 @@ void Slam::PublishSubmaps() {
 
       for (auto&& node_pose : node_poses) {
         // node_pose.data.global_pose;
-        // pose_stamped.header.stamp = ros::Time::now();
-        // pose_stamped.header.frame_id = "map";
-        path.poses.push_back(to_geometry_pose(node_pose.data.global_pose));
-        // pose_stamped.pose = to_geometry_pose(node_pose.data.global_pose);
+        pose_stamped.header.stamp = ros::Time::now();
+        pose_stamped.header.frame_id = "map";
+        pose_stamped.pose = to_geometry_pose(node_pose.data.global_pose);
+        path.poses.push_back(pose_stamped);
+
         // LOG(ERROR) << "node:id:(" << node_pose.id << "),pose:("
         //            << node_pose.data.global_pose << ").";
       }

@@ -151,9 +151,12 @@ bool ProbabilityGrid::DrawToSubmapTexture(
   //            << offset.x() << "," << offset.y() << ").";
   // cell_limits:(491,469),max_x:(16.0333),
   // max_y:(19.6891),resolution:(0.05),offset:(0,0).
+  // *texture->mutable_slice_pose() = transform::ToProto(
+  //     local_pose.inverse() *
+  //     transform::Rigid3d::Translation(Eigen::Vector3d(max_x, max_y, 0.)));
   *texture->mutable_slice_pose() = transform::ToProto(
       local_pose.inverse() *
-      transform::Rigid3d::Translation(Eigen::Vector3d(max_x, max_y, 0.)));
+      transform::Rigid3d::Translation(Eigen::Vector3d(0., 0., 0.)));
   // LOG(ERROR) << "local_pose:(" << local_pose <<
   // ")";实际上是图片右上角的在map中的位姿
 

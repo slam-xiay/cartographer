@@ -42,7 +42,9 @@ void Slam::PublishSubmaps() {
   mapping::MapById<mapping::SubmapId, mapping::SubmapPose> all_submap_poses =
       map_builder_ptr_->pose_graph()->GetAllSubmapPoses();
   for (auto&& submap_id_pose : all_submap_poses) {
-    geometry_msgs::Pose pose = to_geometry_pose(submap_id_pose.data.pose);
+    geometry_msgs::Pose submap_pose =
+        to_geometry_pose(submap_id_pose.data.pose);
+    LOG(ERROR) << "Submap pose 1:(" << submap_id_pose.data.pose << ").";
     mapping::proto::SubmapQuery::Response proto;
     std::string error =
         map_builder_ptr_->SubmapToProto(submap_id_pose.id, &proto);
@@ -62,10 +64,10 @@ void Slam::PublishSubmaps() {
       grid.info.resolution = texture.resolution();
       grid.info.width = texture.width();
       grid.info.height = texture.height();
-      // grid.info.origin = pose;
-      transform::Rigid3d slice_pose = transform::ToRigid3(texture.slice_pose());
-      grid.info.origin =
-          to_geometry_pose(submap_id_pose.data.pose * slice_pose);
+      grid.info.origin = submap_pose;
+      // transform::Rigid3d slice_pose =
+      // transform::ToRigid3(texture.slice_pose()); grid.info.origin =
+      //     to_geometry_pose(submap_id_pose.data.pose * slice_pose);
       // grid.info.origin.position.x = 0.;
       // grid.info.origin.position.y = 0.;
       // grid.info.origin.position.y = 0.;

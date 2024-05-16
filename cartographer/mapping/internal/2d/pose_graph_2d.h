@@ -118,7 +118,10 @@ class PoseGraph2D {
   MapById<SubmapId, SubmapPose> GetAllSubmapPoses() const;
   transform::Rigid3d GetLocalToGlobalTransform(int trajectory_id) const;
   MapById<NodeId, TrajectoryNode> GetTrajectoryNodes() const;
+  //   MapById<SubmapId, TrajectoryNode> GetSubmapNodes() const;
   MapById<NodeId, TrajectoryNodePose> GetTrajectoryNodePoses() const;
+  MapById<NodeId, TrajectoryNodePose> GetNodePosesBySubmapId(
+      const SubmapId& submap_id) const;
   std::map<int, TrajectoryState> GetTrajectoryStates() const;
   //   std::map<std::string, transform::Rigid3d> GetLandmarkPoses() const
   //

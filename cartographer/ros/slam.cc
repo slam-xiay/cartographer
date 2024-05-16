@@ -101,6 +101,14 @@ void Slam::PublishSubmaps() {
       pose_stamped.header = grid.header;
       pose_stamped.pose = submap_pose;
       submap_poses_publisher_.publish(pose_stamped);
+
+      mapping::MapById<mapping::NodeId, mapping::TrajectoryNodePose>
+          node_poses = map_builder_ptr_->pose_graph()->GetNodePosesBySubmapId(
+              submap_id_pose.id);
+      for (auto&& node_pose : node_poses) {
+        pose_stamped.pose = to_geometry_pose(node_pose.pose);
+      }
+
       sleep(1);
     }
   }

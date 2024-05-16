@@ -136,7 +136,7 @@ void Submap2D::ToResponseProto(
   proto::SubmapQuery::Response::SubmapTexture* const texture =
       response->add_textures();
   grid()->DrawToSubmapTexture(texture, local_pose());
-  LOG(ERROR) << "submap pose 2:(" << local_pose() << ").";
+  // LOG(ERROR) << "submap pose 2:(" << local_pose() << ").";
 }
 
 // void Submap2D::InsertRangeData(

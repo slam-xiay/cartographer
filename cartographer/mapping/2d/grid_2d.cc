@@ -116,12 +116,13 @@ void Grid2D::ComputeCroppedLimits(Eigen::Array2i* const offset,
     *limits = CellLimits(1, 1);
     return;
   }
-  LOG(ERROR) << "known_cells_box_ not Empty(),size:("
-             << known_cells_box_.sizes().x() << ","
-             << known_cells_box_.sizes().y() << "),("
-             << known_cells_box_.min().x() << "," << known_cells_box_.min().y()
-             << "," << known_cells_box_.max().x() << ","
-             << known_cells_box_.max().y() << ").";
+  // LOG(ERROR) << "known_cells_box_ not Empty(),size:("
+  //            << known_cells_box_.sizes().x() << ","
+  //            << known_cells_box_.sizes().y() << "),("
+  //            << known_cells_box_.min().x() << "," <<
+  //            known_cells_box_.min().y()
+  //            << "," << known_cells_box_.max().x() << ","
+  //            << known_cells_box_.max().y() << ").";
   // known_cells_box_ not Empty(),size:(490,468),(0,0,490,468).
   *offset = known_cells_box_.min().array();
   *limits = CellLimits(known_cells_box_.sizes().x() + 1,

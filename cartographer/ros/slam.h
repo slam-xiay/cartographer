@@ -9,6 +9,7 @@
 #include "geometry_msgs/Pose.h"
 #include "geometry_msgs/PoseStamped.h"
 #include "nav_msgs/OccupancyGrid.h"
+#include "nav_msgs/Path.h"
 #include "ros/ros.h"
 namespace cartographer {
 namespace slam {

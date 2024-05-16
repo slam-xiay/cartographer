@@ -986,7 +986,7 @@ MapById<NodeId, TrajectoryNodePose> PoseGraph2D::GetNodePosesBySubmapId(
     const SubmapId& submap_id) const {
   MapById<NodeId, TrajectoryNodePose> node_poses;
   LOG(ERROR) << "submap_id:(" << submap_id << "),node size:("
-             << data_.submap_data.at(submap_id).node_ids.count() << ").";
+             << data_.submap_data.at(submap_id).node_ids.size() << ").";
   for (auto&& node_id_data : data_.trajectory_nodes) {
     std::optional<TrajectoryNodePose::ConstantPoseData> constant_pose_data;
     node_poses.Insert(

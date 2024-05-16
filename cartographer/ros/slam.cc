@@ -107,7 +107,7 @@ void Slam::PublishSubmaps() {
 
       nav_msgs::Path path;
       path.header = grid.header;
-
+      LOG(ERROR) << "node_poses size:(" << node_poses.size() << ").";
       for (auto&& node_pose : node_poses) {
         // node_pose.data.global_pose;
         pose_stamped.header.stamp = ros::Time::now();

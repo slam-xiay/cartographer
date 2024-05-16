@@ -992,7 +992,7 @@ MapById<NodeId, TrajectoryNodePose> PoseGraph2D::GetNodePosesBySubmapId(
     node_poses.Insert(
         node_id_data.id,
         TrajectoryNodePose{node_id_data.data.global_pose, constant_pose_data});
-    if (node_poses.size() > 10) continue;
+    // if (node_poses.size() > 10) continue;
   }
   // for (auto&& node_id : data_.submap_data.at(submap_id).node_ids) {
   //   // auto node_data = data_.trajectory_nodes.at(node_data.id);

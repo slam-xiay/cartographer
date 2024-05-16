@@ -44,9 +44,9 @@ void Slam::PublishSubmaps() {
   };
   mapping::MapById<mapping::SubmapId, mapping::SubmapPose> submap_poses =
       map_builder_ptr_->pose_graph()->GetAllSubmapPoses();
-  mapping::MapById<mapping::NodeId, mapping::TrajectoryNodePose>
-      trajectory_poses =
-          map_builder_ptr_->pose_graph()->GetTrajectoryNodePoses();
+  // mapping::MapById<mapping::NodeId, mapping::TrajectoryNodePose>
+  //     trajectory_poses =
+  //         map_builder_ptr_->pose_graph()->GetTrajectoryNodePoses();
   for (auto&& submap_id_pose : submap_poses) {
     geometry_msgs::Pose submap_pose =
         to_geometry_pose(submap_id_pose.data.pose);
@@ -105,10 +105,10 @@ void Slam::PublishSubmaps() {
       mapping::MapById<mapping::NodeId, mapping::TrajectoryNodePose>
           node_poses = map_builder_ptr_->pose_graph()->GetNodePosesBySubmapId(
               submap_id_pose.id);
-      for (auto&& node_pose : node_poses) {
-        pose_stamped.pose = to_geometry_pose(node_pose.pose);
-        node_poses_publisher_.publish(pose_stamped);
-      }
+      // for (auto&& node_pose : node_poses) {
+      //   pose_stamped.pose = to_geometry_pose(node_pose.data.pose);
+      //   node_poses_publisher_.publish(pose_stamped);
+      // }
 
       sleep(1);
     }

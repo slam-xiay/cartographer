@@ -156,7 +156,7 @@ bool ProbabilityGrid::DrawToSubmapTexture(
   //     transform::Rigid3d::Translation(Eigen::Vector3d(max_x, max_y, 0.)));
   *texture->mutable_slice_pose() = transform::ToProto(
       local_pose.inverse() *
-      transform::Rigid3d::Translation(Eigen::Vector3d(0., 0., 0.)));
+      transform::Rigid3d::Translation(Eigen::Vector3d(max_x, max_y, 0.)));
   // LOG(ERROR) << "local_pose:(" << local_pose <<
   // ")";实际上是图片右上角的在map中的位姿
 

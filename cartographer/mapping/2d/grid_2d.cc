@@ -84,8 +84,8 @@ Grid2D::Grid2D(const proto::Grid2D& proto,
   CHECK_LT(min_correspondence_cost_, max_correspondence_cost_);
   if (proto.has_known_cells_box()) {
     const auto& box = proto.known_cells_box();
-    LOG(ERROR) << "Box:(" << box.min_x() << "," << box.min_y() << ","
-               << box.max_x() << "," << box.max_y() << ")";
+    // LOG(ERROR) << "Box:(" << box.min_x() << "," << box.min_y() << ","
+    //            << box.max_x() << "," << box.max_y() << ")";
     known_cells_box_ =
         Eigen::AlignedBox2i(Eigen::Vector2i(box.min_x(), box.min_y()),
                             Eigen::Vector2i(box.max_x(), box.max_y()));

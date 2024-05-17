@@ -73,6 +73,25 @@ transform::Rigid3d ToRigid3(const proto::Rigid3d& rigid) {
                             ToEigen(rigid.rotation()));
 }
 
+geometry_msgs::Pose Rigid3dToGeometryPose(const transform::Rigid3d& rigid3d) {
+  geometry_msgs::Pose pose;
+  pose.position.x = rigid3d.translation().x();
+  pose.position.y = rigid3d.translation().y();
+  pose.position.z = rigid3d.translation().z();
+  pose.orientation.w = rigid3d.rotation().w();
+  pose.orientation.x = rigid3d.rotation().x();
+  pose.orientation.y = rigid3d.rotation().y();
+  pose.orientation.z = rigid3d.rotation().z();
+  return pose;
+}
+
+transform::Rigid3d GeometryPoseToRigid3d(const geometry_msgs::Pose& pose) {
+  return transform::Rigid3d(
+      Eigen::Vector3d(pose.position.x, pose.position.y, pose.position.z),
+      Eigen::Quaterniond(pose.orientation.w, pose.orientation.x,
+                         pose.orientation.y, pose.orientation.z));
+}
+
 proto::Rigid3f ToProto(const transform::Rigid3f& rigid) {
   proto::Rigid3f proto;
   *proto.mutable_translation() = ToProto(rigid.translation());

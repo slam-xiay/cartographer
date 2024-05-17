@@ -24,6 +24,7 @@
 #include "cartographer/common/math.h"
 #include "cartographer/transform/proto/transform.pb.h"
 #include "cartographer/transform/rigid_transform.h"
+#include "geometry_msgs/Pose.h"
 
 namespace cartographer {
 namespace transform {
@@ -125,6 +126,9 @@ proto::Rigid2d ToProto(const Rigid2d& transform);
 proto::Rigid2f ToProto(const Rigid2f& transform);
 proto::Rigid3d ToProto(const Rigid3d& rigid);
 Rigid3d ToRigid3(const proto::Rigid3d& rigid);
+
+transform::Rigid3d ToRigid3(const proto::Rigid3d& rigid);
+geometry_msgs::Pose Rigid3dToGeometryPose(const transform::Rigid3d& rigid3d);
 proto::Rigid3f ToProto(const Rigid3f& rigid);
 proto::Vector2d ToProto(const Eigen::Vector2d& vector);
 proto::Vector3f ToProto(const Eigen::Vector3f& vector);

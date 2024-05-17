@@ -991,7 +991,7 @@ MapById<NodeId, TrajectoryNodePose> PoseGraph2D::GetNodePosesBySubmapId(
              << ").";
   MapById<NodeId, TrajectoryNodePose> node_poses;
   for (auto&& trajectory_node : data_.trajectory_nodes)
-    LOG(ERROR) << "point size:("
+    LOG(ERROR) << "Point cloud size:("
                << trajectory_node.data.constant_data
                       ->filtered_gravity_aligned_point_cloud.size()
                << ").";

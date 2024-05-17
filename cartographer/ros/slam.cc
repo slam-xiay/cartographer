@@ -30,17 +30,6 @@ bool Slam::SetCommandCallBack(Command::Request& req, Command::Response& res) {
 void Slam::PublishNodes() {}
 
 void Slam::PublishSubmaps() {
-  auto to_geometry_pose = [&](const transform::Rigid3d& rigid3d) {
-    geometry_msgs::Pose pose;
-    pose.position.x = rigid3d.translation().x();
-    pose.position.y = rigid3d.translation().y();
-    pose.position.z = rigid3d.translation().z();
-    pose.orientation.w = rigid3d.rotation().w();
-    pose.orientation.x = rigid3d.rotation().x();
-    pose.orientation.y = rigid3d.rotation().y();
-    pose.orientation.z = rigid3d.rotation().z();
-    return pose;
-  };
   mapping::MapById<mapping::SubmapId, mapping::SubmapPose> submap_poses =
       map_builder_ptr_->pose_graph()->GetAllSubmapPoses();
   // mapping::MapById<mapping::NodeId, mapping::TrajectoryNodePose>
@@ -48,7 +37,7 @@ void Slam::PublishSubmaps() {
   //         map_builder_ptr_->pose_graph()->GetTrajectoryNodePoses();
   for (auto&& submap_id_pose : submap_poses) {
     geometry_msgs::Pose submap_pose =
-        to_geometry_pose(submap_id_pose.data.pose);
+        transform::Rigid3dToGeometryPose(submap_id_pose.data.pose);
     // LOG(ERROR) << "Submap pose 1:(" << submap_id_pose.data.pose << ").";
     mapping::proto::SubmapQuery::Response proto;
     std::string error =
@@ -71,7 +60,7 @@ void Slam::PublishSubmaps() {
       grid.info.height = texture.height();
       grid.info.origin = submap_pose;
       transform::Rigid3d slice_pose = transform::ToRigid3(texture.slice_pose());
-      grid.info.origin = to_geometry_pose(slice_pose.inverse());
+      grid.info.origin = transform::Rigid3dToGeometryPose(slice_pose.inverse());
       // grid.info.origin.position.x = 0.;
       // grid.info.origin.position.y = 0.;
       // grid.info.origin.position.y = 0.;
@@ -111,7 +100,8 @@ void Slam::PublishSubmaps() {
       for (auto&& node_pose : node_poses) {
         pose_stamped.header.stamp = ros::Time::now();
         pose_stamped.header.frame_id = "map";
-        pose_stamped.pose = to_geometry_pose(node_pose.data.global_pose);
+        pose_stamped.pose =
+            transform::Rigid3dToGeometryPose(node_pose.data.global_pose);
         path.poses.push_back(pose_stamped);
       }
       node_poses_publisher_.publish(path);

@@ -126,9 +126,7 @@ proto::Rigid2d ToProto(const Rigid2d& transform);
 proto::Rigid2f ToProto(const Rigid2f& transform);
 proto::Rigid3d ToProto(const Rigid3d& rigid);
 Rigid3d ToRigid3(const proto::Rigid3d& rigid);
-
 transform::Rigid3d ToRigid3(const proto::Rigid3d& rigid);
-geometry_msgs::Pose Rigid3dToGeometryPose(const transform::Rigid3d& rigid3d);
 proto::Rigid3f ToProto(const Rigid3f& rigid);
 proto::Vector2d ToProto(const Eigen::Vector2d& vector);
 proto::Vector3f ToProto(const Eigen::Vector3f& vector);
@@ -136,6 +134,9 @@ proto::Vector4f ToProto(const Eigen::Vector4f& vector);
 proto::Vector3d ToProto(const Eigen::Vector3d& vector);
 proto::Quaternionf ToProto(const Eigen::Quaternionf& quaternion);
 proto::Quaterniond ToProto(const Eigen::Quaterniond& quaternion);
+
+geometry_msgs::Pose Rigid3dToGeometryPose(const transform::Rigid3d& rigid3d);
+transform::Rigid3d GeometryPoseToRigid3d(const geometry_msgs::Pose& pose);
 
 }  // namespace transform
 }  // namespace cartographer
